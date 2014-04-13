@@ -1,4 +1,4 @@
-ing http://www.laurentluce.com/posts/binary-search-tree-library-in-python/ as help '''
+'''Using http://www.laurentluce.com/posts/binary-search-tree-library-in-python/ as help '''
 
 class Node:
 
