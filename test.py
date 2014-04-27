@@ -1,16 +1,18 @@
 # Formula consists of a proof term and a subformula. The subformula can also contain
-# a proof term, but eventually the subformula should derived from the Axioms.
+# a proof term, but eventually the subformula should be derived from the Axioms.
 # As for now, the allowed axioms are: -> (implication), ¬ (not)
 # the allowed proof terms are: + (sum/union), ! (bang)
+
+import sympy
 
 
 class Formula:
 
     is_axiom = False     # is_leaf
 
-    def __init__(self, c, A):
+    def __init__(self, a, c=None):
+        self.subformula = a
         self.proof_term = c
-        self.subformula = A
 
     # Main method of class Formula. Evaluates if a Formula is provable.
     def is_provable(self, cs):
@@ -35,50 +37,57 @@ class Formula:
     def is_axiom_of_cs(self, cs):
         return cs[self.proof_term] == self.subformula
 
+    def proof_term_split(self, x):
+        '''
+        tries to split from the subformula a proof_term.
+        if it works, it will reassign the found proof_term to the object and overwrite the subformula with
+        the remaining part of the original subformula.
+        '''
 
-class ProofTerm:
+        #todo
+        return []
 
-    def __init__(self, t):
-        self.term = t
+
+class ProofTerm():
+    _types = ['CONSTANT', 'SUM', 'BANG']
+
+    def __init__(self, expression, type=None):
+        self.expression = expression
+        self.type = type
 
     def is_constant(self):
-        #todo
-        return True
+        return self.type == 'CONSTANT'
 
     def is_sum(self):
-        #todo
-        return True
+        return self.type == 'SUM'
 
     def is_bang(self):
-        #todo
-        return True
+        return self.type == 'BANG'
+
+    def set_type(self):
+        #todo: somehow find out what typ this is.
+        self.type = self._types[0]
+        return self._types[0]
 
     def get_left(self):
-        #todo
+        assert self.type == 'SUM', "Cannot get left if Proof Term is not of type SUM."
+        #todo: read left variable
         return False
 
     def get_right(self):
-        #todo
+        assert self.type == 'SUM', "Cannot get right if Proof Term is not of type SUM."
+        #todo: read right variable
         return False
 
     def remove_bang(self):
-        #todo
+        assert self.type == 'BANG', "Cannot remove BANG if Proof Term is not of type Bang."
+        #todo: read inner
         return self
 
-## Helper class to parse String to
-
-
-class Reader:
-
-    formulas = ["atomic", "implication", "negation"]
-    proof_terms = ["atomic", "sum", "bang"]
-
     @staticmethod
-    def split(formula):
-        #todo
-        return formula
+    def find_pt(expression):
+        #todo: search through the string in order to finde the proof_term. If it exists, create a new ProofTerm.
+
+    # 'private' functions. Seams like that doesn't really exists in python, only the convention to use an underscore.
 
 
-cs = {"c1": "¬A", "c2": "A->B"}
-t = Formula("(!f)", "A->B")
-print(t.to_String())

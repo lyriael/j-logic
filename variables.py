@@ -9,8 +9,6 @@ class Variable(object):
 
 class Substitution(Variable):
 
-    operator = {'+': False, '!': False}
-
     def __init__(self, variables, type):
         Variable.__init__(self, "xyz") #todo generate representation
         self.variables = variables
