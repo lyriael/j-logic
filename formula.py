@@ -7,7 +7,10 @@ class Formula:
 
     def __init__(self, expression):
         self.expression = expression
-        self.subformula = self.get_subformula(expression)
+
+        self.subformula = None
+        self.proof_term = None
+        self.split()
 
     # Main method of class Formula. Evaluates if a Formula is provable.
     def is_provable(self, cs):
@@ -19,8 +22,8 @@ class Formula:
         # e.g. (t+s): A
         elif proof_term.is_sum():
 
-            left = Formula(self.proof_term.get_left(), self.subformula)
-            right = Formula(self.proof_term.get_right(), self.subformula)
+            left = Formula(self.proof_term.get_left())
+            right = Formula(self.proof_term.get_right())
             return left.is_provable(cs) or right.is_provable(cs)
         # e.g. !t:(t: A)
         elif proof_term.is_bang():
@@ -44,5 +47,6 @@ class Formula:
         colon = parser.find_right_most_colon(self.expression)
         return parser.clean_braces(self.expression[:colon])
 
-    def get_representation(self):
-        return
+    def split(self):
+        self.subformula = self.get_subformula()
+        self.proof_term = self.get_proof_term()
