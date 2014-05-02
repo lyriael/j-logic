@@ -21,6 +21,12 @@ class Node(object):
     def has_right(self):
         return self.right is not None
 
+    def get_right(self):
+        return self.right
+
+    def get_left(self):
+        return self.left
+
     def new_left(self):
         new_left = Node()
         self.left = new_left
@@ -54,52 +60,52 @@ class Node(object):
         return term
 
     @staticmethod
-    def make(term):
-        current = Node()
-        all = [current]
-        j = 0   # for debugging
+    def make_tree(term):
+        root = Node()
+        current = root
         for i in term:
-            if i in ['(', ')', '+', '!']:
+            if i in ['(', ')', '+', '!', ':']:
                 if i == '(':
                     left = current.new_left()
                     current = left
-                    all.append(current)
                 if i == ')':
                     current = current.parent
                 if i == '+':
                     current.token = '+'
                     right = current.new_right()
                     current = right
-                    all.append(current)
+                if i == ':':
+                    current.token = ':'
+                    right = current.new_right()
+                    current = right
                 if i == '!':
                     current.token = '!'
                     only = current.new_right()
                     current = only
-                    all.append(current)
             else:
                 current.token = i
                 if current.parent.token == '!':
                     current = current.parent.parent
                 else:
                     current = current.parent
-            j += 1
-
-        return all
+        return root
 
 
 
-tests = ['(c+(a+b))', '!a']
-r = Node.make('(c+(a+b))')[0]
-
-print("INORDER")
-print(r.inorder())
-
-# for i in Node.make('(c+(a+b))'):
+# tests = ['(c+(a+b))', '!a']
+# tree_root = Node.make_tree('((c+(a+b)):A)')
+#
+#
+# print("INORDER")
+# print(tree_root.inorder())
+# print("PREORDER")
+# print(root.preorder())
+# print("SIZE")
+# print(len(tree))
+# for i in Node.make('(c+(a+b)):C'):
 #     print("looking at: " + i.token)
 #     print("left: " + str(i.has_left()))
 #     print("right: " + str(i.has_right()))
 #     print("root: " + str(i.is_root()))
 #     print("leaf: " + str(i.is_leaf()))
 #     print("-----------------------")
-#
-# print(r)

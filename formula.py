@@ -1,52 +1,53 @@
-import parser
-import proof_term
+__author__ = 'lyriael'
+#aka tree
+from tree_node import Node
 
-class Formula:
 
-    expression = None
+class Formula(object):
 
-    def __init__(self, expression):
-        self.expression = expression
+    def __init__(self, formula):
 
-        self.subformula = None
-        self.proof_term = None
-        self.split()
+        if isinstance(formula, str):
+            self.tree_rep = Node.make_tree(formula)
+        elif isinstance(formula, Node):
+            self.tree_rep = formula
 
-    # Main method of class Formula. Evaluates if a Formula is provable.
+        assert self.tree_rep.token == ':'
+        assert self.tree_rep.has_right() and self.tree_rep.has_left()
+
     def is_provable(self, cs):
+        proof_term = self.proof_term()
+        subformula = self.subformula()
 
-        proof_term = self.get_proof_term()
-        # e.g. t: A
-        if proof_term.is_constant():
-            return self.is_axiom(proof_term, cs)
-        # e.g. (t+s): A
-        elif proof_term.is_sum():
-
-            left = Formula(self.proof_term.get_left())
-            right = Formula(self.proof_term.get_right())
-            return left.is_provable(cs) or right.is_provable(cs)
-        # e.g. !t:(t: A)
-        elif proof_term.is_bang():
-            new_formula = Formula(self.subformula)
-            if self.proof_term.remove_bang() == new_formula.proof_term:
+        if proof_term.isleaf():  # if_constant
+            return self.is_axiom(cs)
+        elif proof_term.token == '!':  # if_bang
+            new_formula = Formula(subformula)
+            if proof_term.inorder()[1:] == new_formula.proof_term().inorder():
                 return new_formula.is_provable(cs)
             else:
                 return False
-        return False
+        elif proof_term.token == '+':  # if_sum
+            left_formula = Formula(proof_term.get_left().inorder() + ":" + subformula.inorder())
+            right_formula = Formula(proof_term.get_right().inorder() + ":" + subformula.inorder())
+            return left_formula.is_provable(cs) or right_formula.is_provable(cs)
 
-    def is_axiom(self, proof_term, cs):
-        return cs[proof_term] == self.get_subformula
+    def proof_term(self):
+        return self.tree_rep.get_left()
 
-    def get_proof_term(self):
-        #todo TEST
-        colon = parser.find_right_most_colon(self.expression)
-        return parser.clean_braces(self.expression[colon:])
+    def subformula(self):
+        return self.tree_rep.get_right()
 
-    def get_subformula(self, expression):
-        #todo TEST
-        colon = parser.find_right_most_colon(self.expression)
-        return parser.clean_braces(self.expression[:colon])
+    def is_axiom(self, cs):
+        return cs[self.proof_term()] == self.subformula()
 
-    def split(self):
-        self.subformula = self.get_subformula()
-        self.proof_term = self.get_proof_term()
+
+
+# Tests
+
+# Test if formula may be instanciated as string as well as a node
+a = Formula('(a+b)')
+n = Node()
+n.token = 'a'
+b = Formula(n)
+print(b.tree_rep.inorder())
