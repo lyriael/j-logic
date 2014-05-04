@@ -9,6 +9,9 @@ class Node(object):
     def __repr__(self):
         return self.token
 
+    def __len__(self):
+        return self.len_helper()
+
     def is_root(self):
         return self.parent is self
 
@@ -51,7 +54,9 @@ class Node(object):
         term = ''
         if self.has_left():
             term += '(' + self.left.inorder()
+
         term += str(self)
+
         if self.has_right():
             term += self.right.inorder() + ')'
 
@@ -90,22 +95,15 @@ class Node(object):
                     current = current.parent
         return root
 
+    # debug functions
+    def len_helper(self):
+        count = 0
+        if self.has_left():
+            count += self.left.len_helper()
 
+        count += 1
 
-# tests = ['(c+(a+b))', '!a']
-# tree_root = Node.make_tree('((c+(a+b)):A)')
-#
-#
-# print("INORDER")
-# print(tree_root.inorder())
-# print("PREORDER")
-# print(root.preorder())
-# print("SIZE")
-# print(len(tree))
-# for i in Node.make('(c+(a+b)):C'):
-#     print("looking at: " + i.token)
-#     print("left: " + str(i.has_left()))
-#     print("right: " + str(i.has_right()))
-#     print("root: " + str(i.is_root()))
-#     print("leaf: " + str(i.is_leaf()))
-#     print("-----------------------")
+        if self.has_right():
+            count += self.right.len_helper()
+
+        return count

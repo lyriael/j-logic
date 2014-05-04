@@ -12,14 +12,15 @@ class Formula(object):
         elif isinstance(formula, Node):
             self.tree_rep = formula
 
-        assert self.tree_rep.token == ':'
-        assert self.tree_rep.has_right() and self.tree_rep.has_left()
+        # assert self.tree_rep.token == ':'
+        # assert self.tree_rep.has_right() and self.tree_rep.has_left()
 
     def is_provable(self, cs):
+        print(self)
         proof_term = self.proof_term()
         subformula = self.subformula()
 
-        if proof_term.isleaf():  # if_constant
+        if proof_term.is_leaf():  # if_constant
             return self.is_axiom(cs)
         elif proof_term.token == '!':  # if_bang
             new_formula = Formula(subformula)
@@ -41,7 +42,8 @@ class Formula(object):
     def is_axiom(self, cs):
         return cs[self.proof_term()] == self.subformula()
 
-
+    def __str__(self):
+        return self.tree_rep.inorder()
 
 # Tests
 
@@ -51,3 +53,8 @@ n = Node()
 n.token = 'a'
 b = Formula(n)
 print(b.tree_rep.inorder())
+
+cs = {'a': 'A', 'b': 'B', 'c': 'C'}
+f = Formula('((a+b):B)')
+print(f)
+print(f.is_provable(cs))
