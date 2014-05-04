@@ -11,7 +11,7 @@ class ProofTerm(object):
         return
 
     def __repr__(self):
-        return self.tree[0].inorder()
+        return self.tree.inorder()
 
     def type(self):
         root = self.tree
@@ -31,10 +31,10 @@ class ProofTerm(object):
         return self.type() == 'SUM'
 
     def left(self):
-        return str(self.tree.get_left())
+        return str(self.tree.left())
 
     def right(self):
-        return str(self.tree.get_right())
+        return str(self.tree.right())
 
     def is_bang(self):
         return self.type() == 'CONSTANT'

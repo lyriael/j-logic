@@ -1,5 +1,5 @@
-import parser
 #TESTS
+from old import parser
 
 
 def run_all_tests():

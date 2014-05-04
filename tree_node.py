@@ -1,68 +1,82 @@
 class Node(object):
 
     def __init__(self):
-        self.token = 'no token'
-        self.parent = self
-        self.left = None
-        self.right = None
-
-    def __repr__(self):
-        return self.token
+        self._token = 'no token'
+        self._parent = self
+        self._left = None
+        self._right = None
 
     def __len__(self):
-        return self.len_helper()
+        return self._len_helper()
+
+    def __str__(self):
+        return self.inorder()
 
     def is_root(self):
-        return self.parent is self
+        return self._parent == self
 
     def is_leaf(self):
-        return self.left is None and self.right is None
+        return self._left is None and self._right is None
+
+    def is_tree(self):
+        return len(self.root()) > 1
 
     def has_left(self):
-        return self.left is not None
+        return self._left is not None
 
     def has_right(self):
-        return self.right is not None
+        return self._right is not None
 
-    def get_right(self):
-        return self.right
+    def right(self):
+        return self._right
 
-    def get_left(self):
-        return self.left
+    def left(self):
+        return self._left
+
+    def root(self):
+        if self._parent == self:
+            return self
+        else:
+            return self._parent.root()
+
+    def token(self):
+        return self._token
+
+    def value(self):
+        return self._token
+
+    def parent(self):
+        return self._parent
 
     def new_left(self):
         new_left = Node()
-        self.left = new_left
-        new_left.parent = self
+        new_left._parent = self
+        self._left = new_left
         return new_left
 
     def new_right(self):
         new_right = Node()
-        self.right = new_right
-        new_right.parent = self
+        new_right._parent = self
+        self._right = new_right
         return new_right
-
-    # todo: needs to be fixed. Parentheses for ! and return string, rather than direct printing.
-    def preorder(self):
-        print(self)
-        if self.left:
-            self.left.preorder()
-        if self.right:
-            self.right.preorder()
 
     def inorder(self):
         term = ''
         if self.has_left():
-            term += '(' + self.left.inorder()
+            term += '(' + self._left.inorder()
 
-        term += str(self)
+        term += self._token
 
         if self.has_right():
-            term += self.right.inorder() + ')'
+            term += self._right.inorder() + ')'
 
-        if self.token == '!':
+        if self._token == '!':
             term = term[:-1]
         return term
+
+    def subtree(self):
+        subterm = self.inorder()
+        return Node.make_tree(subterm)
 
     @staticmethod
     def make_tree(term):
@@ -74,36 +88,36 @@ class Node(object):
                     left = current.new_left()
                     current = left
                 if i == ')':
-                    current = current.parent
+                    current = current._parent
                 if i == '+':
-                    current.token = '+'
+                    current._token = '+'
                     right = current.new_right()
                     current = right
                 if i == ':':
-                    current.token = ':'
+                    current._token = ':'
                     right = current.new_right()
                     current = right
                 if i == '!':
-                    current.token = '!'
+                    current._token = '!'
                     only = current.new_right()
                     current = only
             else:
-                current.token = i
-                if current.parent.token == '!':
-                    current = current.parent.parent
+                current._token = i
+                if current._parent._token == '!':
+                    current = current._parent._parent
                 else:
-                    current = current.parent
+                    current = current._parent
         return root
 
-    # debug functions
-    def len_helper(self):
+    # private methods
+    def _len_helper(self):
         count = 0
         if self.has_left():
-            count += self.left.len_helper()
+            count += self._left._len_helper()
 
         count += 1
 
         if self.has_right():
-            count += self.right.len_helper()
+            count += self._right._len_helper()
 
         return count

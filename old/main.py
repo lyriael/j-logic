@@ -3,7 +3,7 @@
 # As for now, the allowed axioms are: -> (implication), ¬ (not)
 # the allowed proof terms are: + (sum/union), ! (bang)
 
-import parser
+from old import parser
 
 
 class Formula:
@@ -24,8 +24,8 @@ class Formula:
         # e.g. (t+s): A
         elif proof_term.is_sum():
 
-            left = Formula(self.proof_term.get_left(), self.subformula)
-            right = Formula(self.proof_term.get_right(), self.subformula)
+            left = Formula(self.proof_term.left(), self.subformula)
+            right = Formula(self.proof_term.right(), self.subformula)
             return left.is_provable(cs) or right.is_provable(cs)
         # e.g. !t:(t: A)
         elif proof_term.is_bang():

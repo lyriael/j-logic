@@ -1,5 +1,4 @@
 __author__ = 'lyriael'
-import parser
 from tree_node import Node
 
 class Formula:
@@ -8,8 +7,8 @@ class Formula:
         root = Node.make_tree(expression)[0]
         assert str(root) == ':'
 
-        self.proof_term = root.get_left()
-        self.subformula = root.get_right()
+        self.proof_term = root.left()
+        self.subformula = root.right()
 
     def __repr__(self):
         return self.proof_term.inorder() + ":" + self.subformula.inorder()
