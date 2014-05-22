@@ -1,7 +1,7 @@
 from formula import Formula
 
 
-cs = {'a': 'A', 'b': 'B', 'c': 'C'}
+cs = {'a': ['A'], 'b': ['B'], 'c': ['C']}
 f1 = '((a+!b):A)'
 f2 = '(a:A)'
 f3 = '((a+!b):(b:B))'

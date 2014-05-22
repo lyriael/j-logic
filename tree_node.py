@@ -1,3 +1,6 @@
+from helper import parse
+
+
 class Node(object):
 
     def __init__(self):
@@ -80,32 +83,27 @@ class Node(object):
 
     @staticmethod
     def make_tree(term):
+        term = parse(term)
         root = Node()
         current = root
-        for i in term:
-            if i in ['(', ')', '+', '!', ':']:
-                if i == '(':
-                    left = current.new_left()
-                    current = left
-                if i == ')':
-                    current = current._parent
-                if i == '+':
-                    current._token = '+'
-                    right = current.new_right()
-                    current = right
-                if i == ':':
-                    current._token = ':'
-                    right = current.new_right()
-                    current = right
-                if i == '!':
-                    current._token = '!'
-                    only = current.new_right()
-                    current = only
+
+        for item in term:
+            if item in [':', '+', '*', '->']:
+                current._token = item
+                current = current.new_right()
+            elif item == '!':
+                current._token = item
+                current = current.new_right()
+
+            elif item == '(':
+                current = current.new_left()
+            elif item == ')':
+                current = current._parent
+
             else:
-                current._token = i
-                if current._parent._token == '!':
-                    current = current._parent._parent
-                else:
+                current._token = item
+                current = current._parent
+                if current._token == '!':
                     current = current._parent
         return root
 
