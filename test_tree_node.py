@@ -127,7 +127,7 @@ def test_inorder():
 def test_subtree():
     tree = Node.make_tree('((a+!b):A)')
     node = tree.left()
-    subtree = node.subtree()
+    subtree = node.deep_copy()
     assert subtree.inorder() == tree.left().inorder() == '(a+!b)'
     print('--test_subtree--')
 

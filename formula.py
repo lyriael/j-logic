@@ -6,123 +6,63 @@ from tree_node import Node
 class Formula(object):
 
     def __init__(self, formula):
-
+        '''
+        string as formula expected. Be careful to put all parentheses.
+        '''
         if isinstance(formula, str):
             self._tree = Node.make_tree(formula)
         elif isinstance(formula, Node):
-            self._tree = formula
+            self._tree = formula.deep_copy()
+        elif isinstance(formula, Formula):
+            self._tree = formula.tree()
+        self._op = self._tree.token()
+        if self._tree.has_left():
+            self._left = str(self._tree.left())
+        if self._tree.has_right():
+            self._right = str(self._tree.right())
 
     def __str__(self):
         return str(self._tree)
 
-
-
-    def is_provable(self, cs, indent=''):
-        proof_term = self.proof_term()
-        subformula = self.subformula()
-        print(indent + ' is ' + str(self) + ' provable?')
-        print(indent + ' \tProof term: ' + str(proof_term) + ',\t token: ' + proof_term.token())
-        print(indent + ' \tSubformula: ' + str(subformula) + ',\t token: ' + subformula.token())
-
-        if proof_term.is_leaf():  # if_constant
-            print(indent + ' operation type is "constant"')
-            print(indent + ' \t"'+str(proof_term)+' => ' + str(subformula) + '" in cs? ')
-            print(indent + ' \t' + str(self.in_cs(cs)) + '!')
-            print('')
-            return self.in_cs(cs)
-        elif proof_term.token() == '!':  # if_bang
-            print(indent + ' operation type is "!"')
-            print(indent + ' \tProof term and subformula have same constant?')
-            new_formula = Formula(str(subformula))
-
-            if proof_term.inorder()[1:] == new_formula.proof_term().inorder():
-                print(indent + ' \tTrue!')
-                indent += ' -->'
-                print('')
-                return new_formula.is_provable(cs, indent)
-            else:
-                print(indent + ' \tFalse!')
-                print('')
-                return False
-        elif proof_term.token() == '+':  # if_sum
-            print(indent + ' operation type is "+"')
-            print(indent + ' \tleft: (' + str(proof_term.left()) + ":" + str(subformula) + ')')
-            print(indent + ' \tright: (' + str(proof_term.right()) + ":" + str(subformula) + ')')
-            print('')
-            indent += ' -->'
-            left_formula = Formula('(' + str(proof_term.left()) + ":" + str(subformula) + ')')
-            right_formula = Formula('(' + str(proof_term.right()) + ":" + str(subformula) + ')')
-            return left_formula.is_provable(cs, indent) or right_formula.is_provable(cs, indent)
-
-        elif proof_term.token() == '*': # if_mult
-            print(indent + ' operation type is "*"')
-            print(indent + ' \tleft is: ' + str(proof_term.left()))
-            print(indent + ' \tright is: ' + str(proof_term.right()))
-
-            left = proof_term.left()
-            right = proof_term.right()
-            formula = subformula
-
-            if left.is_leaf():
-                matches = Formula.match_for_implication(cs[left.token()], str(formula))
-                print(matches)
-                if right.is_leaf():
-                    for f in matches:
-                        if f in cs[right.token()]:
-                            return True
-                    return False
-
-            elif left.token() == '!':
-
-                raise NotImplementedError
-            elif left.token() == '+':
-                raise NotImplementedError
-            elif left.token() == '*':
-                raise NotImplementedError
-            else:
-                raise Exception('Token of proof term is not valid.')
-
-
-            # if proof_term.left().is_leaf():
-            #     matches = Formula.match_for_implication(cs[str(proof_term.left())], str(subformula))
-            #     print(indent + ' \tmatches for X in cs s.t. '+str(proof_term.left())+':(X->'+str(subformula) + '): \t' + str(matches))
-            #     if proof_term.right().is_leaf():
-            #         for formula in matches:
-            #             if formula in cs[str(proof_term.right())]:
-            #                 print(indent + ' \talso matches for X in cs s.t. ' + str(proof_term.right())+':X: \tTrue!')
-            #                 return True
-            #         return False
-            #     else:
-            #         for formula in matches:
-            #             print(indent + ' \tnew formula: (' + str(proof_term.right()) + ':' + formula + ')')
-            #             new_formula = Formula('(' + str(proof_term.right()) + ':' + formula + ')')
-            #             if new_formula.is_provable(cs):
-            #                 return True
-            #         return False
-            # else:
-            #     if proof_term.right().is_leaf():
-            #
-            #     #todo
-            #     return False
-
-
+    def to_s(self):
+        return str(self)
 
     def proof_term(self):
-        return self._tree.left().subtree()
+        if self._op == ':':
+            return Formula(self._left)
+        raise Exception('Has no proof_term')
 
     def subformula(self):
-        return self._tree.right().subtree()
+        if self._op == ':':
+            return Formula(self._right)
+        raise Exception('Has no subformula')
 
-    def operation(self):
-        if self._tree._left.is_leaf():
-            return ''
-        else:
-            return self.proof_term().token()
+    def top_operation(self):
+        if self._tree.token() in ['+', '*', '!', ':', '->']:
+            return self._tree.token()
 
-    def in_cs(self, cs):
-        proof_term = self.proof_term().token()
-        subformula = self.subformula().token()
-        return subformula in cs[proof_term]
+    def left_operand(self):
+        if self._tree.token() in ['+', '*', '->', ':']:
+            return Formula(self._tree.left())
+
+    def right_operand(self):
+        if self._tree.token() in ['+', '*', '->', ':', '!']:
+            return Formula(self._tree.right())
+
+
+    def tree(self):
+        '''
+        returns a deep copy of tree
+        '''
+        return self._tree.deep_copy()
+
+
+    @staticmethod
+    def from_parts(proof_term, subformula):
+        '''
+        returns a new formula, using deep copy.
+        '''
+        return Formula('('+str(proof_term)+':'+str(subformula)+')')
 
     @staticmethod
     def match_for_implication(maybes, subformula):

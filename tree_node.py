@@ -45,11 +45,20 @@ class Node(object):
     def token(self):
         return self._token
 
+    def set_root(self):
+        self._parent = self
+
+    def set_token(self, new_token):
+        self._token = new_token
+
     def value(self):
         return self._token
 
     def parent(self):
         return self._parent
+
+    def get_left(self):
+        return self._left
 
     def new_left(self):
         new_left = Node()
@@ -64,6 +73,9 @@ class Node(object):
         return new_right
 
     def inorder(self):
+        '''
+        returns a string representation of the tree (going only downwards).
+        '''
         term = ''
         if self.has_left():
             term += '(' + self._left.inorder()
@@ -77,7 +89,10 @@ class Node(object):
             term = term[:-1]
         return term
 
-    def subtree(self):
+    def deep_copy(self):
+        '''
+        copy only subtree, where current Node is root.
+        '''
         subterm = self.inorder()
         return Node.make_tree(subterm)
 

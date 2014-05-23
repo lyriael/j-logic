@@ -4,6 +4,7 @@ from tree_node import Node
 from formula import Formula
 from proof_search import ProofSearch
 
+
 class Tests(unittest.TestCase):
 
     def test_parse_string1(self):
@@ -89,19 +90,19 @@ class Tests(unittest.TestCase):
 
     def test_formula_operation1(self):
         formula = Formula('(a:A)')
-        self.assertEqual(formula.operation(), '')
+        self.assertEqual(formula.top_operation(), '')
 
     def test_formula_operation2(self):
         formula = Formula('((a+b):A)')
-        self.assertEqual(formula.operation(), '+')
+        self.assertEqual(formula.top_operation(), '+')
 
     def test_formula_operation3(self):
         formula = Formula('(!a:A)')
-        self.assertEqual(formula.operation(), '!')
+        self.assertEqual(formula.top_operation(), '!')
 
     def test_formula_operation(self):
         formula = Formula('((!a*(b+c)):A)')
-        self.assertEqual(formula.operation(), '*')
+        self.assertEqual(formula.top_operation(), '*')
 
     def test_find_in_cs_const(self):
         ps = ProofSearch('(a:A)', {'a': ['A', 'B'], 'b': ['A', 'B']})
