@@ -60,11 +60,18 @@ class Formula(object):
 
 
     @staticmethod
-    def from_parts(proof_term, subformula):
+    def parts_to_formula(proof_term, subformula):
         '''
         returns a new formula, using deep copy.
         '''
         return Formula('('+str(proof_term)+':'+str(subformula)+')')
+
+    @staticmethod
+    def parts_to_s(proof_term, subformula):
+        '''
+        returns string of combination from proof_term and subformula.
+        '''
+        return '('+str(proof_term)+':'+str(subformula)+')'
 
     @staticmethod
     def match_for_implication(maybes, subformula):

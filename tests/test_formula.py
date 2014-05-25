@@ -29,8 +29,8 @@ class Tests(unittest.TestCase):
         formula = Formula('((a+(b*c)):F)')
         self.assertEqual('(a+(b*c))', formula.proof_term().to_s())
         self.assertEqual('F', formula.subformula().to_s())
-        self.assertNotEqual(Formula.from_parts(formula.proof_term(), formula.subformula()), formula)
-        self.assertEqual(Formula.from_parts(formula.proof_term(), formula.subformula()).to_s(), formula.to_s())
+        self.assertNotEqual(Formula.parts_to_formula(formula.proof_term(), formula.subformula()), formula)
+        self.assertEqual(Formula.parts_to_formula(formula.proof_term(), formula.subformula()).to_s(), formula.to_s())
 
     def test_top_operation1(self):
         formula = Formula('((a+(b*c)):F)')

@@ -3,25 +3,48 @@ from helper import parse
 
 class ProofSearch:
 
-    def __init__(self, formula, cs):
+    def __init__(self, cs):
         '''
         expect a string as formula
         '''
-        self._formula = Formula(formula)
         self._cs = cs
         self._proof = []
+
+    def find(self, proof_term, subformula):
+        '''
+        checks if it is in cs and returns the string.
+        '''
+        assert(proof_term.is_const())
+        if str(subformula) in self._cs[str(proof_term)]:
+            return Formula.parts_to_s(proof_term, subformula)
+
+    def resolve(self, proof_term, subformula):
+        assert not proof_term.is_const()
+        #todo tests!
+        if proof_term.top_operation() == '!':
+            return'!'
+        elif proof_term.top_operation() == '+':
+            return'+'
+        elif proof_term.top_operation() == '*':
+            return'*'
 
     def find_in_cs(self, proof_term, subformula):
         operation = proof_term.top_operation()
         if operation is None:
             if str(subformula) in self._cs[str(proof_term)]:
                 self._proof.append(proof_term.to_s()+':'+subformula.to_s())
-        elif operation == '+':
-            self.resolve_plus(proof_term, subformula)
-        elif operation == '!':
-            self.resolve_bang(proof_term, subformula)
-        elif operation == '*':
-            self.resolve_mult(proof_term, subformula)
+        else:
+            left = proof_term.left_operand()
+            right = proof_term.right_operand()
+            if operation == '!':
+                if right.is_const():
+                    self.resolve_bang(proof_term, subformula)
+            elif operation == '+':
+                if left.is_const() and right.is_const():
+                    self.resolve_plus(proof_term, subformula)
+            elif operation == '*':
+                if left.is_const() and right.is_const():
+                    self.resolve_mult(proof_term, subformula)
         return self._proof
 
     def resolve_plus(self, proof_term, subformula):
@@ -35,12 +58,11 @@ class ProofSearch:
     def resolve_mult(self, proof_term, subformula):
         left = proof_term.left_operand()
         right = proof_term.right_operand()
-        if left.is_const() and right.is_const():
-            candidates = self.find_candidates_left(str(left), subformula)
-            matches = self.check_candidates_right(str(right), candidates)
-            for match in matches:
-                self.find_in_cs(left, Formula('(' + match + '->' + str(subformula) + ')'))
-                self.find_in_cs(right, Formula(match))
+        candidates = self.find_candidates_left(str(left), subformula)
+        matches = self.check_candidates_right(str(right), candidates)
+        for match in matches:
+            self.find_in_cs(left, Formula('(' + match + '->' + str(subformula) + ')'))
+            self.find_in_cs(right, Formula(match))
 
     def find_candidates_left(self, key, subformula):
         candidates = []
