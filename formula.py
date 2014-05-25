@@ -49,6 +49,8 @@ class Formula(object):
         if self._tree.token() in ['+', '*', '->', ':', '!']:
             return Formula(self._tree.right())
 
+    def is_const(self):
+        return len(self._tree) == 1
 
     def tree(self):
         '''

@@ -1,6 +1,6 @@
 def parse(string):
     '''
-    separate operators, parentheses and variables.
+    separate operators, parentheses and variables and returns them as a list.
     '''
     l = list(string)
     for index in range(len(l)):

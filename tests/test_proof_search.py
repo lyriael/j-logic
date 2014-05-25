@@ -30,3 +30,9 @@ class Tests(unittest.TestCase):
         self.assertTrue(result)
         self.assertTrue('a:B' in result)
         self.assertEqual(len(result), 1)
+
+    def test_find_in_cs_mult1(self):
+        ps = ProofSearch('((a*b):F)', {'a': ['(X->F)', '(Y->F)'], 'b': ['Z', 'X']})
+        result = ps.find_in_cs(ps._formula.proof_term(), ps._formula.subformula())
+        self.assertTrue(result)
+        self.assertTrue('a:(X->F)' in result)
