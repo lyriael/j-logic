@@ -68,3 +68,7 @@ class Tests(unittest.TestCase):
         print(f3.top_operation())
         print(str(f2))
         self.assertEqual('!', ps.resolve(f3.proof_term(), f3.subformula()))
+
+    def test_ultimativ(self):
+        ps = ProofSearch({})
+        f = Formula('(((!(a+b)+(d*e))*!((f+g)*h)):F')

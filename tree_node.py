@@ -4,7 +4,7 @@ from helper import parse
 class Node(object):
 
     def __init__(self):
-        self._token = 'no token'
+        self._token = '_NT_'
         self._parent = self
         self._left = None
         self._right = None
@@ -13,6 +13,9 @@ class Node(object):
         return self._len_helper()
 
     def __str__(self):
+        '''
+        String of tree, where current Node is root.
+        '''
         return self.inorder()
 
     def is_root(self):
@@ -29,6 +32,9 @@ class Node(object):
 
     def has_right(self):
         return self._right is not None
+
+    def has_child(self):
+        return self._left is not None or self._right is not None
 
     def right(self):
         return self._right
@@ -77,16 +83,18 @@ class Node(object):
         returns a string representation of the tree (going only downwards).
         '''
         term = ''
-        if self.has_left():
-            term += '(' + self._left.inorder()
+
+        if self.has_left() or self.has_right():
+            if self.left() is None: # handeling unary operator
+                term += '('
+            else:
+                term += '(' + self._left.inorder()
 
         term += self._token
 
         if self.has_right():
             term += self._right.inorder() + ')'
 
-        if self._token == '!':
-            term = term[:-1]
         return term
 
     def deep_copy(self):
@@ -107,9 +115,10 @@ class Node(object):
                 current._token = item
                 current = current.new_right()
             elif item == '!':
+                current = current._parent
                 current._token = item
+                current._left = None
                 current = current.new_right()
-
             elif item == '(':
                 current = current.new_left()
             elif item == ')':

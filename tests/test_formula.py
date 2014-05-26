@@ -15,12 +15,12 @@ class Tests(unittest.TestCase):
         self.assertEqual(formula1.to_s(), formula2.to_s())
 
     def test_init2(self):
-        formula = Formula('(!a:A)')
-        self.assertEqual('(!a:A)', formula.to_s())
+        formula = Formula('((!a):A)')
+        self.assertEqual('((!a):A)', formula.to_s())
 
     def test_init3(self):
-        formula = Formula('(!a:(a:B))')
-        self.assertEqual('(!a:(a:B))', formula.to_s())
+        formula = Formula('((!a):(a:B))')
+        self.assertEqual('((!a):(a:B))', formula.to_s())
         self.assertEqual(6, len(formula._tree))
         self.assertEqual(2, len(formula.proof_term()._tree))
         self.assertEqual(3, len(formula.subformula()._tree))
