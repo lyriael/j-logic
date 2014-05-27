@@ -85,30 +85,20 @@ class Node(object):
         self._right = new_right
         return new_right
 
-    def in_subtree(self, token, child='both'):
-        print('===')
-        print(child)
-        if self.is_leaf():
-            print(self.token() + ' is leaf.')
-            if self.token() == token:
-                return True
-        if child == 'left' or child == 'both':
-            print('left: check for '+token+' in '+str(self._left))
-            left = self._left
-            if left.token() == token:
-                print('found: '+token)
-                return True
-            else:
-                print('current token: '+left.token())
-                return left.in_subtree(token)
-        if child == 'right' or child == 'both':
-            print('right: check for '+token+' in '+str(self._right))
-            right = self._right
-            if right.token() == token:
-                print('Should be here')
-                return True
-            else:
-                return right.in_subtree(token)
+    def find(self, step=0, token='!'):
+        '''
+        returns the first found node and None if none is found
+        '''
+        if self._token == token:
+            return True
+        else:
+            left = False
+            right = False
+            if self.has_left():
+                left = self._left.find(step+1)
+            if self.has_right():
+                right = self._right.find(step+1)
+            return left or right
 
     def is_left_son_of(self, token):
         '''
@@ -139,7 +129,6 @@ class Node(object):
         raise DeprecationWarning
 
     def tidy_up(self):
-        print(self.token())
         parent = self._parent
         if self._parent._token == '+':
             grandp = parent._parent

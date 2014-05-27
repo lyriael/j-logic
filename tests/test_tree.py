@@ -96,20 +96,50 @@ class Tests(unittest.TestCase):
 
     #todo: test tidy_up where + is not next operation
 
-    # def test_is_in_subtree1(self):
-    #     node = Node.make_tree('((!a)+b)')
-    #     left = node.left()
-    #     self.assertEqual('!', left.token())
-    #     self.assertTrue(node.in_subtree('!'))
-    #     self.assertTrue(node.in_subtree('!', 'left'))
-    #     self.assertFalse(node.in_subtree('!', 'right'))
+    def test_find1(self):
+        node = Node.make_tree('((!a)+b)')
+        self.assertEqual('((!a)+b)', str(node))
+        left = node.left()
+        self.assertEqual('!', left.token())
+        self.assertTrue(node.find())
 
-    def test_is_in_subtree2(self):
-        node = Node.make_tree('((A+(!a))*B)')
-        self.assertEqual('((A+(!a))*B)', str(node))
-        self.assertEqual(6, len(node))
-        self.assertEqual('!', node.left().right().token())
-        self.assertTrue(node.in_subtree('!', 'left'))
-        # print('====')
-        # self.assertTrue(node.in_subtree('!'))
-        # self.assertFalse(node.in_subtree('!', 'right'))
+    def test_find2(self):
+        print('here')
+        tree = Node.make_tree('!')
+        self.assertTrue(tree.find())
+
+    def test_find3(self):
+        tree = Node.make_tree('(!a)')
+        self.assertTrue(tree.find())
+
+    def test_find4(self):
+        tree = Node.make_tree('((!a)+b)')
+        self.assertEqual('((!a)+b)', str(tree))
+        self.assertTrue(tree.find())
+        self.assertTrue(tree.left().find())
+        self.assertFalse(tree.right().find())
+
+    def test_find5(self):
+        tree = Node.make_tree('((A+(!a))*B)')
+        self.assertEqual('((A+(!a))*B)', str(tree))
+        self.assertTrue(tree.find())
+        self.assertTrue(tree.left().find())
+        self.assertTrue(tree.left().right().find())
+        self.assertFalse(tree.left().left().find())
+        self.assertFalse(tree.right().find())
+
+    def test_find6(self):
+        tree = Node.make_tree('((((!(a+b))+(d*e))*(!((f+g)*h))):F)')
+        self.assertEqual('((((!(a+b))+(d*e))*(!((f+g)*h))):F)', str(tree))
+        self.assertTrue(tree.find())
+        self.assertTrue(tree.left().left().find())
+
+    # def test_is_in_subtree2(self):
+    #     node = Node.make_tree('((A+(!a))*B)')
+    #     self.assertEqual('((A+(!a))*B)', str(node))
+    #     self.assertEqual(6, len(node))
+    #     self.assertEqual('!', node.left().right().token())
+    #     self.assertTrue(node.find())
+    #     # print('====')
+    #     # self.assertTrue(node.in_subtree('!'))
+    #     # self.assertFalse(node.in_subtree('!', 'right'))
