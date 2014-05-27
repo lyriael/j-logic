@@ -86,9 +86,6 @@ class Node(object):
         return new_right
 
     def find(self, step=0, token='!'):
-        '''
-        returns the first found node and None if none is found
-        '''
         if self._token == token:
             return True
         else:
@@ -100,33 +97,30 @@ class Node(object):
                 right = self._right.find(step+1)
             return left or right
 
-    def is_left_son_of(self, token):
-        '''
-        propably not used... since this is check at initiation of formula
-        '''
-        current = self
-        counter = 0
-        while not current._parent.is_root() or current._parent._token != token:
-            current = current._parent
-            if counter > __MAX_CALLS__:
-                raise RuntimeError('Hangs in while-loop.')
-            counter += 1
-        if current._parent._token == token and current._parent._left is current:
-            return True
-        else:
-            return False
+    #todo: test
+    def sibling(self):
+        if self.is_left():
+            return self._parent._right
+        elif self.is_right():
+            return self._parent._left
 
-    #@depricated
-    def remove_invalid_subtree(self):
-        if self._token in ['+', '*']:
-            self._left.remove_invalid_subtree()
-            self._right.remove_invalid_subtree()
-        if self._token == '!':
-            if self.is_left_son_of('*'):
-                self._parent._left = None
-            else:
-                self._right.remove_invalid_subtree()
-        raise DeprecationWarning
+    #todo: test
+    def replace(self, node):
+        parent = self._parent
+        node._parent = parent
+        if self.is_left():
+            parent._left = node
+        elif self.is_right():
+            parent._right = node
+        self._parent = self
+        return self
+
+    #todo: test
+    def remove(self):
+        sibling = self.sibling()
+        parent = self.parent()
+
+
 
     def tidy_up(self):
         parent = self._parent
