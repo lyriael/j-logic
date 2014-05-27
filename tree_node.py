@@ -1,4 +1,5 @@
 from helper import parse
+__MAX_CALLS__ = 50
 
 
 class Node(object):
@@ -35,6 +36,12 @@ class Node(object):
 
     def has_child(self):
         return self._left is not None or self._right is not None
+
+    def is_left(self):
+        return self._parent._left is self
+
+    def is_right(self):
+        return self._parent._right is self
 
     def right(self):
         return self._right
@@ -83,24 +90,45 @@ class Node(object):
         propably not used... since this is check at initiation of formula
         '''
         current = self
-        while current._parent is not self:
-            if current._token == token:
-                if current._parent._left is current:
-                    return True
-                else:
-                    return False
+        counter = 0
+        while not current._parent.is_root() or current._parent._token != token:
             current = current._parent
-        return False
+            if counter > __MAX_CALLS__:
+                raise RuntimeError('Hangs in while-loop.')
+            counter += 1
+        if current._parent._token == token and current._parent._left is current:
+            return True
+        else:
+            return False
 
-    def remove_bad_sons(self):
+    def remove_invalid_subtree(self):
         if self._token in ['+', '*']:
-            self._left.remove_bad_sons()
-            self._right.remove_bad_sons()
+            self._left.remove_invalid_subtree()
+            self._right.remove_invalid_subtree()
         if self._token == '!':
             if self.is_left_son_of('*'):
-                self = None
+                self._parent._left = None
             else:
-                self._right.remove_bad_sons()
+                self._right.remove_invalid_subtree()
+
+    def tidy_up(self):
+        parent = self._parent
+        if self._parent._token == '+':
+            grandp = parent._parent
+            if parent.is_left() and self.is_left():
+                grandp._left = parent._right
+                grandp._left._parent = grandp
+            elif parent.is_left() and self.is_right():
+                grandp._left = parent._left
+                grandp._left._parent = grandp
+            elif parent.is_right() and self.is_right():
+                grandp._right = parent._left
+                grandp._right._parent = grandp
+            elif parent.is_right() and self.is_left():
+                grandp._right = parent._right
+                grandp._right._parent = grandp
+        else:
+            parent.tidy_up()
 
     def inorder(self):
         '''
@@ -147,12 +175,9 @@ class Node(object):
                 current = current.new_left()
             elif item == ')':
                 current = current._parent
-
             else:
                 current._token = item
                 current = current._parent
-                if current._token == '!':
-                    current = current._parent
         return root
 
     # private methods

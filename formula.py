@@ -22,7 +22,7 @@ class Formula(object):
         if self._tree.has_right():
             self._right = str(self._tree.right())
         #todo: check for left-sons
-        self._tree.remove_bad_sons()
+        self._tree.remove_invalid_subtree()
 
 
     def __str__(self):
