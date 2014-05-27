@@ -85,6 +85,31 @@ class Node(object):
         self._right = new_right
         return new_right
 
+    def in_subtree(self, token, child='both'):
+        print('===')
+        print(child)
+        if self.is_leaf():
+            print(self.token() + ' is leaf.')
+            if self.token() == token:
+                return True
+        if child == 'left' or child == 'both':
+            print('left: check for '+token+' in '+str(self._left))
+            left = self._left
+            if left.token() == token:
+                print('found: '+token)
+                return True
+            else:
+                print('current token: '+left.token())
+                return left.in_subtree(token)
+        if child == 'right' or child == 'both':
+            print('right: check for '+token+' in '+str(self._right))
+            right = self._right
+            if right.token() == token:
+                print('Should be here')
+                return True
+            else:
+                return right.in_subtree(token)
+
     def is_left_son_of(self, token):
         '''
         propably not used... since this is check at initiation of formula
@@ -101,6 +126,7 @@ class Node(object):
         else:
             return False
 
+    #@depricated
     def remove_invalid_subtree(self):
         if self._token in ['+', '*']:
             self._left.remove_invalid_subtree()
@@ -110,8 +136,10 @@ class Node(object):
                 self._parent._left = None
             else:
                 self._right.remove_invalid_subtree()
+        raise DeprecationWarning
 
     def tidy_up(self):
+        print(self.token())
         parent = self._parent
         if self._parent._token == '+':
             grandp = parent._parent
@@ -141,12 +169,9 @@ class Node(object):
                 term += '('
             else:
                 term += '(' + self._left.inorder()
-
         term += self._token
-
         if self.has_right():
             term += self._right.inorder() + ')'
-
         return term
 
     def deep_copy(self):
@@ -165,6 +190,33 @@ class Node(object):
         for item in term:
             if item in [':', '+', '*', '->']:
                 current._token = item
+                if item == '!':
+                    current.tidy_up()
+                current = current.new_right()
+            elif item == '!':
+                current = current._parent
+                current._token = item
+                current._left = None
+                current = current.new_right()
+            elif item == '(':
+                current = current.new_left()
+            elif item == ')':
+                current = current._parent
+            else:
+                current._token = item
+                current = current._parent
+        return root
+
+    @staticmethod
+    def make_tree_extended(term):
+        term = parse(term)
+        root = Node()
+        current = root
+
+        for item in term:
+            if item in [':', '+', '*', '->']:
+                current._token = item
+                #todo: delete invalid subtree
                 current = current.new_right()
             elif item == '!':
                 current = current._parent
