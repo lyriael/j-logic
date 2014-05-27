@@ -9,6 +9,7 @@ class ProofSearch:
         '''
         self._cs = cs
         self._proof = []
+        self._counter = 0 #todo check what the cleanest solution for that is
 
     def find(self, proof_term, subformula):
         '''
@@ -18,14 +19,28 @@ class ProofSearch:
         if str(subformula) in self._cs[str(proof_term)]:
             return Formula.parts_to_s(proof_term, subformula)
 
+    def in_cs(self, proof_term, subformula):
+        return str(subformula) in self._counter[str(proof_term)]
+
     def resolve(self, proof_term, subformula):
-        assert not proof_term.is_const()
         #todo tests!
-        if proof_term.top_operation() == '!':
-            return'!'
-        elif proof_term.top_operation() == '+':
+        if proof_term.top_operation() == '+':
+            left = proof_term.left_operand()
+            if left.is_const() and self.in_cs(left, subformula):
+                self._proof.append(Formula.parts_to_s(left, subformula))
+            else:
+                self.resolve(left, subformula)
+            right = proof_term.right_operand()
+            if right.is_const() and self.in_cs(right, subformula):
+                self._proof.append(Formula.parts_to_s(right, subformula))
+            else:
+                self.resolve(right, subformula)
             return'+'
+        elif proof_term.top_operation() == '!':
+            # if is left child, delete subtree
+            return'!'
         elif proof_term.top_operation() == '*':
+            # make a new variable, search for left term first, then right.
             return'*'
 
     def find_in_cs(self, proof_term, subformula):

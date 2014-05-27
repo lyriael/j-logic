@@ -78,6 +78,30 @@ class Node(object):
         self._right = new_right
         return new_right
 
+    def is_left_son_of(self, token):
+        '''
+        propably not used... since this is check at initiation of formula
+        '''
+        current = self
+        while current._parent is not self:
+            if current._token == token:
+                if current._parent._left is current:
+                    return True
+                else:
+                    return False
+            current = current._parent
+        return False
+
+    def remove_bad_sons(self):
+        if self._token in ['+', '*']:
+            self._left.remove_bad_sons()
+            self._right.remove_bad_sons()
+        if self._token == '!':
+            if self.is_left_son_of('*'):
+                self = None
+            else:
+                self._right.remove_bad_sons()
+
     def inorder(self):
         '''
         returns a string representation of the tree (going only downwards).

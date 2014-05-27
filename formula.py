@@ -15,11 +15,15 @@ class Formula(object):
             self._tree = formula.deep_copy()
         elif isinstance(formula, Formula):
             self._tree = formula.tree()
+        #not sure if this part is used.... its a bit confusing...
         self._op = self._tree.token()
         if self._tree.has_left():
             self._left = str(self._tree.left())
         if self._tree.has_right():
             self._right = str(self._tree.right())
+        #todo: check for left-sons
+        self._tree.remove_bad_sons()
+
 
     def __str__(self):
         return str(self._tree)
@@ -58,6 +62,8 @@ class Formula(object):
         '''
         return self._tree.deep_copy()
 
+    def is_left_son_of_mult(self):
+        return self._tree.is_left_son_of('*')
 
     @staticmethod
     def parts_to_formula(proof_term, subformula):

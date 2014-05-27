@@ -29,7 +29,7 @@ class Tests(unittest.TestCase):
 
     def test_find_in_cs_bang1(self):
         ps = ProofSearch({'a': ['B', 'C'], 'b': ['A', 'B']})
-        f = Formula('(!a:(a:B))')
+        f = Formula('((!a):(a:B))')
         result = ps.find_in_cs(f.proof_term(), f.subformula())
         self.assertTrue(result)
         self.assertTrue('a:B' in result)
@@ -71,4 +71,4 @@ class Tests(unittest.TestCase):
 
     def test_ultimativ(self):
         ps = ProofSearch({})
-        f = Formula('(((!(a+b)+(d*e))*!((f+g)*h)):F')
+        f = Formula('((((!(a+b))+(d*e))*(!((f+g)*h))):F)')

@@ -25,6 +25,10 @@ class Tests(unittest.TestCase):
         self.assertEqual(2, len(formula.proof_term()._tree))
         self.assertEqual(3, len(formula.subformula()._tree))
 
+    def test_init4(self):
+        f = Formula('((((!(a+b))+(d*e))*(!((f+g)*h))):F)')
+        self.assertEqual('((((!(a+b))+(d*e))*(!((f+g)*h))):F)', str(f))
+
     def test_parts1(self):
         formula = Formula('((a+(b*c)):F)')
         self.assertEqual('(a+(b*c))', formula.proof_term().to_s())
