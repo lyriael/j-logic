@@ -97,6 +97,40 @@ class Node(object):
                 right = self._right.find(step+1)
             return left or right
 
+    def find_and_return(self, token='!'):
+        if self._token == '!':
+            return self
+        else:
+            if self.has_left():
+                left = self._left.find_and_return()
+                if left is not None:
+                    return left
+            if self.has_right():
+                right = self._right.find_and_return()
+                if right is not None:
+                    return right
+            return None
+
+
+    #todo: test
+    def set_child(self, node, position):
+        if position == 'left':
+            self._left = node
+            node._parent = self
+        elif position == 'right':
+            self._right = node
+            node._parent = self
+        raise RuntimeWarning('Cannot set_child for "root".')
+
+    #todo: test
+    def which_child(self):
+        if self.is_root():
+            return None
+        if self.parent()._left is self:
+            return 'left'
+        else:
+            return 'right'
+
     #todo: test
     def sibling(self):
         if self.is_left():
@@ -105,23 +139,37 @@ class Node(object):
             return self._parent._left
 
     #todo: test
-    def replace(self, node):
-        parent = self._parent
-        node._parent = parent
-        if self.is_left():
-            parent._left = node
-        elif self.is_right():
-            parent._right = node
-        self._parent = self
+    # swap self and node, that way it should be clearer to read.
+    def replace_with(self, child):
+        '''
+        replaces self with node.
+        '''
+        if self.is_root():
+            child._parent = child
+        else:
+            if self.is_left():
+                self._parent._left = child
+            elif self.is_right():
+                self._parent._right = child
+            child._parent = self._parent
         return self
 
     #todo: test
     def remove(self):
-        sibling = self.sibling()
-        parent = self.parent()
+        '''
+        This method should only be called for '!' nodes
+        '''
+        token = self._parent._token
+        parent = self._parent
+            #todo: check case, when * is root
+        if token in ['*', '!']:
+            #todo if parent.is_root():
+            parent.remove()
+        elif token == '+':
+            parent.replace_with(self.sibling())
 
 
-
+    # don't use
     def tidy_up(self):
         parent = self._parent
         if self._parent._token == '+':
@@ -175,31 +223,6 @@ class Node(object):
                 current._token = item
                 if item == '!':
                     current.tidy_up()
-                current = current.new_right()
-            elif item == '!':
-                current = current._parent
-                current._token = item
-                current._left = None
-                current = current.new_right()
-            elif item == '(':
-                current = current.new_left()
-            elif item == ')':
-                current = current._parent
-            else:
-                current._token = item
-                current = current._parent
-        return root
-
-    @staticmethod
-    def make_tree_extended(term):
-        term = parse(term)
-        root = Node()
-        current = root
-
-        for item in term:
-            if item in [':', '+', '*', '->']:
-                current._token = item
-                #todo: delete invalid subtree
                 current = current.new_right()
             elif item == '!':
                 current = current._parent

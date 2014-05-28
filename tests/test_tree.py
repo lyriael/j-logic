@@ -109,8 +109,32 @@ class Tests(unittest.TestCase):
     #     print(tree)
     #     self.assertEqual(1, len(tree))
 
-    def test_tidy_up6(self):
-        tree = Node.make_tree('(((!a)+A)*B)')
-        bang = tree.left().left()
-        self.assertEqual('!', bang.token())
-        bang.remove()
+    # def test_remove1(self):
+    #     tree = Node.make_tree('(((!a)+A)*B)')
+    #     bang = tree.left().left()
+    #     self.assertEqual(6, len(tree))
+    #     self.assertEqual('!', bang.token())
+    #     bang.remove()
+    #     self.assertEqual(3, len(tree))
+    #     self.assertEqual('(A*B)', str(tree))
+
+    # def test_remove2(self):
+    #     tree = Node.make_tree('((A*(!a))+B)')
+    #     mult = tree.left()
+    #     mult.remove()
+    #     self.assertEqual('*', mult.token())
+    #     self.assertEqual('B', str(tree))
+
+    # def test_find_and_return1(self):
+    #     tree = Node.make_tree('!')
+    #     self.assertEqual([tree], tree.find_and_return([]))
+
+    def test_find_and_return2(self):
+        tree = Node.make_tree('((A*(!a))+B)')
+        bang = tree.left().right()
+        self.assertEqual(bang, tree.find_and_return())
+    #
+    # def test_find_and_return3(self):
+    #     tree = Node.make_tree('(B*((!a)+A))')
+    #     bang = tree.right().left()
+    #     self.assertEqual([bang], tree.find_and_return([]))
