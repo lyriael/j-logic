@@ -1,96 +1,32 @@
 from formula import Formula
 from helper import parse
 
+
 class ProofSearch:
 
-    def __init__(self, cs):
+    def __init__(self, cs, formula):
         '''
         expect a string as formula
         '''
         self._cs = cs
-        self._proof = []
-        self._counter = 0 #todo check what the cleanest solution for that is
+        self._formula = Formula(formula)
+        self._to_proof = {str(self._formula.subformula()): [str(self._formula.proof_term())]}
 
-    def find(self, proof_term, subformula):
-        '''
-        checks if it is in cs and returns the string.
-        '''
-        assert(proof_term.is_const())
-        if str(subformula) in self._cs[str(proof_term)]:
-            return Formula.parts_to_s(proof_term, subformula)
+    def get_ready(self):
+        self._to_proof[str(self._formula.subformula())] = self._formula.split()
 
-    def in_cs(self, proof_term, subformula):
-        return str(subformula) in self._counter[str(proof_term)]
 
-    def resolve(self, proof_term, subformula):
-        #todo tests!
-        if proof_term.top_operation() == '+':
-            left = proof_term.left_operand()
-            if left.is_const() and self.in_cs(left, subformula):
-                self._proof.append(Formula.parts_to_s(left, subformula))
-            else:
-                self.resolve(left, subformula)
-            right = proof_term.right_operand()
-            if right.is_const() and self.in_cs(right, subformula):
-                self._proof.append(Formula.parts_to_s(right, subformula))
-            else:
-                self.resolve(right, subformula)
-            return'+'
-        elif proof_term.top_operation() == '!':
-            # if is left child, delete subtree
-            return'!'
-        elif proof_term.top_operation() == '*':
-            # make a new variable, search for left term first, then right.
-            return'*'
+    def is_provable(self):
+        proof_term = self._formula.proof_term()
+        subformula = self._formula.subformula()
 
-    def find_in_cs(self, proof_term, subformula):
-        operation = proof_term.top_operation()
-        if operation is None:
-            if str(subformula) in self._cs[str(proof_term)]:
-                self._proof.append(proof_term.to_s()+':'+subformula.to_s())
+        case = proof_term.top_operation()  # should be one of +, !, * or const
+
+        if case == '+':
+            left = self._formula.left_operand()
+
+        if case == 'const' and self._formula.is_in(self._cs):
+            return True
         else:
-            left = proof_term.left_operand()
-            right = proof_term.right_operand()
-            if operation == '!':
-                if right.is_const():
-                    self.resolve_bang(proof_term, subformula)
-            elif operation == '+':
-                if left.is_const() and right.is_const():
-                    self.resolve_plus(proof_term, subformula)
-            elif operation == '*':
-                if left.is_const() and right.is_const():
-                    self.resolve_mult(proof_term, subformula)
-        return self._proof
+            return False
 
-    def resolve_plus(self, proof_term, subformula):
-        self.find_in_cs(proof_term.left_operand(), subformula)
-        self.find_in_cs(proof_term.right_operand(), subformula)
-
-    def resolve_bang(self, proof_term, subformula):
-        if subformula.top_operation() == ':' and proof_term.right_operand().to_s() is subformula.left_operand().to_s():
-            self.find_in_cs(subformula.left_operand(), subformula.right_operand())
-
-    def resolve_mult(self, proof_term, subformula):
-        left = proof_term.left_operand()
-        right = proof_term.right_operand()
-        candidates = self.find_candidates_left(str(left), subformula)
-        matches = self.check_candidates_right(str(right), candidates)
-        for match in matches:
-            self.find_in_cs(left, Formula('(' + match + '->' + str(subformula) + ')'))
-            self.find_in_cs(right, Formula(match))
-
-    def find_candidates_left(self, key, subformula):
-        candidates = []
-        for term in self._cs[key]:
-            f = Formula(term)
-            if f.top_operation() == '->' and str(f.right_operand()) == str(subformula):
-                candidates.append(str(f.left_operand()))
-        return candidates
-
-    def check_candidates_right(self, key, candidates):
-        matches = []
-        for candidate in candidates:
-            for term in self._cs[key]:
-                if term == candidate:
-                    matches.append(term)
-        return matches

@@ -109,32 +109,58 @@ class Tests(unittest.TestCase):
     #     print(tree)
     #     self.assertEqual(1, len(tree))
 
-    # def test_remove1(self):
-    #     tree = Node.make_tree('(((!a)+A)*B)')
-    #     bang = tree.left().left()
-    #     self.assertEqual(6, len(tree))
-    #     self.assertEqual('!', bang.token())
-    #     bang.remove()
-    #     self.assertEqual(3, len(tree))
-    #     self.assertEqual('(A*B)', str(tree))
+    def test_replace1(self):
+        tree = Node.make_tree('((a+b)+c)')
+        node = Node.make_tree('(c+d)')
+        tree._replace(tree.right(), node)
+        self.assertEqual('((a+b)+(c+d))', str(tree))
 
-    # def test_remove2(self):
-    #     tree = Node.make_tree('((A*(!a))+B)')
-    #     mult = tree.left()
-    #     mult.remove()
-    #     self.assertEqual('*', mult.token())
-    #     self.assertEqual('B', str(tree))
+    def test_remove_node1(self):
+        tree = Node.make_tree('a')
+        tree.remove(tree.root())
+        self.assertEqual('', str(tree))
 
-    # def test_find_and_return1(self):
-    #     tree = Node.make_tree('!')
-    #     self.assertEqual([tree], tree.find_and_return([]))
+    def test_remove_node2(self):
+        tree = Node.make_tree('(a*b)')
+        tree.remove(tree.left())
+        self.assertEqual('', str(tree))
 
-    def test_find_and_return2(self):
-        tree = Node.make_tree('((A*(!a))+B)')
-        bang = tree.left().right()
-        self.assertEqual(bang, tree.find_and_return())
-    #
-    # def test_find_and_return3(self):
-    #     tree = Node.make_tree('(B*((!a)+A))')
-    #     bang = tree.right().left()
-    #     self.assertEqual([bang], tree.find_and_return([]))
+    def test_remove_node3(self):
+        tree = Node.make_tree('(((!a)+b)*c)')
+        tree.remove(tree.left().left())
+        self.assertEqual('(b*c)', str(tree))
+
+    def test_remove4(self):
+        tree = Node.make_tree('((a*b)*c)')
+        tree.remove(tree.left().left())
+        self.assertEqual('', str(tree))
+
+    def test_remove5(self):
+        tree = Node.make_tree('(((a*b)+c)*d)')
+        tree.remove(tree.left().left())
+        self.assertEqual('(c*d)', str(tree))
+
+    def test_remove_bangs(self):
+        tree = Node.make_tree('((!a)*b)')
+        tree.remove_bangs(tree.root())
+        self.assertEqual('', str(tree))
+
+    def test_remove_bangs2(self):
+        tree = Node.make_tree('(((!a)+c)*b)')
+        tree.remove_bangs(tree.root())
+        self.assertEqual('(c*b)', str(tree))
+
+    def test_remove_bangs3(self):
+        tree = Node.make_tree('((a+((!b)*c))*d)')
+        tree.remove_bangs(tree.root())
+        self.assertEqual('(a*d)', str(tree))
+
+    def test_remove_bangs4(self):
+        tree = Node.make_tree('((a+(b*(!c)))*d)')
+        tree.remove_bangs(tree.root())
+        self.assertEqual('((a+(b*(!c)))*d)', str(tree))
+
+    def test_remove_bangs5(self):
+        tree = Node.make_tree('(a*((!b)*c))')
+        tree.remove_bangs(tree.root())
+        self.assertEqual('', str(tree))

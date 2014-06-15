@@ -97,40 +97,6 @@ class Node(object):
                 right = self._right.find(step+1)
             return left or right
 
-    def find_and_return(self, token='!'):
-        if self._token == '!':
-            return self
-        else:
-            if self.has_left():
-                left = self._left.find_and_return()
-                if left is not None:
-                    return left
-            if self.has_right():
-                right = self._right.find_and_return()
-                if right is not None:
-                    return right
-            return None
-
-
-    #todo: test
-    def set_child(self, node, position):
-        if position == 'left':
-            self._left = node
-            node._parent = self
-        elif position == 'right':
-            self._right = node
-            node._parent = self
-        raise RuntimeWarning('Cannot set_child for "root".')
-
-    #todo: test
-    def which_child(self):
-        if self.is_root():
-            return None
-        if self.parent()._left is self:
-            return 'left'
-        else:
-            return 'right'
-
     #todo: test
     def sibling(self):
         if self.is_left():
@@ -138,38 +104,6 @@ class Node(object):
         elif self.is_right():
             return self._parent._left
 
-    #todo: test
-    # swap self and node, that way it should be clearer to read.
-    def replace_with(self, child):
-        '''
-        replaces self with node.
-        '''
-        if self.is_root():
-            child._parent = child
-        else:
-            if self.is_left():
-                self._parent._left = child
-            elif self.is_right():
-                self._parent._right = child
-            child._parent = self._parent
-        return self
-
-    #todo: test
-    def remove(self):
-        '''
-        This method should only be called for '!' nodes
-        '''
-        token = self._parent._token
-        parent = self._parent
-            #todo: check case, when * is root
-        if token in ['*', '!']:
-            #todo if parent.is_root():
-            parent.remove()
-        elif token == '+':
-            parent.replace_with(self.sibling())
-
-
-    # don't use
     def tidy_up(self):
         parent = self._parent
         if self._parent._token == '+':
@@ -212,6 +146,52 @@ class Node(object):
         subterm = self.inorder()
         return Node.make_tree(subterm)
 
+    def silly_idea(self, node):
+        token = node.token()
+        if token == '+':
+            node.silly_idea(node.left())
+
+    def remove_bangs(self, current_node):
+        if current_node.is_leaf():
+            return
+
+        if current_node.token() == '!':
+            self.remove(current_node)
+        if current_node.token() == '+':
+            self.remove_bangs(current_node.left())
+            self.remove_bangs(current_node.right())
+        if current_node.token() == '*':
+            self.remove_bangs(current_node.left())
+
+    def remove(self, node):
+        '''
+        intended for left subtree of '*' only where node is '!'.
+        '''
+        if node.is_root():
+            self.fell()
+            return
+        if node.parent().token() == '+':
+            self._replace(node.parent(), node.sibling())
+        if node.parent().token() == '*':
+            self.remove(node.parent())
+
+    def _replace(self, node1, node2):
+        '''
+        replaces node1 by node2 (ink. subtree).
+        It expects that node1 is '+' and a child of '*'.
+        '''
+        if node1.is_left():
+            node1.parent()._left = node2
+        elif node1.is_right():
+            node1.parent()._right = node2
+        node2._parent = node1.parent()
+
+    def fell(self):
+        self._left = None
+        self._right = None
+        self._parent = None
+        self._token = ''
+
     @staticmethod
     def make_tree(term):
         term = parse(term)
@@ -223,6 +203,31 @@ class Node(object):
                 current._token = item
                 if item == '!':
                     current.tidy_up()
+                current = current.new_right()
+            elif item == '!':
+                current = current._parent
+                current._token = item
+                current._left = None
+                current = current.new_right()
+            elif item == '(':
+                current = current.new_left()
+            elif item == ')':
+                current = current._parent
+            else:
+                current._token = item
+                current = current._parent
+        return root
+
+    @staticmethod
+    def make_tree_extended(term):
+        term = parse(term)
+        root = Node()
+        current = root
+
+        for item in term:
+            if item in [':', '+', '*', '->']:
+                current._token = item
+                #todo: delete invalid subtree
                 current = current.new_right()
             elif item == '!':
                 current = current._parent

@@ -40,5 +40,25 @@ class Tests(unittest.TestCase):
     def test_top_operation1(self):
         formula = Formula('((a+(b*c)):F)')
         self.assertTrue(formula.top_operation() == ':')
-        self.assertIsNone(formula.subformula().top_operation())
+        self.assertEqual('const', formula.subformula().top_operation())
         self.assertTrue(formula.proof_term().top_operation() == '+')
+
+    def test_top_operation2(self):
+        formula = Formula('(a:A)')
+        self.assertEqual('const', formula.proof_term().top_operation())
+
+    def test_is_in1(self):
+        formula = Formula('(a:A)')
+        cs = {}
+        self.assertFalse(formula.is_in(cs))
+        cs = {'a': ['A']}
+        self.assertTrue(formula.is_in(cs))
+
+    def test_split1(self):
+        formula = Formula('((a+b):F)')
+        self.assertListEqual(['(a:F)', '(b:F)'], formula.split())
+
+    def test_remove_invalid_parts1(self):
+        f = Formula('(((!a)*b):F)')
+        f.remove_invalid_parts()
+        self.assertEqual('(b:F)', str(f))
