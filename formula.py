@@ -21,9 +21,6 @@ class Formula(object):
             self._left = str(self._tree.left())
         if self._tree.has_right():
             self._right = str(self._tree.right())
-        #todo: check for left-sons
-        self._tree.remove_invalid_subtree()
-
 
     def __str__(self):
         return str(self._tree)
@@ -42,8 +39,14 @@ class Formula(object):
         raise Exception('Has no subformula')
 
     def top_operation(self):
+        '''
+        returns the root token of the formula tree if it is a operation (ink. '->'),
+        and 'const' if it is a constant and therefore a leaf.
+        '''
         if self._tree.token() in ['+', '*', '!', ':', '->']:
             return self._tree.token()
+        else:
+            return 'const'
 
     def left_operand(self):
         if self._tree.token() in ['+', '*', '->', ':']:
@@ -62,8 +65,33 @@ class Formula(object):
         '''
         return self._tree.deep_copy()
 
-    def is_left_son_of_mult(self):
-        return self._tree.is_left_son_of('*')
+    def is_in(self, cs):
+        subformula = str(self.subformula())
+        proof_term = str(self.proof_term())
+        if (proof_term in cs) and subformula in cs[proof_term]:
+            return True
+        else:
+            False
+
+    def split(self):
+        '''
+        Returns an array with formulas, where each formula represents an operand of '+'
+        '''
+        parts = []
+        if self.proof_term().top_operation() == '+':
+            left = Formula.parts_to_formula(self.proof_term().left_operand(), self.subformula())
+            right = Formula.parts_to_formula(self.proof_term().right_operand(), self.subformula())
+            parts = parts + left.split() + right.split()
+        else:
+            parts = [str(self.proof_term())]
+        return parts
+
+    def remove_bangs(self):
+        '''
+        This method is intended only for left subtrees of '*'.
+        It will remove all Nodes, that have '!' as token.
+        '''
+        self._tree.remove_bangs()
 
     @staticmethod
     def parts_to_formula(proof_term, subformula):

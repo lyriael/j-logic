@@ -104,24 +104,6 @@ class Node(object):
         elif self.is_right():
             return self._parent._left
 
-    #todo: test
-    def replace(self, node):
-        parent = self._parent
-        node._parent = parent
-        if self.is_left():
-            parent._left = node
-        elif self.is_right():
-            parent._right = node
-        self._parent = self
-        return self
-
-    #todo: test
-    def remove(self):
-        sibling = self.sibling()
-        parent = self.parent()
-
-
-
     def tidy_up(self):
         parent = self._parent
         if self._parent._token == '+':
@@ -163,6 +145,52 @@ class Node(object):
         '''
         subterm = self.inorder()
         return Node.make_tree(subterm)
+
+    def silly_idea(self, node):
+        token = node.token()
+        if token == '+':
+            node.silly_idea(node.left())
+
+    def remove_bangs(self, current_node):
+        if current_node.is_leaf():
+            return
+
+        if current_node.token() == '!':
+            self.remove(current_node)
+        if current_node.token() == '+':
+            self.remove_bangs(current_node.left())
+            self.remove_bangs(current_node.right())
+        if current_node.token() == '*':
+            self.remove_bangs(current_node.left())
+
+    def remove(self, node):
+        '''
+        intended for left subtree of '*' only where node is '!'.
+        '''
+        if node.is_root():
+            self.fell()
+            return
+        if node.parent().token() == '+':
+            self._replace(node.parent(), node.sibling())
+        if node.parent().token() == '*':
+            self.remove(node.parent())
+
+    def _replace(self, node1, node2):
+        '''
+        replaces node1 by node2 (ink. subtree).
+        It expects that node1 is '+' and a child of '*'.
+        '''
+        if node1.is_left():
+            node1.parent()._left = node2
+        elif node1.is_right():
+            node1.parent()._right = node2
+        node2._parent = node1.parent()
+
+    def fell(self):
+        self._left = None
+        self._right = None
+        self._parent = None
+        self._token = ''
 
     @staticmethod
     def make_tree(term):

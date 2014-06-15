@@ -1,8 +1,9 @@
 import unittest
+
 from helper import *
 from tree_node import Node
 from formula import Formula
-from proof_search import ProofSearch
+from old.ps.proof_search import ProofSearch
 
 
 class Tests(unittest.TestCase):
