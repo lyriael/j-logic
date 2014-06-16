@@ -146,15 +146,11 @@ class Node(object):
         subterm = self.inorder()
         return Node.make_tree(subterm)
 
-    def silly_idea(self, node):
-        token = node.token()
-        if token == '+':
-            node.silly_idea(node.left())
-
     def remove_bangs(self, current_node):
-        if current_node.is_leaf():
-            return
-
+        '''
+        should remove all '!' that occure on left side of '*'
+        '''
+        #todo:
         if current_node.token() == '!':
             self.remove(current_node)
         if current_node.token() == '+':
@@ -162,6 +158,9 @@ class Node(object):
             self.remove_bangs(current_node.right())
         if current_node.token() == '*':
             self.remove_bangs(current_node.left())
+            #todo: hack, find nicer solution. Poblem: if tree or part of it gets deleted.
+            if current_node.right() is not None and current_node.right().token() == '*':
+                self.remove_bangs(current_node.right())
 
     def remove(self, node):
         '''
@@ -191,6 +190,19 @@ class Node(object):
         self._right = None
         self._parent = None
         self._token = ''
+
+    def collect_nodes(self, node):
+        '''
+        Returns an array that contains all nodes with operation type '+' or '!'.
+        '''
+        nodes = []
+        if node.has_left():
+            nodes += self.collect_nodes(node.left())
+        if node.token() in ['+', '!']:
+            nodes.append(node)
+        if node.has_right():
+            nodes += self.collect_nodes(node.right())
+        return nodes
 
     @staticmethod
     def make_tree(term):

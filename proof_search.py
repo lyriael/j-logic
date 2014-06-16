@@ -1,5 +1,6 @@
 from formula import Formula
 from helper import parse
+from stack import Stack
 
 
 class ProofSearch:
@@ -10,11 +11,44 @@ class ProofSearch:
         '''
         self._cs = cs
         self._formula = Formula(formula)
-        self._to_proof = {str(self._formula.subformula()): [str(self._formula.proof_term())]}
+        self._to_proof = []
 
-    def get_ready(self):
-        self._to_proof[str(self._formula.subformula())] = self._formula.split()
+    def _devide(self):
+        stack = Stack()
+        stack.push(self._formula)
+        while stack.has_element():
+            f = stack.pop()
+            case = f.proof_term.top_operation()
+            if case == '+':
+                stack.push(f.get_left_split())
+                stack.push(f.get_right_split())
+            elif case == '!':
+                if f.bang_removable():
+                    stack.push(f.remove_bang())
+            elif case == '*':
+                proof_term = f.proof_term
+                self._wander(stack, proof_term)
+            elif case == 'const':
+                self._to_proof.append(f)
 
+    def _wander(self, stack, f):
+        '''
+        Asserts that top operation of f is '*'.
+        Not recursive.
+        If '+' or '!' are within f, f is split and its parts are pushed back to the stack.
+        If nothing can be changed, f is added to the _to_proof array.
+        '''
+        nodes = f.collect_nodes()
+        for node in nodes:
+            if node.top_operation() == '+':
+                stack.push(node.get_left_split)
+                stack.push(node.get_right_split)
+                return
+            elif node.top_operation() == '!':
+                if node.is_left() and node.parent().top_operation() == '*':
+                    stack.push(node.remove())
+                    return
+        self._to_proof.append(f)
 
     def is_provable(self):
         proof_term = self._formula.proof_term()
@@ -29,4 +63,6 @@ class ProofSearch:
             return True
         else:
             return False
+
+
 

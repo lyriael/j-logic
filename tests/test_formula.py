@@ -56,9 +56,7 @@ class Tests(unittest.TestCase):
 
     def test_split1(self):
         formula = Formula('((a+b):F)')
-        self.assertListEqual(['(a:F)', '(b:F)'], formula.split())
+        self.assertListEqual(['a', 'b'], formula.split())
 
-    def test_remove_invalid_parts1(self):
-        f = Formula('(((!a)*b):F)')
-        f.remove_invalid_parts()
-        self.assertEqual('(b:F)', str(f))
+
+

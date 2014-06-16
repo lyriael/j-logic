@@ -86,7 +86,7 @@ class Formula(object):
             parts = [str(self.proof_term())]
         return parts
 
-    def remove_bangs(self):
+    def _remove_bangs(self):
         '''
         This method is intended only for left subtrees of '*'.
         It will remove all Nodes, that have '!' as token.

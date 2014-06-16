@@ -164,3 +164,8 @@ class Tests(unittest.TestCase):
         tree = Node.make_tree('(a*((!b)*c))')
         tree.remove_bangs(tree.root())
         self.assertEqual('', str(tree))
+
+    def test_collect_nodes1(self):
+        f = Node.make_tree('((a+b)*c)')
+        self.assertEqual(1, len(f.collect_nodes(f)))
+        self.assertEqual('(a+b)', str(f.collect_nodes(f)[0]))
