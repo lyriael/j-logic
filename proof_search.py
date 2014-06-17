@@ -13,7 +13,7 @@ class ProofSearch:
         self._formula = Formula(formula)
         self._to_proof = []
 
-    def _devide(self):
+    def devide(self):
         stack = Stack()
         stack.push(self._formula)
         while stack.has_element():
@@ -33,16 +33,16 @@ class ProofSearch:
 
     def _wander(self, stack, f):
         '''
-        Asserts that top operation of f is '*'.
+        Asserts that top operation of f is '*' and only 'proof_term' is given.
         Not recursive.
         If '+' or '!' are within f, f is split and its parts are pushed back to the stack.
         If nothing can be changed, f is added to the _to_proof array.
         '''
-        nodes = f.collect_nodes()
+        nodes = f.collect()
         for node in nodes:
             if node.top_operation() == '+':
-                stack.push(node.get_left_split)
-                stack.push(node.get_right_split)
+                stack.push(node.get_left_split())
+                stack.push(node.get_right_split())
                 return
             elif node.top_operation() == '!':
                 if node.is_left() and node.parent().top_operation() == '*':

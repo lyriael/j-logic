@@ -1,5 +1,6 @@
 import unittest
 from formula import Formula
+from tree_node import Node
 
 
 class Tests(unittest.TestCase):
@@ -17,6 +18,12 @@ class Tests(unittest.TestCase):
     def test_init2(self):
         formula = Formula('((!a):A)')
         self.assertEqual('((!a):A)', formula.to_s())
+
+    def test_init3(self):
+        tree = Node.make_tree('((a+b)*c)')
+        son = tree.get_left()
+        formula = Formula(son)
+        self.assertEqual('(a+b)', str(formula))
 
     #todo: fix!
     # def test_init3(self):
@@ -57,6 +64,12 @@ class Tests(unittest.TestCase):
     def test_split1(self):
         formula = Formula('((a+b):F)')
         self.assertListEqual(['a', 'b'], formula.split())
+
+    def test_collect(self):
+        f = Formula('((a+b)*c)')
+        a = f.collect()
+        self.assertEqual(1, len(a))
+        self.assertEqual('(a+b)', str(a[0]))
 
 
 

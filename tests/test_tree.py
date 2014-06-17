@@ -169,3 +169,5 @@ class Tests(unittest.TestCase):
         f = Node.make_tree('((a+b)*c)')
         self.assertEqual(1, len(f.collect_nodes(f)))
         self.assertEqual('(a+b)', str(f.collect_nodes(f)[0]))
+        self.assertTrue(f.collect_nodes(f)[0].has_parent())
+        self.assertEqual('((a+b)*c)', str(f.collect_nodes(f)[0].parent()))

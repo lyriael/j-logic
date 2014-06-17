@@ -37,6 +37,9 @@ class Node(object):
     def has_child(self):
         return self._left is not None or self._right is not None
 
+    def has_parent(self):
+        return self._parent is not None and self._parent is not self
+
     def is_left(self):
         return self._parent._left is self
 

@@ -93,6 +93,16 @@ class Formula(object):
         '''
         self._tree.remove_bangs()
 
+    def collect(self):
+        '''
+        This method is just a bridge between ProofSearch and TreeNode.
+        '''
+        nodes = self._tree.collect_nodes(self._tree)
+        formulas = []
+        for node in nodes:
+            formulas.append(Formula(node))
+        return formulas
+
     @staticmethod
     def parts_to_formula(proof_term, subformula):
         '''
