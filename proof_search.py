@@ -38,11 +38,12 @@ class ProofSearch:
         If '+' or '!' are within f, f is split and its parts are pushed back to the stack.
         If nothing can be changed, f is added to the _to_proof array.
         '''
+        #todo: remove as soon as it works in formula
         nodes = f.collect()
         for node in nodes:
-            if node.top_operation() == '+':
-                stack.push(node.get_left_split())
-                stack.push(node.get_right_split())
+            if node.token() == '+':
+                stack.push(Formula(node.get_left_split()))
+                stack.push(Formula(node.get_right_split()))
                 return
             elif node.top_operation() == '!':
                 if node.is_left() and node.parent().top_operation() == '*':

@@ -70,6 +70,7 @@ class Tests(unittest.TestCase):
         a = f.collect()
         self.assertEqual(1, len(a))
         self.assertEqual('(a+b)', str(a[0]))
+        self.assertEqual('((a+b)*c)', str(a[0].parent()))
 
 
 

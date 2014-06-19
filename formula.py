@@ -13,14 +13,17 @@ class Formula(object):
             self._tree = Node.make_tree(formula)
         elif isinstance(formula, Node):
             self._tree = formula.deep_copy()
+            print('node')
         elif isinstance(formula, Formula):
             self._tree = formula.tree()
+            print('formula')
         #not sure if this part is used.... its a bit confusing...
-        self._op = self._tree.token()
         if self._tree.has_left():
             self._left = str(self._tree.left())
         if self._tree.has_right():
             self._right = str(self._tree.right())
+        self._op = self._tree.token()
+
 
     def __str__(self):
         return str(self._tree)
@@ -96,12 +99,29 @@ class Formula(object):
     def collect(self):
         '''
         This method is just a bridge between ProofSearch and TreeNode.
+        !! It returns a array of Nodes!! (not formula)
         '''
-        nodes = self._tree.collect_nodes(self._tree)
-        formulas = []
+        return self._tree.collect_nodes(self._tree)
+
+    def _wander(self, stack, formula):
+        '''
+        Asserts that top operation of f is '*' and only 'proof_term' is given.
+        Not recursive.
+        If '+' or '!' are within f, f is split and its parts are pushed back to the stack.
+        If nothing can be changed, f is returned.
+        '''
+        #todo: fix so it works in Formula
+        nodes = formula.collect()
         for node in nodes:
-            formulas.append(Formula(node))
-        return formulas
+            if node.top_operation() == '+':
+                stack.push(node.get_left_split())
+                stack.push(node.get_right_split())
+                return
+            elif node.top_operation() == '!':
+                if node.is_left() and node.parent().top_operation() == '*':
+                    stack.push(node.remove())
+                    return
+        return formula
 
     @staticmethod
     def parts_to_formula(proof_term, subformula):

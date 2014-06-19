@@ -197,15 +197,32 @@ class Node(object):
     def collect_nodes(self, node):
         '''
         Returns an array that contains all nodes with operation type '+' or '!'.
+
+        Recursive!
         '''
+        #todo: is it better to just return one instead of an array?
         nodes = []
-        if node.has_left():
-            nodes += self.collect_nodes(node.left())
         if node.token() in ['+', '!']:
             nodes.append(node)
+        if node.has_left():
+            nodes += self.collect_nodes(node.left())
         if node.has_right():
             nodes += self.collect_nodes(node.right())
         return nodes
+
+    def get_left_split(self):
+        f1 = self.deep_copy()
+        print(str(f1.is_root()))
+        f1._parent._left = f1.left()
+        f1._left._parent = f1.parent()
+        print(str(f1))
+        return f1
+
+    def get_right_split(self):
+        f2 = self.deep_copy()
+        f2._parent._right = f2.right()
+        f2._right._parent = f2.parent()
+        return f2
 
     @staticmethod
     def make_tree(term):

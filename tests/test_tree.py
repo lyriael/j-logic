@@ -171,3 +171,10 @@ class Tests(unittest.TestCase):
         self.assertEqual('(a+b)', str(f.collect_nodes(f)[0]))
         self.assertTrue(f.collect_nodes(f)[0].has_parent())
         self.assertEqual('((a+b)*c)', str(f.collect_nodes(f)[0].parent()))
+
+    def test_collect_nodes2(self):
+        f = Node.make_tree('((((a+b)*(e+f))+(!c))*d)')
+        col = f.collect_nodes(f)
+        self.assertEqual(4, len(col))
+        for node in col:
+            print(str(node))
