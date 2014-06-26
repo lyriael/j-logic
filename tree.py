@@ -34,16 +34,66 @@ class Tree(object):
         '''
         Returns formula as a String using inorder.
         '''
-        term = ''
-        return self._inorder(self.root)
+        return self._inorder_string(self.root)
 
-    def _inorder(self, node):
+    def _inorder_string(self, node):
         term = ''
         if not node.is_leaf():
             term += '('
             if node.has_left():
-                term += self._inorder(node.left)
+                term += self._inorder_string(node.left)
         term += node.token
         if node.has_right():
-            term += self._inorder(node.right) + ')'
+            term += self._inorder_string(node.right) + ')'
         return term
+
+    def inorder_nodes(self, node):
+        nodes = []
+        if node.has_left():
+            nodes += self.inorder_nodes(node.left)
+        nodes.append(node)
+        if node.has_right():
+            nodes += self.inorder_nodes(node.right)
+        return nodes
+
+    def subtree(self, node):
+        term = self._inorder_string(node)
+        return Tree(term)
+
+    def deep_copy(self):
+        return Tree(self._inorder_string(self.root))
+
+    def first(self, token):
+        nodes = self.inorder_nodes(self.root)
+        for node in nodes:
+            if node.token == token:
+                return node
+        return None
+
+    def left_split(self, node):
+        '''
+        Caution: makes direct changes to the tree
+        '''
+        if node.position == 'root':
+            node.left.set_root()
+            self.root = node.left
+        else:
+            node.left.parent = node.parent
+            if node.position == 'left':
+                node.parent.set_left(node.left)
+            elif node.parent == 'right':
+                node.parent.set_right(node.left)
+
+    def right_split(self, node):
+        '''
+        Caution: makes direct changes to the tree
+        '''
+        if node.position == 'root':
+            node.right.set_root()
+            self.root = node.right
+        else:
+            node.right.parent = node.parent
+            if node.position == 'left':
+                node.parent.set_left(node.right)
+            elif node.parent == 'right':
+                node.parent.set_right(node.right)

@@ -15,4 +15,3 @@ def parse(string):
     while '' in l:
         l.remove('')
     return l
-

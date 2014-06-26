@@ -43,3 +43,31 @@ class Tests(unittest.TestCase):
         self.assertEqual('((!a):F)', tree.to_s())
         tree = Tree('((a*(!(b+c))):F)')
         self.assertEqual('((a*(!(b+c))):F)', tree.to_s())
+
+    def test_subtree(self):
+        tree = Tree('((a*(!(b+c))):F)')
+        node = tree.root.left
+        subtree = tree.subtree(node)
+        self.assertEqual('*', subtree.root.token)
+        self.assertEqual('(a*(!(b+c)))', subtree.to_s())
+
+    def test_inorder_nodes(self):
+        tree = Tree('((a*(!(b+c))):F)')
+        nodes = []
+        for node in tree.inorder_nodes(tree.root):
+            nodes.append(node.token)
+        self.assertListEqual(['a', '*', '!', 'b', '+', 'c', ':', 'F'], nodes)
+
+    def test_first1(self):
+        tree = Tree('((a*(!(b+c))):F)')
+        mult = tree.root.left
+        bang = tree.root.left.right
+        plus = tree.root.left.right.right
+        self.assertEqual(mult, tree.first('*'))
+        self.assertEqual(bang, tree.first('!'))
+        self.assertEqual(plus, tree.first('+'))
+
+    def test_first2(self):
+        tree = Tree('(a:((b+c)+d))')
+        first_plus = tree.root.right.left
+        self.assertEqual(first_plus, tree.first('+'))

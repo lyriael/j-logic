@@ -1,4 +1,3 @@
-
 class Node(object):
 
     def __init__(self):
@@ -21,6 +20,7 @@ class Node(object):
     def set_root(self):
         self.parent = self
         self.position = 'root'
+        self.sibling = None
 
     def new_right(self):
         right_child = Node()
@@ -48,3 +48,16 @@ class Node(object):
     def has_left(self):
         return self.left is not None
 
+    def set_sibling(self, node):
+        self.sibling = node
+        node.sibling = self
+
+    def set_right(self, node):
+        self.right = node
+        self.left.set_sibling(node)
+        node.parent = self
+
+    def set_left(self, node):
+        self.left = node
+        self.right.set_sibling(node)
+        node.parent = self
