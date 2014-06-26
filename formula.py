@@ -12,20 +12,14 @@ class Formula(object):
         self.tree = Tree(formula)
         self.op = self.tree.root.token
 
-    def proof_term(self):
+    def is_provable(self, cs):
         '''
-        Returns a new formula that contains only the left subtree
+        only to be used with splitted and simplified terms.
         '''
-        if self.op == ':':
-            return Formula(self.tree.subtree(self.tree.root.left).to_s())
-        else:
-            return None
-
-    def subformula(self):
-        if self.op == ':':
-            return Formula(self.tree.subtree(self.tree.root.right).to_s())
-        else:
-            return None
+        formulas = self.to_pieces()
+        for f in formulas:
+            proof_terms = f.tree.proof_terms()
+            print('todo')
 
     def to_pieces(self):
         # first step: make sum-splits
@@ -47,6 +41,22 @@ class Formula(object):
             if f.proof_term().tree.has_bad_bang():
                 parts.remove(f)
 
+        return parts
+
+    def proof_term(self):
+        '''
+        Returns a new formula that contains only the left subtree
+        '''
+        if self.op == ':':
+            return Formula(self.tree.subtree(self.tree.root.left).to_s())
+        else:
+            return None
+
+    def subformula(self):
+        if self.op == ':':
+            return Formula(self.tree.subtree(self.tree.root.right).to_s())
+        else:
+            return None
 
     def sum_split(self):
         proof_term = self.proof_term()

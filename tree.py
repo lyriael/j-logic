@@ -1,5 +1,6 @@
 from node import Node
 from helper import parse
+from helper import replace
 
 
 class Tree(object):
@@ -55,6 +56,18 @@ class Tree(object):
             nodes += self.preorder_nodes(node.right)
         return nodes
 
+    def leaves(self, node):
+        #todo: test
+        leaves = []
+        if node.token.alpha():
+            leaves.append(node)
+        else:
+            if node.has_left():
+                leaves += self.leaves(node.left)
+            if node.has_right():
+                leaves += self.leaves(node.right)
+        return leaves
+
     def subtree(self, node):
         term = self._inorder_string(node)
         return Tree(term)
@@ -106,3 +119,33 @@ class Tree(object):
             if node.token == '!' and node.position == 'left':
                 return True
         return False
+
+    def proof_terms(self):
+        '''
+        This method expects the formula to be splited and simplified already,
+        sucht that only '*', '!' and const are nodes.
+        '''
+        consts = {}
+        for leaf in self.leaves(self.root.left):
+            consts[leaf.token] = []
+        #todo:test
+        v_count = 1
+        temp = [self]
+        while len(temp) > 0:
+            f = temp.pop()
+            proof_term = f.subtree(f.root.left)
+            subformula = f.subtree(f.root.right).to_s()
+            if len(proof_term.to_s()) == 1: # constant
+                consts[proof_term.to_s()] = subformula
+            else:
+                if proof_term.root.token == '*':
+                    left = proof_term.subtree(f.root.left).to_s()
+                    right = proof_term.subtree(f.root.right).to_s()
+                    temp.append(Tree('('+left+':(X_'+str(v_count)+'->'+subformula+'))'))
+                    temp.append(Tree('('+right+':X_'+str(v_count)+')'))
+                    v_count += 1
+                elif proof_term.root.token == '!':
+                    left = proof_term.subtree(f.root.left).to_s()
+                    s = '('+left+':'+str(v_count)+')'
+                    temp.append(Tree(s))
+                    replace(consts, subformula, s)

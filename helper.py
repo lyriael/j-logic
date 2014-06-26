@@ -15,3 +15,7 @@ def parse(string):
     while '' in l:
         l.remove('')
     return l
+
+
+def replace(dictionary, new, old):
+    print('todo')
