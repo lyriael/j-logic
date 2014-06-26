@@ -43,6 +43,8 @@ class Tests(unittest.TestCase):
         self.assertEqual('((!a):F)', tree.to_s())
         tree = Tree('((a*(!(b+c))):F)')
         self.assertEqual('((a*(!(b+c))):F)', tree.to_s())
+        tree = Tree('(((f+e)*d)+((!b)+a))')
+        self.assertEqual('(((f+e)*d)+((!b)+a))', tree.to_s())
 
     def test_subtree(self):
         tree = Tree('((a*(!(b+c))):F)')
@@ -54,9 +56,9 @@ class Tests(unittest.TestCase):
     def test_inorder_nodes(self):
         tree = Tree('((a*(!(b+c))):F)')
         nodes = []
-        for node in tree.inorder_nodes(tree.root):
+        for node in tree.preorder_nodes(tree.root):
             nodes.append(node.token)
-        self.assertListEqual(['a', '*', '!', 'b', '+', 'c', ':', 'F'], nodes)
+        self.assertListEqual([':', '*', 'a', '!', '+', 'b', 'c', 'F'], nodes)
 
     def test_first1(self):
         tree = Tree('((a*(!(b+c))):F)')
@@ -69,5 +71,5 @@ class Tests(unittest.TestCase):
 
     def test_first2(self):
         tree = Tree('(a:((b+c)+d))')
-        first_plus = tree.root.right.left
+        first_plus = tree.root.right
         self.assertEqual(first_plus, tree.first('+'))

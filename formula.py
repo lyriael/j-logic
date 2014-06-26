@@ -21,25 +21,78 @@ class Formula(object):
         else:
             return None
 
+    def subformula(self):
+        if self.op == ':':
+            return Formula(self.tree.subtree(self.tree.root.right).to_s())
+        else:
+            return None
+
     def to_pieces(self):
         # first step: make sum-splits
+        parts = self.sum_split()
+
+        # second step: simplify formula if top operation is bang
+        bangs = []
+        for f in parts:
+            if f.proof_term().op == '!':
+                bangs.append(f)
+                parts.remove(f)
+        for f in bangs:
+            improved = f.remove_bang()
+            if improved is not None:
+                parts.append(improved)
+
+        # third step: remove formulas where bang is left child of mult
+        finals = []
+        while len(parts) > 0:
+            f = parts.pop()
+            node = f.bad_bang()
+            if node is None:
+                finals.append(f)
+            else:
+                improved = f.remove_bad_bang(node)
+                if improved is not None:
+                    parts.append(f)
+        return parts
+
+    def sum_split(self):
+        proof_term = self.proof_term()
+        subformula = self.subformula().formula
         todo = []
         done = []
-        todo.append(self.proof_term())
-
+        todo.append(proof_term.tree)
         while len(todo) > 0:
             f = todo.pop()
-            if f.tree.first('+') is None:
+            if f.first('+') is None:
                 done.append(f)
             else:
-                left = f.tree.deep_copy()
+                left = f.deep_copy()
                 node = left.first('+')
                 left.left_split(node)
-                todo.append(Formula(left.to_s()))
+                todo.append(left)
 
-                right = f.tree.deep_copy()
+                right = f.deep_copy()
                 node = right.first('+')
                 right.right_split(node)
-                todo.append(Formula(right.to_s()))
-        return done
+                todo.append(right)
+        # make to string and remove duplicates
+        temp = []
+        for tree in done:
+            temp.append('('+tree.to_s()+':'+subformula+')')
+        temp = list(set(temp))
+        # make to Formulas
+        formulas = []
+        for s in temp:
+            formulas.append(Formula(s))
+        return formulas
 
+    def remove_bang(self):
+        # accessing child of '!'
+        left = self.tree.subtree(self.tree.root.left.right)
+        right = self.tree.subtree(self.tree.root.right.left)
+        if left.to_s() == right.to_s():
+            subformula = self.tree.subtree(self.tree.root.right.right)
+            s = '('+right.to_s()+':'+subformula.to_s()+')'
+            return Formula(s)
+        else:
+            return None

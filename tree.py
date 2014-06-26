@@ -47,13 +47,12 @@ class Tree(object):
             term += self._inorder_string(node.right) + ')'
         return term
 
-    def inorder_nodes(self, node):
-        nodes = []
+    def preorder_nodes(self, node):
+        nodes = [node]
         if node.has_left():
-            nodes += self.inorder_nodes(node.left)
-        nodes.append(node)
+            nodes += self.preorder_nodes(node.left)
         if node.has_right():
-            nodes += self.inorder_nodes(node.right)
+            nodes += self.preorder_nodes(node.right)
         return nodes
 
     def subtree(self, node):
@@ -64,7 +63,7 @@ class Tree(object):
         return Tree(self._inorder_string(self.root))
 
     def first(self, token):
-        nodes = self.inorder_nodes(self.root)
+        nodes = self.preorder_nodes(self.root)
         for node in nodes:
             if node.token == token:
                 return node
