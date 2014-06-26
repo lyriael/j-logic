@@ -13,10 +13,8 @@ class Formula(object):
             self._tree = Node.make_tree(formula)
         elif isinstance(formula, Node):
             self._tree = formula.deep_copy()
-            print('node')
         elif isinstance(formula, Formula):
             self._tree = formula.tree()
-            print('formula')
         #not sure if this part is used.... its a bit confusing...
         if self._tree.has_left():
             self._left = str(self._tree.left())
