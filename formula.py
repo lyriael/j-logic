@@ -43,17 +43,10 @@ class Formula(object):
                 parts.append(improved)
 
         # third step: remove formulas where bang is left child of mult
-        finals = []
-        while len(parts) > 0:
-            f = parts.pop()
-            node = f.bad_bang()
-            if node is None:
-                finals.append(f)
-            else:
-                improved = f.remove_bad_bang(node)
-                if improved is not None:
-                    parts.append(f)
-        return parts
+        for f in parts:
+            if f.proof_term().tree.has_bad_bang():
+                parts.remove(f)
+
 
     def sum_split(self):
         proof_term = self.proof_term()

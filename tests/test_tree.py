@@ -45,6 +45,8 @@ class Tests(unittest.TestCase):
         self.assertEqual('((a*(!(b+c))):F)', tree.to_s())
         tree = Tree('(((f+e)*d)+((!b)+a))')
         self.assertEqual('(((f+e)*d)+((!b)+a))', tree.to_s())
+        tree = Tree('((a*(!b))*(!c))')
+        self.assertEqual('((a*(!b))*(!c))', tree.to_s())
 
     def test_subtree(self):
         tree = Tree('((a*(!(b+c))):F)')
@@ -73,3 +75,11 @@ class Tests(unittest.TestCase):
         tree = Tree('(a:((b+c)+d))')
         first_plus = tree.root.right
         self.assertEqual(first_plus, tree.first('+'))
+
+    def test_has_bad_bang(self):
+        f = Tree('((!a)*b)')
+        self.assertTrue(f.has_bad_bang())
+        f = Tree('(((!a)*b)*(!c))')
+        self.assertTrue(f.has_bad_bang())
+        f = Tree('((a*(!b))*(!c))')
+        self.assertFalse(f.has_bad_bang())

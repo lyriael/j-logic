@@ -96,3 +96,13 @@ class Tree(object):
                 node.parent.set_left(node.right)
             elif node.parent == 'right':
                 node.parent.set_right(node.right)
+
+    def has_bad_bang(self):
+        '''
+        This method expects the formula to be splited and simplified already,
+        sucht that only '*', '!' and const are nodes.
+        '''
+        for node in self.preorder_nodes(self.root):
+            if node.token == '!' and node.position == 'left':
+                return True
+        return False
