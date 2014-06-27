@@ -74,3 +74,21 @@ class Node(object):
         node.parent = self
         node.set_position()
         node.set_sibling()
+
+    def _inorder_string(self, node):
+        '''
+        This is an exact copy of the same-named method in Tree.
+        todo: find cleaner solution
+        '''
+        term = ''
+        if not node.is_leaf():
+            term += '('
+            if node.has_left():
+                term += self._inorder_string(node.left)
+        term += node.token
+        if node.has_right():
+            term += self._inorder_string(node.right) + ')'
+        return term
+
+    def to_s(self):
+        return self._inorder_string(self)

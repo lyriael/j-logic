@@ -126,6 +126,9 @@ class Tree(object):
         This method expects the formula to be splited and simplified already,
         sucht that only '*', '!' and const are nodes.
 
+        It returns a List with tuples, where the first entry is the proof constant
+        and the second the other part (thingy after ':'...).
+
         THE MAGIC HAPPENS RIGHT HERE
         '''
         consts = []
@@ -152,3 +155,35 @@ class Tree(object):
                     swaps.append((subformula, s))
                     v_count += 1
         return sorted(replace(consts, swaps))
+
+    @staticmethod
+    def possible_match(node_a, node_b):
+        wilds = []
+
+        # match
+        if node_a.token == node_b.token:
+            # continue if both have sons
+
+            if node_a.has_left() and node_b.has_left():
+                match = Tree.possible_match(node_a.left, node_b.left)
+                if match:
+                    wilds += match
+            elif node_a.has_left() or node_b.has_left():
+                return False
+
+            if node_a.has_right() and node_b.has_right():
+                match = Tree.possible_match(node_a.right, node_b.right)
+                if match:
+                    wilds += match
+            elif node_a.has_right() or node_b.has_right():
+                return False
+        # wild char
+        elif node_a.token[0] == 'X':
+            wilds.append((node_a.token, node_b.to_s()))
+        # no match and no wild char
+        else:
+            return False
+        return wilds
+
+
+

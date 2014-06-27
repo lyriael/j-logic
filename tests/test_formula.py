@@ -47,7 +47,8 @@ class Tests(unittest.TestCase):
         a = []
         for f in many_formulas:
             a.append(f.formula)
-        self.assertListEqual(['((!((!a)*(c*(!d)))):F)', '((!(b*(c*(!d)))):F)', '((e*f):F)', '((e*g):F)'], sorted(a))
+        self.assertListEqual(['((!((!a)*(c*(!d)))):F)', '((!(b*(c*(!d)))):F)',
+                              '((e*f):F)', '((e*g):F)'], sorted(a))
 
     def test_remove_bang1(self):
         f = Formula('((!a):(a:A)))')
@@ -70,23 +71,5 @@ class Tests(unittest.TestCase):
         # real testing on this method should be made in Tree for .proof_terms()
         t = Formula('(((a*(b*c))*(!(d*(!e)))):F)')
         c = t.get_terms_to_proof()
-        self.assertListEqual([('a', '(X5->(((d*(!e)):X2)->F))'), ('b', '(X6->X5)'), ('c', 'X6'), ('d', '((e:X4)->X2)'), ('e', 'X4')], c)
-
-    def test_to_pieces_and_get_terms_to_proof(self):
-        monster = Formula('(((!(((!a)+b)*(c*(!d))))+(e*(f+g))):F)')
-        parts = monster.to_pieces()
-        alle = {}
-        for f in parts:
-            alle[f.formula] = f.get_terms_to_proof()
-        self.assertDictEqual({'((e*f):F)': [('e', '(X1->F)'), ('f', 'X1')],
-                              '((e*g):F)': [('e', '(X1->F)'), ('g', 'X1')]}, alle)
-
-    def test_to_pieces_and_get_terms_to_proof2(self):
-        yig = Formula('(((!(a*b))+(c*((!d)+e))):((a*b):F))')
-        parts = yig.to_pieces()
-        tuti = {}
-        for f in parts:
-            tuti[f.formula] = f.get_terms_to_proof()
-        self.assertDictEqual({'((c*e):((a*b):F))': [('c', '(X1->((a*b):F))'), ('e', 'X1')],
-                              '((c*(!d)):((a*b):F))': [('c', '((d:X2)->((a*b):F))'), ('d', 'X2')],
-                              '((a*b):F)': [('a', '(X1->F)'), ('b', 'X1')]}, tuti)
+        self.assertListEqual([('a', '(X5->(((d*(!e)):X2)->F))'), ('b', '(X6->X5)'),
+                              ('c', 'X6'), ('d', '((e:X4)->X2)'), ('e', 'X4')], c)

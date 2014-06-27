@@ -12,17 +12,13 @@ class Formula(object):
         self.tree = Tree(formula)
         self.op = self.tree.root.token
 
-    def is_provable(self, cs):
-        '''
-        only to be used with split and simplified terms.
-        '''
-        formulas = self.to_pieces()
-        for f in formulas:
-            # array of tuples: ('a', 'F->G')
-            to_proof = f.get_terms_to_proof()
-            #todo compare with cs
-
     def to_pieces(self):
+        '''
+        Returns a list of formulas, where all '+', all top '!' and all bad '!'
+        are removed.
+
+        MAGIC HAPPENS HERE.
+        '''
         # first step: make sum-splits
         parts = self.sum_split()
 
@@ -48,12 +44,16 @@ class Formula(object):
         '''
         This method is just to keep the look a bit cleaner.
         The work itself is done by Tree.
+
+        MAGIC COMES FROM HERE SOMEWHERE.
         '''
         return self.tree.proof_terms()
 
     def proof_term(self):
         '''
-        Returns a new formula that contains only the left subtree
+        Returns a new formula that contains only the left subtree.
+        Not to be confused with 'get_terms_to_proof()' that
+        calls 'proof_terms()' from Tree.
         '''
         if self.op == ':':
             return Formula(self.tree.subtree(self.tree.root.left).to_s())
