@@ -57,9 +57,8 @@ class Tree(object):
         return nodes
 
     def leaves(self, node):
-        #todo: test
         leaves = []
-        if node.token.alpha():
+        if node.token.isalpha():
             leaves.append(node)
         else:
             if node.has_left():
@@ -125,10 +124,8 @@ class Tree(object):
         This method expects the formula to be splited and simplified already,
         sucht that only '*', '!' and const are nodes.
         '''
-        consts = {}
-        for leaf in self.leaves(self.root.left):
-            consts[leaf.token] = []
-        #todo:test
+        consts = []
+        swaps = []
         v_count = 1
         temp = [self]
         while len(temp) > 0:
@@ -136,16 +133,18 @@ class Tree(object):
             proof_term = f.subtree(f.root.left)
             subformula = f.subtree(f.root.right).to_s()
             if len(proof_term.to_s()) == 1: # constant
-                consts[proof_term.to_s()] = subformula
+                consts.append((proof_term.to_s(), subformula))
             else:
                 if proof_term.root.token == '*':
-                    left = proof_term.subtree(f.root.left).to_s()
-                    right = proof_term.subtree(f.root.right).to_s()
-                    temp.append(Tree('('+left+':(X_'+str(v_count)+'->'+subformula+'))'))
-                    temp.append(Tree('('+right+':X_'+str(v_count)+')'))
+                    left = proof_term.subtree(proof_term.root.left).to_s()
+                    right = proof_term.subtree(proof_term.root.right).to_s()
+                    temp.append(Tree('('+left+':(X'+str(v_count)+'->'+subformula+'))'))
+                    temp.append(Tree('('+right+':X'+str(v_count)+')'))
                     v_count += 1
                 elif proof_term.root.token == '!':
-                    left = proof_term.subtree(f.root.left).to_s()
-                    s = '('+left+':'+str(v_count)+')'
+                    left = proof_term.subtree(f.root.left.right).to_s()
+                    s = '('+left+':X'+str(v_count)+')'
                     temp.append(Tree(s))
-                    replace(consts, subformula, s)
+                    swaps.append((subformula, s))
+                    v_count += 1
+        return sorted(replace(consts, swaps))
