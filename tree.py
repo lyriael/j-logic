@@ -68,8 +68,10 @@ class Tree(object):
         return leaves
 
     def subtree(self, node):
-        term = self._inorder_string(node)
-        return Tree(term)
+        if node is None:
+            return None
+        else:
+            return Tree(self._inorder_string(node))
 
     def deep_copy(self):
         return Tree(self._inorder_string(self.root))
@@ -81,33 +83,33 @@ class Tree(object):
                 return node
         return None
 
-    def left_split(self, node):
+    def left_split(self, plus_node):
         '''
         Caution: makes direct changes to the tree
+        Expects the node to have token '+'
         '''
-        if node.position == 'root':
-            node.left.set_root()
-            self.root = node.left
+        if plus_node.position == 'root':
+            plus_node.left.set_root()
+            self.root = plus_node.left
         else:
-            node.left.parent = node.parent
-            if node.position == 'left':
-                node.parent.set_left(node.left)
-            elif node.parent == 'right':
-                node.parent.set_right(node.left)
+            if plus_node.position == 'left':
+                plus_node.parent.set_left(plus_node.left)
+            elif plus_node.position == 'right':
+                plus_node.parent.set_right(plus_node.left)
 
-    def right_split(self, node):
+    def right_split(self, plus_node):
         '''
         Caution: makes direct changes to the tree
+        Expects the node to have token '+'
         '''
-        if node.position == 'root':
-            node.right.set_root()
-            self.root = node.right
+        if plus_node.position == 'root':
+            plus_node.right.set_root()
+            self.root = plus_node.right
         else:
-            node.right.parent = node.parent
-            if node.position == 'left':
-                node.parent.set_left(node.right)
-            elif node.parent == 'right':
-                node.parent.set_right(node.right)
+            if plus_node.position == 'left':
+                plus_node.parent.set_left(plus_node.right)
+            elif plus_node.position == 'right':
+                plus_node.parent.set_right(plus_node.right)
 
     def has_bad_bang(self):
         '''
@@ -123,6 +125,8 @@ class Tree(object):
         '''
         This method expects the formula to be splited and simplified already,
         sucht that only '*', '!' and const are nodes.
+
+        THE MAGIC HAPPENS RIGHT HERE
         '''
         consts = []
         swaps = []

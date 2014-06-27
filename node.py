@@ -48,16 +48,29 @@ class Node(object):
     def has_left(self):
         return self.left is not None
 
-    def set_sibling(self, node):
-        self.sibling = node
-        node.sibling = self
+    def set_sibling(self):
+        sibling = None
+        if self.position == 'right':
+            sibling = self.parent.left
+        elif self.position == 'left':
+            sibling = self.parent.right
+        self.sibling = sibling
+        sibling.sibling = self
 
-    def set_right(self, node):
-        self.right = node
-        self.left.set_sibling(node)
-        node.parent = self
+    def set_position(self):
+        if self.parent.left == self:
+            self.position = 'left'
+        elif self.parent.right == self:
+            self.position = 'right'
 
     def set_left(self, node):
         self.left = node
-        self.right.set_sibling(node)
         node.parent = self
+        node.set_position()
+        node.set_sibling()
+
+    def set_right(self, node):
+        self.right = node
+        node.parent = self
+        node.set_position()
+        node.set_sibling()
