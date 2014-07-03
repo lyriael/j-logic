@@ -1,6 +1,7 @@
 from node import Node
 from helper import parse
 from helper import replace
+from helper import wilds
 
 
 class Tree(object):
@@ -157,7 +158,25 @@ class Tree(object):
         return sorted(replace(consts, swaps))
 
     @staticmethod
-    def possible_match(node_a, node_b):
+    def possible_match(term_a, term_b):
+        '''
+        Wrapper to make handling easier (and correct!)
+        '''
+        a = Tree(term_a)
+        b = Tree(term_b)
+        matches = Tree._possible_match(a.root, b.root)
+        w = wilds(term_a)
+        if len(matches) == len(w):
+            return matches
+        else:
+            return False
+
+    @staticmethod
+    def _possible_match(node_a, node_b):
+        '''
+        Returns arry that contains wild char matches if the trees match and
+        returns False, if there is a mismatch.
+        '''
         wilds = []
 
         # match
@@ -165,14 +184,14 @@ class Tree(object):
             # continue if both have sons
 
             if node_a.has_left() and node_b.has_left():
-                match = Tree.possible_match(node_a.left, node_b.left)
+                match = Tree._possible_match(node_a.left, node_b.left)
                 if match:
                     wilds += match
             elif node_a.has_left() or node_b.has_left():
                 return False
 
             if node_a.has_right() and node_b.has_right():
-                match = Tree.possible_match(node_a.right, node_b.right)
+                match = Tree._possible_match(node_a.right, node_b.right)
                 if match:
                     wilds += match
             elif node_a.has_right() or node_b.has_right():

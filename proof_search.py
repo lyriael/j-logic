@@ -1,5 +1,7 @@
 from formula import Formula
 from tree import Tree
+from helper import config_dict
+from helper import init_dict
 
 
 class ProofSearch:
@@ -19,13 +21,57 @@ class ProofSearch:
             big_mama[small.formula] = small.get_terms_to_proof()
         return big_mama
 
-    def conquer(self, smalls):
+    def conquer(self, musts):
         '''
-        small: list of tuples
+        musts: list of tuples
         e.g.
-        [('a','F'), ('a', 'X1'), ('b', '(X2->F)']
+        [('a','F'), ('a', 'X1'), ('b', '(X2->F))']
         all those tuples must be found in cs.
+        This method should only be used on reduced formulas!
         '''
-        wilds = {}
+        # init key list
+        #todo
+
+    def get_configurations(self, term):
+        '''
+        Expects only term that contain wild char (e.g. X3).
+
+        configs example:
+
+                1       2       3       ...     for i in cs[const].
+        X1: [   ''  ,   'G' ,   'H'  ,  ... ]
+        X2: [   ''  ,   'A' ,   'b:B',  ... ]
+
+        '''
+        const = term[0]
+        orig_formula = term[1]
+        cs = self._cs[const]
+        configs = config_dict(term, len(cs))
+
+        i = 0
+        for cs_formula in cs:
+            match = Tree.possible_match(orig_formula, cs_formula)
+            if isinstance(match, list):
+                for x in match:
+                    configs[x[0]][i] = x[1]
+            i += 1
+        return configs
+
+    @staticmethod
+    def merge_configurations(all_configs):
+        # get a list of a occuring Xs
+        wilds = []
+        for c in all_configs:
+            wilds += c.keys()
+        wilds = list(set(wilds))
+
+        # init returning config
+        merged_config = init_dict(wilds, len(all_configs[wilds[0]]))
+
+
+
+
+
+
 
 
