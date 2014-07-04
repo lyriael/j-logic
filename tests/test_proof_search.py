@@ -22,7 +22,13 @@ class Tests(unittest.TestCase):
         terms_to_match = ps.divide()['(((a*b)*(!c)):(c:F))']
         self.assertListEqual([('a', '(X3->((c:X2)->(c:F)))'), ('b', 'X3'), ('c', 'X2')], terms_to_match)
 
+    #todo remove
     def test_get_configurations(self):
         ps = ProofSearch({'a': ['(G->H)', '(A->(G->F))', '((b:B)->(H->F))', '((H->F)->(G->F))']}, '')
         term = ('a', '(X2->(X1->F))')
         self.assertDictEqual({'X1': ['', 'G', 'H', 'G'], 'X2': ['', 'A', '(b:B)', '(H->F)']}, ps.get_configurations(term))
+
+    def test_get_other_configurations(self):
+        ps = ProofSearch({'a': ['(A->(A->F))', '((b:B)->A)', 'B', '(C->(A->F))', '((b:B)->(B->F))']}, '')
+        term = ('a', '(X2->(X1->F))')
+        print(ps.get_other_configurations(term, 6))

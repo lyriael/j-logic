@@ -161,12 +161,17 @@ class Tree(object):
     def possible_match(term_a, term_b):
         '''
         Wrapper to make handling easier (and correct!)
+
+        Example for return array:
+
+        [('X3', '((a*b):Z)'), ('X2', 'Y')]
         '''
         a = Tree(term_a)
         b = Tree(term_b)
         matches = Tree._possible_match(a.root, b.root)
-        w = wilds(term_a)
-        if len(matches) == len(w):
+        x_s = wilds(term_a)
+
+        if isinstance(matches, list) and len(matches) == len(x_s):
             return matches
         else:
             return False
@@ -174,7 +179,7 @@ class Tree(object):
     @staticmethod
     def _possible_match(node_a, node_b):
         '''
-        Returns arry that contains wild char matches if the trees match and
+        Returns array that contains wild char matches if the trees match and
         returns False, if there is a mismatch.
         '''
         wilds = []

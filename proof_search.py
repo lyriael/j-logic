@@ -33,7 +33,10 @@ class ProofSearch:
         #todo
 
     def get_configurations(self, term):
+        #todo: remove
         '''
+        This should not be used, since I like the other matrix better.
+
         Expects only term that contain wild char (e.g. X3).
 
         configs example:
@@ -57,6 +60,44 @@ class ProofSearch:
             i += 1
         return configs
 
+    def get_other_configurations(self, term, x_size):
+        '''
+        Returned are all Tuples that match term to the corresponding in cs.
+
+        x_size = 5
+        len(cs) = 3
+
+                    j
+                X1  X2  X3  X4  X5
+            [[  A,  A,  -,  -,  -],
+            [   A,  C,  -,  -,  -],
+         i  [   B, b:B, -,  -,  -]]
+
+        It might be, that some X's place is never used, but that's ok.
+        '''
+        const = term[0]
+        orig_formula = term[1]
+        cs = self._cs[const]
+
+        # init matrix of needed size
+        configs = [['' for i in range(x_size)] for j in range(len(cs))]
+
+        # iterate through all entries in cs for given constant of term.
+        i = 0
+        for cs_formula in cs:
+            match = Tree.possible_match(orig_formula, cs_formula)
+            if isinstance(match, list):
+                for x in match:
+                    j = int(x[0][1:])-1
+                    configs[i][j] = x[1]
+            i += 1
+
+        for item in configs[:]:
+            if item == ['']*x_size:
+                configs.remove(item)
+        return configs
+
+
     @staticmethod
     def merge_configurations(all_configs):
         # get a list of a occuring Xs
@@ -66,7 +107,7 @@ class ProofSearch:
         wilds = list(set(wilds))
 
         # init returning config
-        merged_config = init_dict(wilds, len(all_configs[wilds[0]]))
+        merged_config = init_dict(wilds, 0)
 
 
 
