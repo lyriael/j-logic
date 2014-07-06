@@ -22,13 +22,36 @@ class Tests(unittest.TestCase):
         terms_to_match = ps.divide()['(((a*b)*(!c)):(c:F))']
         self.assertListEqual([('a', '(X3->((c:X2)->(c:F)))'), ('b', 'X3'), ('c', 'X2')], terms_to_match)
 
-    #todo remove
-    def test_get_configurations(self):
-        ps = ProofSearch({'a': ['(G->H)', '(A->(G->F))', '((b:B)->(H->F))', '((H->F)->(G->F))']}, '')
-        term = ('a', '(X2->(X1->F))')
-        self.assertDictEqual({'X1': ['', 'G', 'H', 'G'], 'X2': ['', 'A', '(b:B)', '(H->F)']}, ps.get_configurations(term))
-
-    def test_get_other_configurations(self):
+    def test_get_configuration(self):
         ps = ProofSearch({'a': ['(A->(A->F))', '((b:B)->A)', 'B', '(C->(A->F))', '((b:B)->(B->F))']}, '')
         term = ('a', '(X2->(X1->F))')
-        print(ps.get_other_configurations(term, 6))
+        self.assertListEqual([['A', 'A', '', '', '', ''], ['A', 'C', '', '', '', ''], ['B', '(b:B)', '', '', '', '']],
+                             ps.get_configuration(term, 6)[1])
+
+    def test_configuration_to_table(self):
+        ps = ProofSearch({'a': ['(A->(A->F))', '((b:B)->A)', 'B', '(C->(A->F))', '((b:B)->(B->F))'],
+                          'b': ['A', 'B', '(b:B)', '(A->A)', '(C->B)'],
+                          'c': ['(B->B)', '(A->A)', '(A->B)']}, '')
+        m = [('a', '(X2->(X1->F))'), ('a', '((b:X5)->X2)'),
+             ('a', 'X6'), ('b', 'X5'), ('b', '(X3->X1)'), ('c', '(X6->X1)')]
+        self.assertListEqual(['a', [['A', 'A', '', '', '', ''],
+                                    ['A', 'C', '', '', '', ''],
+                                    ['B', '(b:B)', '', '', '', '']],
+                              'a', [['', 'A', '', '', 'B', ''],
+                                    ['', '(B->F)', '', '', 'B', '']],
+                              'a', [['', '', '', '', '', '(A->(A->F))'],
+                                    ['', '', '', '', '', '((b:B)->A)'],
+                                    ['', '', '', '', '', 'B'],
+                                    ['', '', '', '', '', '(C->(A->F))'],
+                                    ['', '', '', '', '', '((b:B)->(B->F))']],
+                              'b', [['', '', '', '', 'A', ''],
+                                    ['', '', '', '', 'B', ''],
+                                    ['', '', '', '', '(b:B)', ''],
+                                    ['', '', '', '', '(A->A)', ''],
+                                    ['', '', '', '', '(C->B)', '']],
+                              'b', [['A', '', 'A', '', '', ''],
+                                    ['B', '', 'C', '', '', '']],
+                              'c', [['B', '', '', '', '', 'B'],
+                                    ['A', '', '', '', '', 'A'],
+                                    ['B', '', '', '', '', 'A']]]
+                             , ps.configurations_to_table(m))

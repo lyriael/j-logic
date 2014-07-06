@@ -19,6 +19,18 @@ def parse(string):
     return l
 
 
+def size(musts):
+    '''
+    Takes an list of tuples as input and
+    searches for to highest occurring X..
+    '''
+    all_xs = []
+    for term in musts:
+        all_xs += wilds(term[1])
+    all_xs = sorted(list(set(all_xs)))
+    return sorted(map(lambda x: int(x[1:]), all_xs)).pop()
+
+
 def replace(consts, swaps):
     new_consts = []
     for term in consts:
@@ -34,10 +46,16 @@ def config_dict(term, size):
 
 
 def unique_wilds(term):
+    '''
+    List of all different occurring 'Xs'.
+    '''
     return sorted(list(set(wilds(term))))
 
 
 def wilds(term):
+    '''
+    List of all occurring 'Xs'.
+    '''
     return sorted(findall(r'X\d+', term))
 
 

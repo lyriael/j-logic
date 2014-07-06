@@ -1,7 +1,7 @@
 from formula import Formula
 from tree import Tree
-from helper import config_dict
 from helper import init_dict
+from helper import size
 
 
 class ProofSearch:
@@ -21,48 +21,33 @@ class ProofSearch:
             big_mama[small.formula] = small.get_terms_to_proof()
         return big_mama
 
-    def conquer(self, musts):
+    def configurations_to_table(self, musts):
         '''
         musts: list of tuples
         e.g.
         [('a','F'), ('a', 'X1'), ('b', '(X2->F))']
         all those tuples must be found in cs.
         This method should only be used on reduced formulas!
+
+        Look at tests to see return example.
         '''
-        # init key list
-        #todo
 
-    def get_configurations(self, term):
-        #todo: remove
+        # collect all configurations
+        all_configs = []
+        x = size(musts)
+        for term in musts:
+            all_configs += ProofSearch.get_configuration(self, term, x)
+        return all_configs
+
+    def get_configuration(self, term, x_size):
         '''
-        This should not be used, since I like the other matrix better.
+        Returned is a tuple with the constant at first place and
+        all lists that match term to the corresponding in cs in the second place.
 
-        Expects only term that contain wild char (e.g. X3).
+        Example:
 
-        configs example:
-
-                1       2       3       ...     for i in cs[const].
-        X1: [   ''  ,   'G' ,   'H'  ,  ... ]
-        X2: [   ''  ,   'A' ,   'b:B',  ... ]
-
-        '''
-        const = term[0]
-        orig_formula = term[1]
-        cs = self._cs[const]
-        configs = config_dict(term, len(cs))
-
-        i = 0
-        for cs_formula in cs:
-            match = Tree.possible_match(orig_formula, cs_formula)
-            if isinstance(match, list):
-                for x in match:
-                    configs[x[0]][i] = x[1]
-            i += 1
-        return configs
-
-    def get_other_configurations(self, term, x_size):
-        '''
-        Returned are all Tuples that match term to the corresponding in cs.
+        constant: 'a'
+        Matrix:
 
         x_size = 5
         len(cs) = 3
@@ -73,13 +58,15 @@ class ProofSearch:
             [   A,  C,  -,  -,  -],
          i  [   B, b:B, -,  -,  -]]
 
+         return ('a', M)
+
         It might be, that some X's place is never used, but that's ok.
         '''
         const = term[0]
         orig_formula = term[1]
         cs = self._cs[const]
 
-        # init matrix of needed size
+        # init empty matrix of needed size
         configs = [['' for i in range(x_size)] for j in range(len(cs))]
 
         # iterate through all entries in cs for given constant of term.
@@ -95,11 +82,14 @@ class ProofSearch:
         for item in configs[:]:
             if item == ['']*x_size:
                 configs.remove(item)
-        return configs
+        # make a tuple
+        t = (const, configs)
+        return t
 
 
     @staticmethod
     def merge_configurations(all_configs):
+        #todo
         # get a list of a occuring Xs
         wilds = []
         for c in all_configs:
