@@ -2,6 +2,8 @@ from formula import Formula
 from tree import Tree
 from helper import init_dict
 from helper import size
+from helper import merge
+
 
 
 class ProofSearch:
@@ -21,6 +23,34 @@ class ProofSearch:
             big_mama[small.formula] = small.get_terms_to_proof()
         return big_mama
 
+    def merge_configurations(self, musts):
+        # list of tuples, already sorted by size.
+        table = self.configurations_to_table(musts)
+
+        matches = [['']*size(musts)]
+        temp = []
+
+        # each tuple in table
+        for tup in table:
+            print(tup[0])
+            terms = tup[1]
+
+            if len(matches) > 0:
+                for candidate in matches:
+                    for term in terms:
+                        m = merge(term, candidate)
+                        if m:
+                            temp.append(m)
+                matches = list(temp)
+                temp = []
+                print('matches')
+                print(matches)
+                print('----')
+            else:
+                #todo: this exit is not taken!!
+                return None
+        return matches
+
     def configurations_to_table(self, musts):
         '''
         musts: list of tuples
@@ -36,8 +66,8 @@ class ProofSearch:
         all_configs = []
         x = size(musts)
         for term in musts:
-            all_configs += ProofSearch.get_configuration(self, term, x)
-        return all_configs
+            all_configs.append(ProofSearch.get_configuration(self, term, x))
+        return sorted(all_configs, key=lambda t: len(t[1]))
 
     def get_configuration(self, term, x_size):
         '''
@@ -87,17 +117,7 @@ class ProofSearch:
         return t
 
 
-    @staticmethod
-    def merge_configurations(all_configs):
-        #todo
-        # get a list of a occuring Xs
-        wilds = []
-        for c in all_configs:
-            wilds += c.keys()
-        wilds = list(set(wilds))
 
-        # init returning config
-        merged_config = init_dict(wilds, 0)
 
 
 

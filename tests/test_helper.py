@@ -18,3 +18,10 @@ class Tests(unittest.TestCase):
         m = [('a', '(X2->(X1->F))'), ('a', '((b:X5)->X2)'),
              ('a', 'X6'), ('b', 'X5'), ('b', '(X3->X1)'), ('c', 'X6->X1')]
         self.assertEqual(6, size(m))
+
+    def test_match1(self):
+        self.assertListEqual(['A', 'A', '', '', 'B', ''],
+                             merge(['A', 'A', '', '', '', ''], ['', 'A', '', '', 'B', '', '']))
+
+    def test_match2(self):
+        self.assertIsNone(merge(['B', '(b:B)', '', '', '', ''], ['', '(B->F)', '', '', 'B', '']))

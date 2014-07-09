@@ -31,6 +31,23 @@ def size(musts):
     return sorted(map(lambda x: int(x[1:]), all_xs)).pop()
 
 
+def merge(a, b):
+    '''
+    compares to lists, if they are mergable return the merge, else return None.
+    '''
+    s = len(a)
+    m = ['']*s
+    for i in range(s-1):
+        if a[i] == b[i]:
+            m[i] = a[i]
+        elif a[i] == '':
+            m[i] = b[i]
+        elif b[i] == '':
+            m[i] = a[i]
+        else:
+            return None
+    return m
+
 def replace(consts, swaps):
     new_consts = []
     for term in consts:
