@@ -160,6 +160,8 @@ class Tree(object):
     @staticmethod
     def possible_match(term_a, term_b):
         '''
+        !! DEPRICATED! -> @mismatch_search
+
         Wrapper to make handling easier (and correct!)
 
         Example for return array:
@@ -181,13 +183,14 @@ class Tree(object):
         '''
         Returns array that contains wild char matches if the trees match and
         returns False, if there is a mismatch.
+
+        !Only node_a should contain any wildchars (Xs)
         '''
         wilds = []
 
         # match
         if node_a.token == node_b.token:
-            # continue if both have sons
-
+            # recursion if both have sons
             if node_a.has_left() and node_b.has_left():
                 match = Tree._possible_match(node_a.left, node_b.left)
                 if match:
@@ -201,13 +204,69 @@ class Tree(object):
                     wilds += match
             elif node_a.has_right() or node_b.has_right():
                 return False
-        # wild char
+
+        # wild char match
         elif node_a.token[0] == 'X':
             wilds.append((node_a.token, node_b.to_s()))
-        # no match and no wild char
+
+        # no match at all
         else:
             return False
         return wilds
 
+    @staticmethod
+    def _mismatch_search(node_a, node_b):
+        '''
 
+        :param term_a: may contain wilds such as X1
+        :param term_b: must not contain any wilds, only constants
+        :return:
+        '''
+        mismatch = []
+        wilds = []
+        if str(node_a) == str(node_b):
+            print('should be here')
+            pass
+        else:
+            result = node_a.compare_to(node_b)
+            if result == 'no match':
+                mismatch.append(True)
+            elif result == 'wild match':
+                wilds.append((node_a.token, node_b.to_s()))
+            # call recursion
+            elif result == 'exact match':
+                if node_a.has_left() and node_b.has_left():
+                    mismatch_tmp, wilds_tmp = Tree._mismatch_search(node_a.left, node_b.left)
+                    wilds += wilds_tmp
+                    mismatch += mismatch_tmp
+                elif node_a.has_left() or node_b.has_left():
+                    mismatch.append(True)
+                else:
+                    # neither has left son
+                    pass
 
+                if node_a.has_right() and node_b.has_right():
+                    mismatch_tmp, wilds_tmp = Tree._mismatch_search(node_a.right, node_b.right)
+                    wilds += wilds_tmp
+                    mismatch += mismatch_tmp
+                elif node_a.has_right() or node_b.has_right():
+                    mismatch.append(True)
+                else:
+                    # neither has a right son
+                    pass
+        return mismatch, wilds
+
+    @staticmethod
+    def mismatch_search(term_a, term_b):
+        '''
+        wrapper for _mismatch_search
+
+        :param term_a:
+        :param term_b:
+        :return:
+        '''
+        mismatch, wilds = Tree._mismatch_search(Tree(term_a).root, Tree(term_b).root)
+        if len(mismatch)>0:
+            return False
+        else:
+            return wilds

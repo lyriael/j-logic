@@ -37,7 +37,7 @@ def merge(a, b):
     '''
     s = len(a)
     m = ['']*s
-    for i in range(s-1):
+    for i in range(s):
         if a[i] == b[i]:
             m[i] = a[i]
         elif a[i] == '':

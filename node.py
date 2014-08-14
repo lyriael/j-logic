@@ -92,3 +92,16 @@ class Node(object):
 
     def to_s(self):
         return self._inorder_string(self)
+
+    def compare_to(self, other_node):
+        '''
+        String comparement
+        :param other_node:
+        :return:
+        '''
+        if self.token[0] == 'X':
+            return 'wild match'
+        elif self.token == other_node.token:
+            return 'exact match'
+        else:
+            return 'no match'

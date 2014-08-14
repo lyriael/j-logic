@@ -53,6 +53,8 @@ class Tests(unittest.TestCase):
         self.assertEqual('(((!(((!a)+b)*(c*(!d))))+(e*(f+g))):F)', monster.to_s())
         yig = Tree('(((!(a*b))+(c*((!d)+e))):((a*b):F))')
         self.assertEqual('(((!(a*b))+(c*((!d)+e))):((a*b):F))', yig.to_s())
+        tree = Tree('((((a*(!b))+a)*(b*a)):F)')
+        self.assertEqual('((((a*(!b))+a)*(b*a)):F)', tree.to_s())
 
     def test_subtree(self):
         tree = Tree('((a*(!(b+c))):F)')
@@ -127,45 +129,82 @@ class Tests(unittest.TestCase):
         t.right_split(n)
         self.assertEqual('(e*g)', t.to_s())
 
-    def test_possible_match(self):
-        a = Tree('(X3->((c:X2)->(c:F)))')
-        self.assertEqual('(X3->((c:X2)->(c:F)))', a.to_s())
-        b = Tree('(A->((c:A)->(c:F)))')
-        self.assertEqual('(A->((c:A)->(c:F)))', b.to_s())
-        match = Tree._possible_match(a.root, b.root)
-        self.assertListEqual([('X3', 'A'), ('X2', 'A')], match)
+    # def test_possible_match(self):
+    #     a = Tree('(X3->((c:X2)->(c:F)))')
+    #     self.assertEqual('(X3->((c:X2)->(c:F)))', a.to_s())
+    #     b = Tree('(A->((c:A)->(c:F)))')
+    #     self.assertEqual('(A->((c:A)->(c:F)))', b.to_s())
+    #     match = Tree._possible_match(a.root, b.root)
+    #     self.assertListEqual([('X3', 'A'), ('X2', 'A')], match)
+    #
+    # def test_possible_match2(self):
+    #     a = Tree('(X3->((c:X2)->(c:F)))')
+    #     b = Tree('(A->((c:B)->(c:F)))')
+    #     match = Tree._possible_match(a.root, b.root)
+    #     self.assertListEqual([('X3', 'A'), ('X2', 'B')], match)
+    #
+    # def test_possible_match3(self):
+    #     a = Tree('(A->((c:B)->(c:F)))')
+    #     b = Tree('(A->((c:Z)->(c:F)))')
+    #     match = Tree._possible_match(a.root, b.root)
+    #     self.assertFalse(match)
+    #
+    # def test_possible_match4(self):
+    #     a = Tree('(A->((c:B)->(c:F)))')
+    #     b = Tree('(A->((c:B)->(c:F)))')
+    #     match = Tree._possible_match(a.root, b.root)
+    #     self.assertListEqual([], match)
+    #
+    # def test_possible_match5(self):
+    #     a = Tree('(X3->((c:X2)->(c:F)))')
+    #     b = Tree('(((a*b):Z)->((c:Y)->(c:F)))')
+    #     match = Tree._possible_match(a.root, b.root)
+    #     self.assertListEqual([('X3', '((a*b):Z)'), ('X2', 'Y')], match)
 
-    def test_possible_match2(self):
-        a = Tree('(X3->((c:X2)->(c:F)))')
-        b = Tree('(A->((c:B)->(c:F)))')
-        match = Tree._possible_match(a.root, b.root)
-        self.assertListEqual([('X3', 'A'), ('X2', 'B')], match)
+    # def test_possible_match6(self):
+    #     print('===')
+    #     a = Tree('(X3->((c:X2)->(c:F)))')
+    #     b = Tree('(A->((c:B)->(G)))')
+    #     match = Tree._possible_match(a.root, b.root)
+    #     self.assertFalse(match)
+    #     print('===')
+    #
+    # def test_possible_match7(self):
+    #     match = Tree.possible_match('(X2->(X1->F))', '(G->H)')
+    #     self.assertFalse(match)
+    #
+    # def test_possible_match8(self):
+    #     a = Tree('(B->F)')
+    #     b = Tree('(A->T)')
+    #     match = Tree._possible_match(a.root, b.root)
+    #     self.assertFalse(match)
+    #
+    # def test_possible_match9(self):
+    #     a = Tree('(X1->T)')
+    #     b = Tree('(A->B)')
+    #     match = Tree._possible_match(a.root, b.root)
+    #     self.assertFalse(match)
+    #
+    # # def test_possible_match9(self):
+    # #     a = Tree('(X1->F)')
+    # #     b = Tree('(A->T)')
+    # #     match = Tree._possible_match(a.root, b.root)
+    # #     self.assertFalse(match)
+    #
 
-    def test_possible_match3(self):
-        a = Tree('(A->((c:B)->(c:F)))')
-        b = Tree('(A->((c:Z)->(c:F)))')
-        match = Tree._possible_match(a.root, b.root)
-        self.assertFalse(match)
-
-    def test_possible_match4(self):
-        a = Tree('(A->((c:B)->(c:F)))')
-        b = Tree('(A->((c:B)->(c:F)))')
-        match = Tree._possible_match(a.root, b.root)
-        self.assertListEqual([], match)
-
-    def test_possible_match5(self):
-        a = Tree('(X3->((c:X2)->(c:F)))')
-        b = Tree('(((a*b):Z)->((c:Y)->(c:F)))')
-        match = Tree._possible_match(a.root, b.root)
-        self.assertListEqual([('X3', '((a*b):Z)'), ('X2', 'Y')], match)
-
-    def test_possible_match6(self):
-        a = Tree('(X3->((c:X2)->(c:F)))')
-        b = Tree('(X3->((c:X2)->(G)))')
-        match = Tree._possible_match(a.root, b.root)
-        self.assertFalse(match)
-
-    def test_possible_match7(self):
-        match = Tree.possible_match('(X2->(X1->F))', '(G->H)')
-        self.assertFalse(match)
-
+    def test_mismatch_search1(self):
+        a = Tree('(A->B)')
+        b = Tree('(A->C)')
+        x = Tree('(X1->B)')
+        mismatch, wilds = Tree._mismatch_search(a.root, a.root)
+        self.assertListEqual([], mismatch)
+        self.assertListEqual([], wilds)
+        mismatch, wilds = Tree._mismatch_search(a.root, b.root)
+        self.assertTrue(mismatch[0])
+        self.assertListEqual([], wilds)
+        mismatch, wilds = Tree._mismatch_search(x.root, a.root)
+        self.assertListEqual([], mismatch)
+        self.assertListEqual([('X1', 'A')], wilds)
+        mismatch, wilds = Tree._mismatch_search(x.root, b.root)
+        self.assertTrue(mismatch[0])
+        self.assertListEqual([('X1', 'A')], wilds)

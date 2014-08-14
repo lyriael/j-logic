@@ -1,6 +1,5 @@
 from formula import Formula
 from tree import Tree
-from helper import init_dict
 from helper import size
 from helper import merge
 
@@ -16,6 +15,19 @@ class ProofSearch:
         self._formula = Formula(formula)
 
     def divide(self):
+        '''
+        Does two things:
+
+        1. splits for + and eliminates bad placed !
+        2. returns 'musts'
+
+        For the further proof search one entry of the returning dict must be satisfiable.
+        For an entry to be satisfiable, all tuples must be satisfiable.
+
+        Example: '(((c*(a*b))+d):F)'
+        -> {'(d:F)':            [('d', 'F')],
+            '((c*(a*b)):F)':    [('a', '(X2->X1)'), ('b', 'X2'), ('c', '(X1->F)')]}
+        '''
         # of those tiny-formulas it is enough to prove just one
         big_mama = {}
         for small in self._formula.to_pieces():
@@ -23,37 +35,37 @@ class ProofSearch:
             big_mama[small.formula] = small.get_terms_to_proof()
         return big_mama
 
-    def merge_configurations(self, musts):
-        # list of tuples, already sorted by size.
-        table = self.configurations_to_table(musts)
-
-        matches = [['']*size(musts)]
+    def configuration_merge(self, table):
+        #todo: get number of variables in a nicer way!
+        size = len(table[0][1][0])
+        match = [['']*size]
         temp = []
 
-        # each tuple in table
-        for tup in table:
-            print(tup[0])
-            terms = tup[1]
+        for look_up in table:
+            print('++++')
+            print(look_up[0])
+            samples = look_up[1]
+            for candidate in samples:
+                for condition in match:
+                    print('compare ' + str(condition) + ' with ' + str(candidate))
+                    m = merge(condition, candidate)
+                    if m is None:
+                        pass
+                    else:
+                        print('add ' + str(m) + ' to merge.')
+                        temp.append(m)
+                        at_least_one = True
+            match = temp
+            print('---')
+            print(match)
+            temp = []
+        return match
 
-            if len(matches) > 0:
-                for candidate in matches:
-                    for term in terms:
-                        m = merge(term, candidate)
-                        if m:
-                            temp.append(m)
-                matches = list(temp)
-                temp = []
-                print('matches')
-                print(matches)
-                print('----')
-            else:
-                #todo: this exit is not taken!!
-                return None
-        return matches
-
-    def configurations_to_table(self, musts):
+    def configuration_table(self, musts):
         '''
         musts: list of tuples
+        this method is part of merge_configuration, it doesn't need to be called separately.
+
         e.g.
         [('a','F'), ('a', 'X1'), ('b', '(X2->F))']
         all those tuples must be found in cs.
@@ -71,6 +83,8 @@ class ProofSearch:
 
     def get_configuration(self, term, x_size):
         '''
+        private method!!
+
         Returned is a tuple with the constant at first place and
         all lists that match term to the corresponding in cs in the second place.
 
@@ -103,6 +117,7 @@ class ProofSearch:
         i = 0
         for cs_formula in cs:
             match = Tree.possible_match(orig_formula, cs_formula)
+            print(match)
             if isinstance(match, list):
                 for x in match:
                     j = int(x[0][1:])-1

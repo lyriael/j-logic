@@ -163,3 +163,15 @@ class Tests(unittest.TestCase):
         self.assertEqual(b.parent, c)
         self.assertEqual(b.sibling, d)
         self.assertEqual(d.sibling, b)
+
+    def test_compare_to(self):
+        a, b, x = Node(), Node(), Node()
+        a.token = 'A'
+        b.token = 'B'
+        x.token = 'X4'
+
+        self.assertEqual('exact match', a.compare_to(a))
+        self.assertEqual('no match', a.compare_to(b))
+        self.assertEqual('no match', a.compare_to(x))
+        self.assertEqual('wild match', x.compare_to(a))
+        self.assertEqual('wild match', x.compare_to(x))

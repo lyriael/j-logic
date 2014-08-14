@@ -25,3 +25,6 @@ class Tests(unittest.TestCase):
 
     def test_match2(self):
         self.assertIsNone(merge(['B', '(b:B)', '', '', '', ''], ['', '(B->F)', '', '', 'B', '']))
+
+    def test_match3(self):
+        self.assertListEqual(['', 'S'], merge(['', 'S'], ['', '']))

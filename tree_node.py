@@ -212,10 +212,10 @@ class Node(object):
 
     def get_left_split(self):
         f1 = self.deep_copy()
-        print(str(f1.is_root()))
+        # print(str(f1.is_root()))
         f1._parent._left = f1.left()
         f1._left._parent = f1.parent()
-        print(str(f1))
+        # print(str(f1))
         return f1
 
     def get_right_split(self):
