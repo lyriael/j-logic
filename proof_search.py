@@ -15,6 +15,7 @@ class ProofSearch:
         self._formula = Formula(formula)
 
     def divide(self):
+        # todo: move divide to formula?
         '''
         Does two things:
 
@@ -36,14 +37,21 @@ class ProofSearch:
         return big_mama
 
     def configuration_merge(self, table):
+        '''
+        Puts all possible solutions from configuration_table together.
+        The result are the possible solutions.
+
+        :param table:
+        :return:
+        '''
         #todo: get number of variables in a nicer way!
+        print(table)
         size = len(table[0][1][0])
+        print(size)
         match = [['']*size]
         temp = []
 
         for look_up in table:
-            print('++++')
-            print(look_up[0])
             samples = look_up[1]
             for candidate in samples:
                 for condition in match:
@@ -52,22 +60,19 @@ class ProofSearch:
                     if m is None:
                         pass
                     else:
-                        print('add ' + str(m) + ' to merge.')
+                        #print('add ' + str(m) + ' to merge.')
                         temp.append(m)
-                        at_least_one = True
             match = temp
-            print('---')
-            print(match)
             temp = []
         return match
 
     def configuration_table(self, musts):
         '''
         musts: list of tuples
-        this method is part of merge_configuration, it doesn't need to be called separately.
+        the output of this method is used in configuration_merge.
 
         e.g.
-        [('a','F'), ('a', 'X1'), ('b', '(X2->F))']
+        [('a',['F', 'G']), ('a', ['X1']), ('b', ['(X2->F)])']
         all those tuples must be found in cs.
         This method should only be used on reduced formulas!
 
@@ -90,6 +95,7 @@ class ProofSearch:
 
         Example:
 
+        term: ('a', '(X1->(X2->F))')
         constant: 'a'
         Matrix:
 
@@ -108,17 +114,24 @@ class ProofSearch:
         '''
         const = term[0]
         orig_formula = term[1]
-        cs = self._cs[const]
+        cs = self._cs.get(const, [])
+
+        # If cs contains no entry for 'const'.
+        if len(cs) == 0:
+            no_entries = (const, [[]])
+            return no_entries
 
         # init empty matrix of needed size
+        # e.g.: x_size = 5, len(cs) = 3
+        # >> configs = [['', '', '', '', ''], ['', '', '', '', ''], ['', '', '', '', '']]
         configs = [['' for i in range(x_size)] for j in range(len(cs))]
 
         # iterate through all entries in cs for given constant of term.
         i = 0
         for cs_formula in cs:
-            match = Tree.possible_match(orig_formula, cs_formula)
-            print(match)
+            match = Tree.mismatch_search(orig_formula, cs_formula)
             if isinstance(match, list):
+                # if there is an exact match, match is just empty and the next loop will not iterate.
                 for x in match:
                     j = int(x[0][1:])-1
                     configs[i][j] = x[1]

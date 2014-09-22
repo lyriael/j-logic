@@ -57,6 +57,13 @@ class Tree(object):
             nodes += self.preorder_nodes(node.right)
         return nodes
 
+    def first(self, token):
+        nodes = self.preorder_nodes(self.root)
+        for node in nodes:
+            if node.token == token:
+                return node
+        return None
+
     def leaves(self, node):
         leaves = []
         if node.token.isalpha():
@@ -76,13 +83,6 @@ class Tree(object):
 
     def deep_copy(self):
         return Tree(self._inorder_string(self.root))
-
-    def first(self, token):
-        nodes = self.preorder_nodes(self.root)
-        for node in nodes:
-            if node.token == token:
-                return node
-        return None
 
     def left_split(self, plus_node):
         '''
@@ -125,7 +125,7 @@ class Tree(object):
     def proof_terms(self):
         '''
         This method expects the formula to be splited and simplified already,
-        sucht that only '*', '!' and const are nodes.
+        such that only '*', '!' and const are nodes.
 
         It returns a List with tuples, where the first entry is the proof constant
         and the second the other part (thingy after ':'...).
