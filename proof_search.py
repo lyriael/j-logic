@@ -31,9 +31,9 @@ class ProofSearch:
         '''
         # of those tiny-formulas it is enough to prove just one
         big_mama = {}
-        for small in self._formula.to_pieces():
+        for small in self._formula.atomize():
             # find how that structre looks in test_formula#test_to_pieces_and_get_terms_to_proof
-            big_mama[small.formula] = small.get_terms_to_proof()
+            big_mama[small.formula] = small.look_ups()
         return big_mama
 
     def configuration_merge(self, table):

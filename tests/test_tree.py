@@ -103,20 +103,20 @@ class Tests(unittest.TestCase):
 
     def test_proof_terms1(self):
         t = Tree('((a*b):F)')
-        c = t.proof_terms()
+        c = t.musts()
         self.assertListEqual([('a', '(X1->F)'), ('b', 'X1')], c)
         t = Tree('(((a*b)*c):F)')
-        c = t.proof_terms()
+        c = t.musts()
         self.assertListEqual([('a', '(X2->(X1->F))'), ('b', 'X2'), ('c', 'X1')], c)
 
     def test_proof_terms2(self):
         t = Tree('((a*(!b)):F)')
-        c = t.proof_terms()
+        c = t.musts()
         self.assertListEqual([('a', '((b:X2)->F)'), ('b', 'X2')], c)
 
     def test_proof_terms3(self):
         t = Tree('(((a*(b*c))*(!(d*(!e)))):F)')
-        c = t.proof_terms()
+        c = t.musts()
         self.assertListEqual([('a', '(X5->(((d*(!e)):X2)->F))'), ('b', '(X6->X5)'), ('c', 'X6'), ('d', '((e:X4)->X2)'), ('e', 'X4')], c)
 
     def test_left_split(self):

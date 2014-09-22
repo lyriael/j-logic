@@ -122,7 +122,7 @@ class Tree(object):
                 return True
         return False
 
-    def proof_terms(self):
+    def musts(self):
         '''
         This method expects the formula to be splited and simplified already,
         such that only '*', '!' and const are nodes.
@@ -132,14 +132,15 @@ class Tree(object):
 
         THE MAGIC HAPPENS RIGHT HERE
         '''
-        consts = []
-        swaps = []
-        v_count = 1
-        temp = [self]
+        consts = []     # returning container.
+        swaps = []      # contains replacements for Wilds from '!'. => ('X2', '(b:X3)')
+        v_count = 1     # needed for Wilds (X1, X2, ...)
+        temp = [self]   # contains Trees
         while len(temp) > 0:
             f = temp.pop()
             proof_term = f.subtree(f.root.left)
             subformula = f.subtree(f.root.right).to_s()
+
             if len(proof_term.to_s()) == 1: # constant
                 consts.append((proof_term.to_s(), subformula))
             else:

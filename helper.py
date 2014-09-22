@@ -49,6 +49,16 @@ def merge(a, b):
     return m
 
 def replace(consts, swaps):
+    '''
+    :param:
+    swaps: [('X2', '(b:X3)'), ...]
+    Wilds that must be replaces because of '!'
+
+    consts: [('a', ['(X2->(X1->F))]), ...]
+
+    :return:
+    adjusted const => [('a', ['((b:X3)->(X1->F))]), ...]
+    '''
     new_consts = []
     for term in consts:
         tmp = term[1]
