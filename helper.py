@@ -30,7 +30,6 @@ def size(musts):
     all_xs = sorted(list(set(all_xs)))
     return sorted(map(lambda x: int(x[1:]), all_xs)).pop()
 
-
 def merge(a, b):
     '''
     compares to lists, if they are mergable return the merge, else return None.

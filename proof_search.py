@@ -129,7 +129,7 @@ class ProofSearch:
         # iterate through all entries in cs for given constant of term.
         i = 0
         for cs_formula in cs:
-            match = Tree.mismatch_search(orig_formula, cs_formula)
+            match = Tree.match_against(orig_formula, cs_formula)
             if isinstance(match, list):
                 # if there is an exact match, match is just empty and the next loop will not iterate.
                 for x in match:

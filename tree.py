@@ -161,7 +161,7 @@ class Tree(object):
     @staticmethod
     def possible_match(term_a, term_b):
         '''
-        !! DEPRICATED! -> @mismatch_search
+        !! DEPRICATED! -> @mismatch_search -> compare_to
 
         Wrapper to make handling easier (and correct!)
 
@@ -182,6 +182,8 @@ class Tree(object):
     @staticmethod
     def _possible_match(node_a, node_b):
         '''
+        Wrapper, see possible_match
+
         Returns array that contains wild char matches if the trees match and
         returns False, if there is a mismatch.
 
@@ -218,6 +220,7 @@ class Tree(object):
     @staticmethod
     def _mismatch_search(node_a, node_b):
         '''
+        Wrapper for match_against
 
         :param term_a: may contain wilds such as X1
         :param term_b: must not contain any wilds, only constants
@@ -226,10 +229,9 @@ class Tree(object):
         mismatch = []
         wilds = []
         if str(node_a) == str(node_b):
-            print('should be here')
             pass
         else:
-            result = node_a.compare_to(node_b)
+            result = node_a.compare_to_OLD(node_b)
             if result == 'no match':
                 mismatch.append(True)
             elif result == 'wild match':
@@ -258,16 +260,52 @@ class Tree(object):
         return mismatch, wilds
 
     @staticmethod
-    def mismatch_search(term_a, term_b):
+    def match_against(term_a, term_b):
         '''
+        ===DEPRECATED===
+        see 'compare_to'
+        ================
         wrapper for _mismatch_search
 
-        :param term_a:
-        :param term_b:
-        :return:
+        :param term_a: one node of term_a can be a subtree of term_b.
+        :param term_b: a subtree of term_b can be matched to one single node of term_a.
+        :return wilds:
+        List of Tuples, here at first position the collecting node of term_a is, and at second position the
+        corresponding subtree of term_b
+
+        Examples:
+        term_a = (A->B)->C
+        term_b X1->X2
+            => [('X1', '(A->B)'), ('X2', 'C')]
+
+        term_a = (X1->X2)->X3
+        term_b = Y1->Y2
+            => [('Y1', 'X1->X2'), ('Y2', 'X3')]
         '''
         mismatch, wilds = Tree._mismatch_search(Tree(term_a).root, Tree(term_b).root)
         if len(mismatch)>0:
             return False
         else:
             return wilds
+
+    def compare_to(self, other_tree):
+        '''
+        This is a wrapper method for the recursive method in Node that compares the tree structure.
+        self should be the tree that is less deep than 'other_tree', so that wilds (X's, bzw. Y's) are here.
+
+        :param other_tree:      Tree that contains only X's if self contains Y's.
+        :return:
+            True,               For exact match.
+            False,              No possible match.
+            List of tuples,     If there is a wild match (only X's).
+        '''
+        match = self.root._compare_to(other_tree.root)
+        for d in match[:]:
+            if d is False:
+                return False
+            elif d is True:
+                match.remove(d)
+        if len(match) == 0:
+            return True
+        else:
+            return match

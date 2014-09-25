@@ -93,15 +93,45 @@ class Node(object):
     def to_s(self):
         return self._inorder_string(self)
 
-    def compare_to(self, other_node):
+    def compare_to_OLD(self, other_node):
         '''
         String comparement
         :param other_node:
         :return:
         '''
-        if self.token[0] == 'X':
+        if self.token[0] in ['X']:
             return 'wild match'
         elif self.token == other_node.token:
             return 'exact match'
         else:
             return 'no match'
+
+    def _compare_to(self, other_node):
+        '''
+        # TODO
+        :param other_node:
+        :return:
+        '''
+        wilds = []
+        if self.token[0] == 'X':
+            wilds.append({self.token: other_node.to_s()})
+        elif self.token[0] == 'Y':
+            wilds.append(True)
+
+        elif self.token == other_node.token:
+            wilds.append(True)
+            # check if both nodes have children
+            if (bool(self.has_left()) ^ bool(other_node.has_left())) or \
+                    (bool(self.has_right()) ^ bool(other_node.has_right())): # ^ == XOR
+                wilds.append(False)
+            else:
+                if self.has_left() and other_node.has_left():
+                    wilds += self.left._compare_to(other_node.left)
+                if self.has_right() and other_node.has_right():
+                    wilds += self.right._compare_to(other_node.right)
+
+        else: # no match and no wilds
+            wilds.append(False)
+        return wilds
+
+

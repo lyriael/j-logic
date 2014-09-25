@@ -1,5 +1,6 @@
 import unittest
 from node import Node
+from tree import Tree
 
 
 class Tests(unittest.TestCase):
@@ -164,14 +165,26 @@ class Tests(unittest.TestCase):
         self.assertEqual(b.sibling, d)
         self.assertEqual(d.sibling, b)
 
-    def test_compare_to(self):
+    def test_compare_to_OLD(self):
         a, b, x = Node(), Node(), Node()
         a.token = 'A'
         b.token = 'B'
         x.token = 'X4'
 
-        self.assertEqual('exact match', a.compare_to(a))
-        self.assertEqual('no match', a.compare_to(b))
-        self.assertEqual('no match', a.compare_to(x))
-        self.assertEqual('wild match', x.compare_to(a))
-        self.assertEqual('wild match', x.compare_to(x))
+        self.assertEqual('exact match', a.compare_to_OLD(a))
+        self.assertEqual('no match', a.compare_to_OLD(b))
+        self.assertEqual('no match', a.compare_to_OLD(x))
+        self.assertEqual('wild match', x.compare_to_OLD(a))
+        self.assertEqual('wild match', x.compare_to_OLD(x))
+
+    def test__compare_to1(self):
+        a, b, x, y = Node(), Node(), Node(), Node()
+        a.token = 'A'
+        b.token = 'B'
+        x.token = 'X4'
+        y.token = 'Y3'
+        self.assertListEqual(a._compare_to(a), [True])
+        self.assertListEqual(a._compare_to(b), [False])
+        self.assertListEqual(a._compare_to(x), [False])
+        self.assertListEqual(x._compare_to(a), [{'X4': 'A'}])
+
