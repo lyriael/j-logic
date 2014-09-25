@@ -90,3 +90,52 @@ def init_dict(keys, length):
     for k in keys:
         d[k] = ['']*length
     return d
+
+
+def configs_to_table(configs, size):
+    '''
+
+    :param configs: [{'X1':'A', 'X3':'(A->B)'},{'X1':'C', 'X3':'C'},{...}], second return argument of cs, compare_to
+    :param size: highest Xn that occurs for one atomic Formula.
+    :return: table:
+    Example:
+              X1  X2  X3  X4
+        [   [   ,   ,   ,   ],
+            [   ,   ,   ,   ],
+            ...
+            [   ,   ,   ,   ]
+        ]
+    '''
+    # init empty matrix of needed size
+    # e.g.: x_size = 5, len(cs) = 3
+    # >> configs = [['', '', '', '', ''], ['', '', '', '', ''], ['', '', '', '', '']]
+    table = [['' for i in range(size)] for j in range(len(configs))]
+
+    row = 0
+    for line in configs:
+        for x in line:
+            position = int(x[1:]) - 1
+            term = line[x]
+            table[row][position] = term
+        row += 1
+    return table
+
+
+def merge_two_tables(first, second):
+    '''
+
+    :param first:
+    :param second:
+    :return:
+    '''
+    # init empty match
+    match = [['']*len(first[0])]
+    # holds all matches
+    merged_tables = []
+    for condition in first:
+        for candidate in second:
+            m = merge(condition, candidate)
+            if m:
+                merged_tables.append(m)
+    return merged_tables
+

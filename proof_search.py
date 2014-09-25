@@ -1,7 +1,9 @@
 from formula import Formula
+from cs import CS
 from tree import Tree
 from helper import size
 from helper import merge
+from helper import configs_to_table
 
 
 
@@ -11,8 +13,9 @@ class ProofSearch:
         '''
         expect a string as formula
         '''
-        self._cs = cs
+        self._cs = CS(cs)
         self._formula = Formula(formula)
+        self._atomics_and_musts = {}
 
     def divide(self):
         # todo: move divide to formula?
@@ -30,14 +33,53 @@ class ProofSearch:
             '((c*(a*b)):F)':    [('a', '(X2->X1)'), ('b', 'X2'), ('c', '(X1->F)')]}
         '''
         # of those tiny-formulas it is enough to prove just one
-        big_mama = {}
+        atomics_with_musts = {}
         for small in self._formula.atomize():
             # find how that structre looks in test_formula#test_to_pieces_and_get_terms_to_proof
-            big_mama[small.formula] = small.look_ups()
-        return big_mama
+            atomics_with_musts[small.formula] = small.get_musts()
+        self._atomics_and_musts = atomics_with_musts
+        return atomics_with_musts
+
+    def conquer(self):
+        '''
+        Should only be called if divide was called before.
+
+        :return:
+        '''
+        for atomic_formula in self._atomics_and_musts:
+            # procedure for each possible option
+            max_x = size(atomic_formula)
+            tables = []
+            for proof_constant_condition in atomic_formula:
+                proof_constant = proof_constant_condition[0]
+                condition_term = proof_constant_condition[1]
+                # result of search can be True, False, or a List with wilds.
+                result = self._cs.find(proof_constant, condition_term)
+                # If one of the conditions for a proof_constant is not satisfiable, the whole atomic formula is
+                # unsatisfiable.
+                if result is False:
+                    # todo: break looks ugly, but ok?
+                    break
+                # exact match, or wild matches with Y's. We don't need to know how, we just need to know it worked.
+                elif result is True:
+                    # todo: this information must be saved somewhere!
+                    pass
+                # there are wilds.
+                else:
+                    tables.append(configs_to_table(result, max_x))
+            # todo: merge tables (if it is not emtpy)
+            # todo: break, if merge fails or never was true
+
+
+
+
+
 
     def configuration_merge(self, table):
         '''
+        ===DEPRECATED===
+        see merge two tables in helper
+        ================
         Puts all possible solutions from configuration_table together.
         The result are the possible solutions.
 
@@ -45,9 +87,7 @@ class ProofSearch:
         :return:
         '''
         #todo: get number of variables in a nicer way!
-        print(table)
         size = len(table[0][1][0])
-        print(size)
         match = [['']*size]
         temp = []
 
@@ -66,8 +106,14 @@ class ProofSearch:
             temp = []
         return match
 
+
+    # DEPRECATED
     def configuration_table(self, musts):
         '''
+        ===DEPRECATED====
+        see compare_to() in cs
+        =================
+
         musts: list of tuples
         the output of this method is used in configuration_merge.
 
@@ -88,6 +134,9 @@ class ProofSearch:
 
     def get_configuration(self, term, x_size):
         '''
+        ===DEPRECATED====
+        see compare_to() in cs
+        =================
         private method!!
 
         Returned is a tuple with the constant at first place and

@@ -183,8 +183,12 @@ class Tests(unittest.TestCase):
         b.token = 'B'
         x.token = 'X4'
         y.token = 'Y3'
-        self.assertListEqual(a._compare_to(a), [True])
-        self.assertListEqual(a._compare_to(b), [False])
-        self.assertListEqual(a._compare_to(x), [False])
-        self.assertListEqual(x._compare_to(a), [{'X4': 'A'}])
+        self.assertEqual(a.compare_node_to(a)[0], True)
+        self.assertEqual(a.compare_node_to(a)[1], {})
+        self.assertEqual(a.compare_node_to(b)[0], False)
+        self.assertEqual(a.compare_node_to(b)[1], {})
+        self.assertEqual(a.compare_node_to(x)[0], False)
+        self.assertEqual(a.compare_node_to(x)[1], {})
+        self.assertEqual(x.compare_node_to(a)[0], True)
+        self.assertEqual(x.compare_node_to(a)[1], {'X4': 'A'})
 

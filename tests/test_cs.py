@@ -16,3 +16,9 @@ class Tests(unittest.TestCase):
         self.assertTrue(match)
         match = cs.find('a', 'asdf')
         self.assertTrue(match)
+
+    def test_find_list(self):
+        cs = CS({'a': ['(A->B)', 'C', '(Y1->(Y2->Y3))', '(C->D)', '((A->B)->C)']})
+        orig_term = '(X1->X2)'
+        match = cs.find('a', orig_term)
+        print(match)

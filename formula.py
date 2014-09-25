@@ -44,12 +44,13 @@ class Formula(object):
                 parts.remove(f)
         return parts
 
-    def look_ups(self):
+    def get_musts(self):
         '''
-        Analyse Formula and put a List together with entries which must be in CS to proof the Formula.
+        Analyse Formula and put a List together with entries which must be in CS to proof the Formula. Expects the
+        Formula to be atomic!
         If the Formula contains any '*', the look up entries will contain so called 'Wilds' (X1, X2, ...). These 'Wilds'
         do not exists in CS, but can be assigned any constant or formula that fits. But because any Wild can occure more
-        than once not every configuration is valid.
+        than once for different proof constants, not every configuration is valid.
 
         :return:
         Alphabetically sorted List of Tuples.

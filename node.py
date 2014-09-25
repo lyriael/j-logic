@@ -106,32 +106,38 @@ class Node(object):
         else:
             return 'no match'
 
-    def _compare_to(self, other_node):
+    def compare_node_to(self, other_node):
         '''
         # TODO
         :param other_node:
         :return:
         '''
-        wilds = []
+        #todo refactor
+        matches = True
+        wilds = {}
         if self.token[0] == 'X':
-            wilds.append({self.token: other_node.to_s()})
+            wilds[self.token] = other_node.to_s()
         elif self.token[0] == 'Y':
-            wilds.append(True)
+            matches &= True
 
         elif self.token == other_node.token:
-            wilds.append(True)
+            matches &= True
             # check if both nodes have children
             if (bool(self.has_left()) ^ bool(other_node.has_left())) or \
                     (bool(self.has_right()) ^ bool(other_node.has_right())): # ^ == XOR
-                wilds.append(False)
+                matches &= False
             else:
                 if self.has_left() and other_node.has_left():
-                    wilds += self.left._compare_to(other_node.left)
+                    m, w = self.left.compare_node_to(other_node.left)
+                    matches &= m
+                    wilds.update(w)
                 if self.has_right() and other_node.has_right():
-                    wilds += self.right._compare_to(other_node.right)
-
-        else: # no match and no wilds
-            wilds.append(False)
-        return wilds
+                    m, w = self.right.compare_node_to(other_node.right)
+                    matches &= m
+                    wilds.update(w)
+        # no match and no wilds
+        else:
+            matches &= False
+        return matches, wilds
 
 

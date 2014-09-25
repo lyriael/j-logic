@@ -39,7 +39,7 @@ class CS:
                     # if orig_term contains 'X' we need to know if a configuration
                     # is possible and what that configuration is, or there is no match.
                     match = orig.compare_to(cs)
-                    if isinstance(list, match):
+                    if isinstance(match, list):
                         wild_config.append(match)
                     else:
                         match_found = match_found | match

@@ -219,13 +219,11 @@ class Tests(unittest.TestCase):
         # self.assertListEqual([], mismatch)
         # self.assertListEqual([('X1', 'A'), ('X2', 'B'), ('X3', 'C')], wilds)
         # mismatch, wilds = Tree._mismatch_search(y.root, c.root)
-        print(mismatch)
-        print(wilds)
 
     def test_compare_to1(self):
         a = Tree('((A->B)->C)')
         x = Tree('(X1->X2)')
-        self.assertListEqual(x.compare_to(a), [{'X1': '(A->B)'}, {'X2': 'C'}])
+        self.assertDictEqual(x.compare_to(a), {'X1': '(A->B)', 'X2': 'C'})
 
     def test_compare_to2(self):
         a = Tree('((A->B)->C)')

@@ -28,3 +28,7 @@ class Tests(unittest.TestCase):
 
     def test_match3(self):
         self.assertListEqual(['', 'S'], merge(['', 'S'], ['', '']))
+
+    def test_config_to_table(self):
+        configs = [{'X1': 'A', 'X2': 'B'}, {'X1': '(A->B)', 'X4': 'C'}]
+        print(configs_to_table(configs, 4))

@@ -62,6 +62,6 @@ class Tests(unittest.TestCase):
     def test_get_terms_to_proof(self):
         # real testing on this method should be made in Tree for .proof_terms()
         t = Formula('(((a*(b*c))*(!(d*(!e)))):F)')
-        c = t.look_ups()
+        c = t.get_musts()
         self.assertListEqual([('a', '(X5->(((d*(!e)):X2)->F))'), ('b', '(X6->X5)'),
                               ('c', 'X6'), ('d', '((e:X4)->X2)'), ('e', 'X4')], c)

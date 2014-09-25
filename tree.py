@@ -299,13 +299,18 @@ class Tree(object):
             False,              No possible match.
             List of tuples,     If there is a wild match (only X's).
         '''
-        match = self.root._compare_to(other_tree.root)
-        for d in match[:]:
-            if d is False:
-                return False
-            elif d is True:
-                match.remove(d)
-        if len(match) == 0:
-            return True
+        match, wilds = self.root.compare_node_to(other_tree.root)
+        if match:
+            return wilds if len(wilds) > 0 else True
         else:
-            return match
+            return False
+
+        # for d in match[:]:
+        #     if d is False:
+        #         return False
+        #     elif d is True:
+        #         match.remove(d)
+        # if len(match) == 0:
+        #     return True
+        # else:
+        #     return match
