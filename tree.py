@@ -304,13 +304,3 @@ class Tree(object):
             return wilds if len(wilds) > 0 else True
         else:
             return False
-
-        # for d in match[:]:
-        #     if d is False:
-        #         return False
-        #     elif d is True:
-        #         match.remove(d)
-        # if len(match) == 0:
-        #     return True
-        # else:
-        #     return match

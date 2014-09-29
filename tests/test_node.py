@@ -177,18 +177,35 @@ class Tests(unittest.TestCase):
         self.assertEqual('wild match', x.compare_to_OLD(a))
         self.assertEqual('wild match', x.compare_to_OLD(x))
 
-    def test__compare_to1(self):
-        a, b, x, y = Node(), Node(), Node(), Node()
+    # def test__compare_to1(self):
+    #     a, b, x, y = Node(), Node(), Node(), Node()
+    #     a.token = 'A'
+    #     b.token = 'B'
+    #     x.token = 'X4'
+    #     y.token = 'Y3'
+    #     self.assertEqual(a.compare_node_to(a)[0], True)
+    #     self.assertEqual(a.compare_node_to(a)[1], {})
+    #     self.assertEqual(a.compare_node_to(b)[0], False)
+    #     self.assertEqual(a.compare_node_to(b)[1], {})
+    #     self.assertEqual(a.compare_node_to(x)[0], False)
+    #     self.assertEqual(a.compare_node_to(x)[1], {})
+    #     self.assertEqual(x.compare_node_to(a)[0], True)
+    #     self.assertEqual(x.compare_node_to(a)[1], {'X4': 'A'})
+
+    def test_compare_node_to2(self):
+        a, b, impl_ab = Node(), Node(), Node()
+        impl_ab.token = '->'
         a.token = 'A'
         b.token = 'B'
-        x.token = 'X4'
-        y.token = 'Y3'
-        self.assertEqual(a.compare_node_to(a)[0], True)
-        self.assertEqual(a.compare_node_to(a)[1], {})
-        self.assertEqual(a.compare_node_to(b)[0], False)
-        self.assertEqual(a.compare_node_to(b)[1], {})
-        self.assertEqual(a.compare_node_to(x)[0], False)
-        self.assertEqual(a.compare_node_to(x)[1], {})
-        self.assertEqual(x.compare_node_to(a)[0], True)
-        self.assertEqual(x.compare_node_to(a)[1], {'X4': 'A'})
+        impl_ab.set_left(a)
+        impl_ab.set_right(b)
+        print(impl_ab.to_s())
+        x1, x2, impl_x = Node(), Node(), Node()
+        impl_x.token = '->'
+        x1.token = 'X1'
+        x2.token = 'X2'
+        impl_x.set_left(x1)
+        impl_x.set_right(x2)
+        self.assertTrue(impl_x.compare_node_to(impl_ab)[0])
+        self.assertDictEqual(impl_x.compare_node_to(impl_ab)[1], {'X1': 'A', 'X2': 'B'})
 

@@ -4,7 +4,7 @@ from tree import Tree
 from helper import size
 from helper import merge
 from helper import configs_to_table
-
+from helper import merge_two_tables
 
 
 class ProofSearch:
@@ -29,7 +29,9 @@ class ProofSearch:
         For an entry to be satisfiable, all tuples must be satisfiable.
 
         Example: '(((c*(a*b))+d):F)'
-        -> {'(d:F)':            [('d', 'F')],
+
+        -> {
+            '(d:F)':            [('d', 'F')],
             '((c*(a*b)):F)':    [('a', '(X2->X1)'), ('b', 'X2'), ('c', '(X1->F)')]}
         '''
         # of those tiny-formulas it is enough to prove just one
@@ -43,38 +45,68 @@ class ProofSearch:
     def conquer(self):
         '''
         Should only be called if divide was called before.
-
+        # todo: doku
         :return:
         '''
+        satisfiable = False
+        # atomic_formula: '(d:F)'
         for atomic_formula in self._atomics_and_musts:
             # procedure for each possible option
-            max_x = size(atomic_formula)
-            tables = []
-            for proof_constant_condition in atomic_formula:
-                proof_constant = proof_constant_condition[0]
-                condition_term = proof_constant_condition[1]
-                # result of search can be True, False, or a List with wilds.
-                result = self._cs.find(proof_constant, condition_term)
-                # If one of the conditions for a proof_constant is not satisfiable, the whole atomic formula is
-                # unsatisfiable.
-                if result is False:
-                    # todo: break looks ugly, but ok?
-                    break
-                # exact match, or wild matches with Y's. We don't need to know how, we just need to know it worked.
-                elif result is True:
-                    # todo: this information must be saved somewhere!
-                    pass
-                # there are wilds.
-                else:
-                    tables.append(configs_to_table(result, max_x))
-            # todo: merge tables (if it is not emtpy)
-            # todo: break, if merge fails or never was true
+            musts = self._atomics_and_musts[atomic_formula]
+            max_x = size(musts)
+            satisfiable |= self._conquer_one(max_x, musts)
+            # print('musts: ' + str(musts))
+            # print('\tsatisfiable? ' + str(self._conquer_one(max_x, musts)))
+        return satisfiable
+
+    def _conquer_one(self, max_x, musts):
+        '''
+
+        :param musts: [('a': '(A->B)'), ...]
+        :return: satisfiable: True, False
+        '''
+        # todo: write some more tests!!
+        # todo: -> may be for good testing method needs to be changed.
+        merge_table = [['']*max_x]
+        satisfiable = True
+        for proof_constant_condition in musts:           # [('a': '(A->B)'), ...]
+            # print('-----------')
+            # print(proof_constant_condition)
+            proof_constant = proof_constant_condition[0] # 'a'
+            condition_term = proof_constant_condition[1] # '(A->B)'
+
+            # result: True/False
+            # wilds: [[{'X1':'A'},{'X4', 'A->B'}], [{'X1', ...},{'X4', ..}], [{...},{...}]]
+            result, wilds = self._cs.find(proof_constant, condition_term)
+            # print('wilds:' + str(wilds))
+            # exact match, or Y-match
+            if result is True and len(wilds) == 0:
+                # print('True and len(wilds) == 0')
+                satisfiable &= True
+            # wild match
+            elif result is True and len(wilds) > 0:
+                # print('True and len(wilds) > 0')
+                # table:X1  X2  X3  X4
+                # [   [   ,   ,   ,   ],
+                #     [   ,   ,   ,   ],
+                #     ...
+                #     [   ,   ,   ,   ]
+                # ]
+                new_table = configs_to_table(wilds, max_x)
+                # print('\tunmerged tables: ' + str(merge_table) + ' --- ' + str(new_table))
+                merge_table = merge_two_tables(merge_table, new_table)
+                # print('\tmerged tables: ' + str(new_table))
+                if len(merge_table) == 0:
+                    # print('\t\t -> merge failed')
+                    satisfiable &= False
+            # no match
+            elif result is False:
+                # print('False')
+                satisfiable &= False
+        return satisfiable
 
 
-
-
-
-
+    # ---------------------- DEPRECATED -------------------------------------------
     def configuration_merge(self, table):
         '''
         ===DEPRECATED===
@@ -106,8 +138,6 @@ class ProofSearch:
             temp = []
         return match
 
-
-    # DEPRECATED
     def configuration_table(self, musts):
         '''
         ===DEPRECATED====

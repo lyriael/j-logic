@@ -55,7 +55,8 @@ class Node(object):
         elif self.position == 'left':
             sibling = self.parent.right
         self.sibling = sibling
-        sibling.sibling = self
+        if sibling is not None:
+            sibling.sibling = self
 
     def set_position(self):
         if self.parent.left == self:

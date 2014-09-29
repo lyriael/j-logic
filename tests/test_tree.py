@@ -235,3 +235,8 @@ class Tests(unittest.TestCase):
         x = Tree('((X1->X2)->X3)')
         self.assertTrue(y.compare_to(x))
 
+    def test_compare_to4(self):
+        a = Tree('(A->B)')
+        x = Tree('(X1->(X2->X3))')
+        self.assertFalse(x.compare_to(a))
+

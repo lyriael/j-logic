@@ -19,6 +19,10 @@ class Tests(unittest.TestCase):
              ('a', 'X6'), ('b', 'X5'), ('b', '(X3->X1)'), ('c', 'X6->X1')]
         self.assertEqual(6, size(m))
 
+    def test_size2(self):
+        m = [('s', '(X2->X1)'), ('t', 'X2'), ('v', '(X1->F)')]
+        self.assertEqual(2, size(m))
+
     def test_match1(self):
         self.assertListEqual(['A', 'A', '', '', 'B', ''],
                              merge(['A', 'A', '', '', '', ''], ['', 'A', '', '', 'B', '', '']))
