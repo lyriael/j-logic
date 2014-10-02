@@ -1,7 +1,8 @@
 from node import Node
 from helper import parse
 from helper import replace
-from helper import wilds
+from helper import wild_list
+from helper import y_to_x
 
 
 class Tree(object):
@@ -172,7 +173,7 @@ class Tree(object):
         a = Tree(term_a)
         b = Tree(term_b)
         matches = Tree._possible_match(a.root, b.root)
-        x_s = wilds(term_a)
+        x_s = wild_list(term_a)
 
         if isinstance(matches, list) and len(matches) == len(x_s):
             return matches
@@ -290,6 +291,9 @@ class Tree(object):
 
     def compare_to(self, other_tree):
         '''
+        ===DEPRECATED===
+        see 'compare_second_try'
+        ================
         This is a wrapper method for the recursive method in Node that compares the tree structure.
         self should be the tree that is less deep than 'other_tree', so that wilds (X's, bzw. Y's) are here.
 
@@ -299,8 +303,76 @@ class Tree(object):
             False,              No possible match.
             List of tuples,     If there is a wild match (only X's).
         '''
-        match, wilds = self.root.compare_node_to(other_tree.root)
+        match, wilds_x, wilds_y = self.root.compare_node_to(other_tree.root, {})
+        print(wilds_y)
+        wilds_x_additionals = y_to_x(wilds_y)
         if match:
-            return wilds if len(wilds) > 0 else True
+            return wilds_x if len(wilds_x) > 0 else True
         else:
             return False
+
+    @staticmethod
+    def compare_second_try(orig_node, cs_node, conditions, wilds):
+        '''
+        from 2.10.14
+        changes the tree while comparing.
+        self == x (orig)
+        mutable == y/const (cs)
+
+        :param mutable:
+        :return:
+        '''
+        # todo: rename this method!!
+        # if current node is Yn, then replace all occurring Yn's with whatever is in orig.
+        if cs_node.token[0] == 'Y':
+            Tree._replace_in_tree(cs_node.get_root(), cs_node.token, Tree(orig_node.to_s()).root)
+            #todo: maybe there is replacement needed in conditions as well.
+        # if current node is Xn, then this is the consequence of a Yn being replaced. What
+        # ever is in orig is a condition to Xn.
+        elif cs_node.token[0] == 'X':
+            # condition
+            if 'X' in orig_node.to_s():
+                t = (cs_node.token, orig_node.to_s())
+                conditions.append(t)
+            # wild
+            else:
+                wilds[cs_node.token] = orig_node.to_s()
+        # unresolved 'Y' in cs-subtree to corresponding 'X' in orig => condition
+        elif orig_node.token[0] == 'X' and ('Y' in cs_node.to_s() or 'X' in cs_node.to_s()):
+            print('ever here')
+            t = (orig_node.token, cs_node.to_s())
+            conditions.append(t)
+        # normal wild config
+        # todo: OMG, what shall be done, if there is a Y inside??!!
+        # todo: check if a X in wilds can be overwritten by accident
+        elif orig_node.token[0] == 'X':
+            wilds[orig_node.to_s()] = cs_node.to_s()
+        # if both are same
+        elif orig_node.token == cs_node.token:
+            if orig_node.token in ['->', ':']:
+                conditions, wilds = Tree.compare_second_try(orig_node.left, cs_node.left, conditions, wilds)
+                conditions, wilds = Tree.compare_second_try(orig_node.right, cs_node.right, conditions, wilds)
+            else:
+                # same constant
+                pass
+        else:
+            # no match possible
+            # no idea how to make that nicer
+            conditions, wilds = None, None
+        return conditions, wilds
+
+    @staticmethod
+    def _replace_in_tree(current_node: Node, old: str, replacement: Node):
+        '''
+        used in compare_second_try
+        :param old_node:
+        :param replacement:
+        :return:
+        '''
+        if current_node.token == old:
+            current_node.swap_with(replacement)
+        else:
+            if current_node.has_left():
+                Tree._replace_in_tree(current_node.left, old, replacement)
+            if current_node.has_right():
+                Tree._replace_in_tree(current_node.right, old, replacement)

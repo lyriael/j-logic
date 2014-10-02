@@ -76,6 +76,12 @@ class Node(object):
         node.set_position()
         node.set_sibling()
 
+    def get_root(self):
+        current = self
+        while not current.is_root():
+            current = current.parent
+        return current
+
     def _inorder_string(self, node):
         '''
         This is an exact copy of the same-named method in Tree.
@@ -107,7 +113,7 @@ class Node(object):
         else:
             return 'no match'
 
-    def compare_node_to(self, other_node):
+    def compare_node_to(self, other_node, wilds_y):
         '''
         # TODO
         :param other_node:
@@ -115,12 +121,21 @@ class Node(object):
         '''
         #todo refactor
         matches = True
-        wilds = {}
-        if self.token[0] == 'X':
-            wilds[self.token] = other_node.to_s()
-        elif self.token[0] == 'Y':
-            matches &= True
+        wilds_x = {}
+        # wilds_y = {}
 
+        # if self contains 'X' => other_node has no 'Y'
+        if self.token[0] == 'X':
+            wilds_x[self.token] = other_node.to_s()
+        # if self contains 'Y' => other_node may be or contain a 'X' or just constants.
+        # todo: here must be the adaption
+        elif self.token[0] == 'Y':
+            # matches &= True
+            if self.token in wilds_y:
+                wilds_y[self.token].append(other_node.to_s())
+            else:
+                wilds_y[self.token] = [other_node.to_s()]
+        # if there is an exact match (only constants), recursively continue downwards.
         elif self.token == other_node.token:
             matches &= True
             # check if both nodes have children
@@ -129,16 +144,31 @@ class Node(object):
                 matches &= False
             else:
                 if self.has_left() and other_node.has_left():
-                    m, w = self.left.compare_node_to(other_node.left)
+                    m, w_x, w_y = self.left.compare_node_to(other_node.left, wilds_y)
                     matches &= m
-                    wilds.update(w)
+                    wilds_x.update(w_x)
                 if self.has_right() and other_node.has_right():
-                    m, w = self.right.compare_node_to(other_node.right)
+                    m, w_x, w_y = self.right.compare_node_to(other_node.right, wilds_y)
                     matches &= m
-                    wilds.update(w)
+                    wilds_x.update(w_x)
         # no match and no wilds
         else:
             matches &= False
-        return matches, wilds
+        return matches, wilds_x, wilds_y
 
+    def swap_with(self, replacement):
+        '''
+
+        :param replacement: node of a tree
+        :return:
+        '''
+        # assert self.is_root()
+        # assert self.token[0] == 'Y'
+        replacement.position = self.position
+        if replacement.position == 'left':
+            self.parent.left = replacement
+        else:
+            self.parent.right = replacement
+        replacement.parent = self.parent
+        replacement.sibling = self.sibling
 

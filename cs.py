@@ -17,7 +17,7 @@ class CS:
                 False, if key is not in present in cs, or simply no match can be found.
                 True, if a exact match is found, or a wild match is possible.
             wilds: if match depends on Wilds, else empty.
-                Example: [[{'X1':'A'},{'X4', 'A->B'}], [{'X1', ...},{'X4', ..}], [{...},{...}]]
+                Example: [[{'X1':'A','X4':'A->B'}, {'X1': ...,'X4': ..}, {...,...}]]
         '''
         cs_terms = self._dict.get(proof_constant, [])
         wild_config = []
@@ -34,12 +34,16 @@ class CS:
             for cs_term in cs_terms:
                 # print('\t cs_term: ' + str(cs_term) )
                 cs = Tree(cs_term)
-                # if cs_term contains a 'Y', or if orig_term has a 'X', we
-                # need only to know if it matches, but are not interested,
-                # how they match.
-                if ('Y' in cs_term) or ('X' not in orig_term):
-                    # print('\t no X\'s or also Y\'s!')
-                    match_found = match_found | cs.compare_to(orig)
+                # cs_term must be compared to orig_term. If orig_term contains X,
+                # a List of X-wilds might be returned.
+                if 'Y' in cs_term:
+                    # todo: compare_to muss noch angepasst werden.
+                    match = cs.compare_to(orig)
+                    if isinstance(match, dict):
+                        wild_config.append(match)
+                        match_found |= True
+                    else:
+                        match_found |= match
                 else:
                     # if orig_term contains 'X' we need to know if a configuration
                     # is possible and what that configuration is, or there is no match.
@@ -50,6 +54,8 @@ class CS:
                     if isinstance(match, dict):
                         wild_config.append(match)
                         match_found |= True
+                    else:
+                        match_found |= match
                 # print('\t ---')
         return match_found, wild_config
 

@@ -103,6 +103,7 @@ class ProofSearch:
             elif result is False:
                 # print('False')
                 satisfiable &= False
+            # print(satisfiable)
         return satisfiable
 
 

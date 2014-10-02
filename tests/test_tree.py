@@ -220,23 +220,129 @@ class Tests(unittest.TestCase):
         # self.assertListEqual([('X1', 'A'), ('X2', 'B'), ('X3', 'C')], wilds)
         # mismatch, wilds = Tree._mismatch_search(y.root, c.root)
 
-    def test_compare_to1(self):
+    # def test_compare_to1(self):
+    #     a = Tree('((A->B)->C)')
+    #     x = Tree('(X1->X2)')
+    #     self.assertDictEqual(x.compare_to(a), {'X1': '(A->B)', 'X2': 'C'})
+    #
+    # def test_compare_to2(self):
+    #     a = Tree('((A->B)->C)')
+    #     y = Tree('(Y1->Y2)')
+    #     self.assertTrue(y.compare_to(a))
+    #
+    # def test_compare_to3(self):
+    #     y = Tree('(Y1->Y2)')
+    #     x = Tree('((X1->X2)->X3)')
+    #     self.assertTrue(y.compare_to(x))
+    #
+    # def test_compare_to4(self):
+    #     a = Tree('(A->B)')
+    #     x = Tree('(X1->(X2->X3))')
+    #     self.assertFalse(x.compare_to(a))
+    #
+    # def test_compare_to5(self):
+    #     y = Tree('(Y1->(Y2->Y1))')
+    #     x = Tree('(X3->(X2->(X1->F)))')
+    #     self.assertTrue(y.compare_to(x))
+    #
+    # def test_compare_to6(self):
+    #     y = Tree('(Y1->(Y1->Y1))')
+    #     x = Tree('(X3->(X2->(X1->F)))')
+    #     self.assertTrue(y.compare_to(x))
+    #
+    # def test_compare_to7(self):
+    #     y = Tree('(Y1->Y1)')
+    #     a = Tree('((A->B)->A)')
+    #     self.assertFalse(y.compare_to(a))
+    #
+    # def test_compare_to8(self):
+    #     y = Tree('(Y1->(Y2->Y1))')
+    #     x = Tree('((X1->F)->(B->(X2->G)))')
+    #     self.assertTrue(y.compare_to(x))
+
+    def test__replace_in_tree(self):
+        y = Tree('(Y1->(Y2->Y1))')
+        x = Tree('X1')
+        Tree._replace_in_tree(y.root, 'Y1', x.root)
+        self.assertEqual('(X1->(Y2->X1))', y.to_s())
+
+    def test_compare_second_try1(self):
         a = Tree('((A->B)->C)')
         x = Tree('(X1->X2)')
-        self.assertDictEqual(x.compare_to(a), {'X1': '(A->B)', 'X2': 'C'})
+        con, wil = Tree.compare_second_try(x.root, a.root, [], {})
+        self.assertListEqual(con, [])
+        self.assertDictEqual(wil, {'X2': 'C', 'X1': '(A->B)'})
 
-    def test_compare_to2(self):
+    def test_compare_second_try2(self):
         a = Tree('((A->B)->C)')
         y = Tree('(Y1->Y2)')
-        self.assertTrue(y.compare_to(a))
+        con, wil = Tree.compare_second_try(a.root, y.root, [], {})
+        self.assertListEqual(con, [])
+        self.assertDictEqual(wil, {})
 
-    def test_compare_to3(self):
-        y = Tree('(Y1->Y2)')
-        x = Tree('((X1->X2)->X3)')
-        self.assertTrue(y.compare_to(x))
+    def test_compare_second_try3(self):
+        cs = Tree('(Y1->Y2)')
+        orig = Tree('((X1->X2)->X3)')
+        con, wil = Tree.compare_second_try(orig.root, cs.root, [], {})
+        self.assertListEqual(con, [])
+        self.assertDictEqual(wil, {})
 
-    def test_compare_to4(self):
-        a = Tree('(A->B)')
-        x = Tree('(X1->(X2->X3))')
-        self.assertFalse(x.compare_to(a))
+    def test_compare_second_try4(self):
+        cs = Tree('(A->B)')
+        orig = Tree('(X1->(X2->X3))')
+        con, wil = Tree.compare_second_try(orig.root, cs.root, [], {})
+        self.assertIsNone(con)
+        self.assertIsNone(wil)
 
+    def test_compare_second_try5(self):
+        cs = Tree('(Y1->(Y2->Y1))')
+        orig = Tree('(X3->(X2->(X1->F)))')
+        con, wil = Tree.compare_second_try(orig.root, cs.root, [], {})
+        self.assertListEqual(con, [('X3', '(X1->F)')])
+        self.assertDictEqual(wil, {})
+
+    def test_compare_second_try6(self):
+        cs = Tree('(Y1->(Y1->Y1))')
+        orig = Tree('(X3->(X2->(X1->F)))')
+        con, wil = Tree.compare_second_try(orig.root, cs.root, [], {})
+        self.assertListEqual(con, [('X3', 'X2'), ('X3', '(X1->F)')])
+        self.assertDictEqual(wil, {})
+
+    def test_compare_second_try7(self):
+        cs = Tree('(Y1->Y1)')
+        orig = Tree('((A->B)->A)')
+        con, wil = Tree.compare_second_try(orig.root, cs.root, [], {})
+        self.assertIsNone(con)
+        self.assertIsNone(wil)
+
+    def test_compare_second_try8(self):
+        cs = Tree('(Y1->(Y2->Y1))')
+        orig = Tree('((X1->F)->(B->(X2->G)))')
+        con, wil = Tree.compare_second_try(orig.root, cs.root, [], {})
+        self.assertIsNone(con)
+        self.assertIsNone(wil)
+
+    def test_compare_second_try9(self):
+        cs = Tree('(Y1->(Y1->Y1))')
+        orig = Tree('(X1->(B->X2))')
+        con, wil = Tree.compare_second_try(orig.root, cs.root, [], {})
+        self.assertListEqual(con, [('X1', 'X2')])
+        self.assertDictEqual(wil, {'X1': 'B'})
+
+    def test_compare_second_try10(self):
+        cs = Tree('(Y1->(Y1->F))')
+        orig = Tree('(X1->X2)')
+        con, wil = Tree.compare_second_try(orig.root, cs.root, [], {})
+        print(con)
+        print(wil)
+        self.assertListEqual(con, [('X2', '(X1->F)')])
+        self.assertDictEqual(wil, {})
+
+    def test_compare_second_try11(self):
+        # hopefully this will never be possible!
+        # todo: what to do in this situation?
+        cs = Tree('(Y1->(Y2->F))')
+        orig = Tree('(X1->X2)')
+        con, wil = Tree.compare_second_try(orig.root, cs.root, [], {})
+        self.assertListEqual(con, [('X2', '(Y2->F)')])
+        self.assertDictEqual(wil, {})

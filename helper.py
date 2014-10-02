@@ -26,7 +26,7 @@ def size(musts):
     '''
     all_xs = []
     for term in musts:
-        all_xs += wilds(term[1])
+        all_xs += wild_list(term[1])
     all_xs = sorted(list(set(all_xs)))
     return sorted(map(lambda x: int(x[1:]), all_xs)).pop()
 
@@ -75,10 +75,10 @@ def unique_wilds(term):
     '''
     List of all different occurring 'Xs'.
     '''
-    return sorted(list(set(wilds(term))))
+    return sorted(list(set(wild_list(term))))
 
 
-def wilds(term):
+def wild_list(term):
     '''
     List of all occurring 'Xs'.
     '''
@@ -139,3 +139,23 @@ def merge_two_tables(first, second):
                 merged_tables.append(m)
     return merged_tables
 
+
+def y_to_x(wilds_y):
+    '''
+
+    :param wilds_y:
+    :return:
+    '''
+    x_constrains = []
+    for key in wilds_y:
+        if len(wilds_y[key]) == 1:
+            pass
+        else:
+            if _has_contradiction(wilds_y[key]):
+                return False
+            else:
+                x_constrains.append(wilds_y[key])
+    return x_constrains
+
+def _has_contradiction(config_for_one_y):
+    n = 7
