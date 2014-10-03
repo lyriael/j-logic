@@ -1,5 +1,6 @@
 from re import findall
 
+
 def parse(string):
     '''
     separate operators, parentheses and variables and returns them as a list.
@@ -19,7 +20,7 @@ def parse(string):
     return l
 
 
-def size(musts):
+def x_size(musts):
     '''
     Takes an list of tuples as input and
     searches for to highest occurring X..
@@ -30,22 +31,27 @@ def size(musts):
     all_xs = sorted(list(set(all_xs)))
     return sorted(map(lambda x: int(x[1:]), all_xs)).pop()
 
+
 def merge(a, b):
     '''
     compares to lists, if they are mergable return the merge, else return None.
     '''
-    s = len(a)
-    m = ['']*s
-    for i in range(s):
-        if a[i] == b[i]:
-            m[i] = a[i]
-        elif a[i] == '':
-            m[i] = b[i]
-        elif b[i] == '':
-            m[i] = a[i]
+    size = len(a)
+    new = ['']*size
+    for index in range(size):
+        # first check if wilds match
+        if a[index] == b[index]:
+            new[index] = a[index]
+
+        elif a[index] == '':
+            new[index] = b[index]
+
+        elif b[index] == '':
+            new[index] = a[index]
         else:
             return None
-    return m
+    return new
+
 
 def replace(consts, swaps):
     '''
@@ -95,49 +101,36 @@ def init_dict(keys, length):
 def configs_to_table(configs, size):
     '''
 
-    :param configs: [{'X1':'A', 'X3':'(A->B)'},{'X1':'C', 'X3':'C'},{...}], second return argument of cs, compare_to
+    :param configs: [   ({'X1':'A', 'X3':'(A->B)'}, [('X2', 'X1')]  ),
+                        ({'X1':'C', 'X3':'C'},      []              ),
+                        ({...},                     []              )],
+                        second return argument of cs, compare_to
     :param size: highest Xn that occurs for one atomic Formula.
     :return: table:
     Example:
-              X1  X2  X3  X4
-        [   [   ,   ,   ,   ],
-            [   ,   ,   ,   ],
+              X1  X2  X3  X4    conditions
+        [   ([   ,   ,   ,   ],  None)
+            ([   ,   ,   ,   ],  [...])
             ...
-            [   ,   ,   ,   ]
+            ([   ,   ,   ,   ],  None)
         ]
     '''
     # init empty matrix of needed size
     # e.g.: x_size = 5, len(cs) = 3
-    # >> configs = [['', '', '', '', ''], ['', '', '', '', ''], ['', '', '', '', '']]
-    table = [['' for i in range(size)] for j in range(len(configs))]
-
-    row = 0
-    for line in configs:
-        for x in line:
-            position = int(x[1:]) - 1
-            term = line[x]
-            table[row][position] = term
-        row += 1
-    return table
-
-
-def merge_two_tables(first, second):
-    '''
-
-    :param first:
-    :param second:
-    :return:
-    '''
-    # init empty match
-    match = [['']*len(first[0])]
-    # holds all matches
-    merged_tables = []
-    for condition in first:
-        for candidate in second:
-            m = merge(condition, candidate)
-            if m:
-                merged_tables.append(m)
-    return merged_tables
+    # >> table = [(['', '', '', '', ''], []), (['', '', '', '', ''], []), (['', '', '', '', ''], [])]
+    if configs:
+        table = [(['' for i in range(size)], []) for j in range(len(configs))]
+        row = 0
+        for tpl in configs:
+            for x in tpl[0]: # accessing the wild-dict, ignoring conditions (tpl[1])
+                position = int(x[1:]) - 1
+                term = tpl[0][x]
+                table[row][0][position] = term
+            row += 1
+        # todo: what if configs = []? => currently an emtpy List is returned.
+        return table
+    else:
+        return [(['']*size, [])]
 
 
 def y_to_x(wilds_y):
@@ -157,5 +150,6 @@ def y_to_x(wilds_y):
                 x_constrains.append(wilds_y[key])
     return x_constrains
 
+
 def _has_contradiction(config_for_one_y):
-    n = 7
+    print('EEEEERRROOORRR')

@@ -206,6 +206,6 @@ class Tests(unittest.TestCase):
         x2.token = 'X2'
         impl_x.set_left(x1)
         impl_x.set_right(x2)
-        self.assertTrue(impl_x.compare_node_to(impl_ab)[0])
-        self.assertDictEqual(impl_x.compare_node_to(impl_ab)[1], {'X1': 'A', 'X2': 'B'})
+        self.assertTrue(impl_x.compare_node_to(impl_ab, {})[0])
+        self.assertDictEqual(impl_x.compare_node_to(impl_ab, {})[1], {'X1': 'A', 'X2': 'B'})
 

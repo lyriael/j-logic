@@ -35,7 +35,17 @@ class Tests(unittest.TestCase):
     def test__conquer_one(self):
         ps = ProofSearch({'a': ['(A->(A->F))', '((b:B)->A)', 'B', '(C->(A->F))', '((b:B)->(B->F))'], 'b': ['B']}, '')
         term = [('a', '(X2->(X1->F))'), ('b', 'B')]
-        self.assertTrue(ps._conquer_one(2, term))
+        one = ps._conquer_one(2, term)
+        self.assertListEqual([(['A', 'A'], []),
+                              (['A', 'C'], []),
+                              (['B', '(b:B)'], [])],
+                             one)
+
+    def test__conquer_one1(self):
+        ps = ProofSearch({'a': ['(A->(A->F))', '((b:B)->A)', 'B', '(C->(A->F))', '((b:B)->(B->F))'], 'b': ['B']}, '')
+        term = [('a', '(X2->(X1->F))'), ('b', 'C')]
+        one = ps._conquer_one(2, term)
+        self.assertIsNone(one)
 
     def test_conquer(self):
         cs = {'s': ['(B->A)'],

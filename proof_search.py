@@ -1,10 +1,9 @@
 from formula import Formula
 from cs import CS
 from tree import Tree
-from helper import size
+from helper import x_size
 from helper import merge
 from helper import configs_to_table
-from helper import merge_two_tables
 
 
 class ProofSearch:
@@ -48,16 +47,32 @@ class ProofSearch:
         # todo: doku
         :return:
         '''
-        satisfiable = False
         # atomic_formula: '(d:F)'
         for atomic_formula in self._atomics_and_musts:
             # procedure for each possible option
             musts = self._atomics_and_musts[atomic_formula]
-            max_x = size(musts)
-            satisfiable |= self._conquer_one(max_x, musts)
-            # print('musts: ' + str(musts))
-            # print('\tsatisfiable? ' + str(self._conquer_one(max_x, musts)))
-        return satisfiable
+            max_x = x_size(musts)
+            table = self._conquer_one(max_x, musts)
+            if table:
+                return atomic_formula, table
+        return None
+
+    def conquer_all_solutions(self):
+        '''
+        Should only be called if divide was called before.
+        # todo: doku
+        :return:
+        '''
+        all = []
+        # atomic_formula: '(d:F)'
+        for atomic_formula in self._atomics_and_musts:
+            # procedure for each possible option
+            musts = self._atomics_and_musts[atomic_formula]
+            max_x = x_size(musts)
+            table = self._conquer_one(max_x, musts)
+            if table:
+                all.append((atomic_formula, table))
+        return all
 
     def _conquer_one(self, max_x, musts):
         '''
@@ -67,44 +82,24 @@ class ProofSearch:
         '''
         # todo: write some more tests!!
         # todo: -> may be for good testing method needs to be changed.
-        merge_table = [['']*max_x]
-        satisfiable = True
-        for proof_constant_condition in musts:           # [('a': '(A->B)'), ...]
-            # print('-----------')
-            # print(proof_constant_condition)
-            proof_constant = proof_constant_condition[0] # 'a'
-            condition_term = proof_constant_condition[1] # '(A->B)'
+        finale_table = [(['']*max_x, [])]
+        # each of 'must' has to be satisfiable!
+        for must in musts:           # [('a': '(A->B)'), ...]
+            proof_constant = must[0] #   'a'
+            condition_term = must[1] #   '(A->B)'
 
-            # result: True/False
-            # wilds: [[{'X1':'A'},{'X4', 'A->B'}], [{'X1', ...},{'X4', ..}], [{...},{...}]]
-            result, wilds = self._cs.find(proof_constant, condition_term)
-            # print('wilds:' + str(wilds))
-            # exact match, or Y-match
-            if result is True and len(wilds) == 0:
-                # print('True and len(wilds) == 0')
-                satisfiable &= True
-            # wild match
-            elif result is True and len(wilds) > 0:
-                # print('True and len(wilds) > 0')
-                # table:X1  X2  X3  X4
-                # [   [   ,   ,   ,   ],
-                #     [   ,   ,   ,   ],
-                #     ...
-                #     [   ,   ,   ,   ]
-                # ]
-                new_table = configs_to_table(wilds, max_x)
-                # print('\tunmerged tables: ' + str(merge_table) + ' --- ' + str(new_table))
-                merge_table = merge_two_tables(merge_table, new_table)
-                # print('\tmerged tables: ' + str(new_table))
-                if len(merge_table) == 0:
-                    # print('\t\t -> merge failed')
-                    satisfiable &= False
-            # no match
-            elif result is False:
-                # print('False')
-                satisfiable &= False
-            # print(satisfiable)
-        return satisfiable
+            configs_for_one_must = self._cs.find_all_for(proof_constant, condition_term)
+            # print('\tconfigs for: ' + str(must))
+            # print('\tcurrent finale table: ' + str(finale_table))
+            # if configs_for_one != None => 'must' is satisfiable with no further conditions.
+            if configs_for_one_must is None:
+                return None
+            else:
+                configs_for_one_must = configs_to_table(configs_for_one_must, max_x)
+                # print('\t\tas table: ' + str(configs_for_one_must))
+                finale_table = Tree.merge_two_tables(finale_table, configs_for_one_must)
+                # print('\t\tfinale table: ' + str(finale_table))
+        return finale_table
 
 
     # ---------------------- DEPRECATED -------------------------------------------
@@ -158,7 +153,7 @@ class ProofSearch:
 
         # collect all configurations
         all_configs = []
-        x = size(musts)
+        x = x_size(musts)
         for term in musts:
             all_configs.append(ProofSearch.get_configuration(self, term, x))
         return sorted(all_configs, key=lambda t: len(t[1]))
