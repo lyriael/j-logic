@@ -41,32 +41,9 @@ class Tests(unittest.TestCase):
     def test_config_to_table2(self):
         # test for no wilds & no condition
         configs = []
-        self.assertListEqual([], configs_to_table(configs, 3))
+        self.assertListEqual([(['', '', ''], [])], configs_to_table(configs, 3))
 
     def test_merge_(self):
         t1 = ['A', 'B', '']
         t2 = ['A', '', 'C']
         self.assertListEqual(['A', 'B', 'C'], merge(t1, t2))
-
-
-
-
-    # DEPRECATED
-    # def test_y_to_x1(self):
-    #     wilds_y = {'Y1': ['X3', '(X1->F)'], 'Y2': ['X2']}
-    #     print(y_to_x(wilds_y))
-    #     self.assertDictEqual({'X3': '(X1->F)'}, y_to_x(wilds_y))
-    #
-    # def test_y_to_x2(self):
-    #     wilds_y = {'Y1': ['X3', 'X2', '(X1->F)']}
-    #     self.assertDictEqual({'X3': '(X1->F)', 'X2': '(X1->F)'}, y_to_x(wilds_y))
-    #
-    # def test_y_to_x3(self):
-    #     wilds_y = {'Y1': ['(A->B)', 'A']}
-    #     self.assertFalse(y_to_x(wilds_y))
-    #
-    # def test_y_to_x4(self):
-    #     self.assertDictEqual({}, y_to_x({'Y1': ['X1'], 'Y2': ['X2'], 'Y3': ['F']}))
-    #
-    # def test_y_to_x5(self):
-    #     self.assertDictEqual({'X1': 'F'}, y_to_x({'Y1': ['X1', 'F']}))

@@ -100,62 +100,6 @@ class Node(object):
     def to_s(self):
         return self._inorder_string(self)
 
-    def compare_to_OLD(self, other_node):
-        '''
-        String comparement
-        :param other_node:
-        :return:
-        '''
-        if self.token[0] in ['X']:
-            return 'wild match'
-        elif self.token == other_node.token:
-            return 'exact match'
-        else:
-            return 'no match'
-
-    def compare_node_to(self, other_node, wilds_y):
-        '''
-        # TODO
-        :param other_node:
-        :return:
-        '''
-        #todo refactor
-        matches = True
-        wilds_x = {}
-        # wilds_y = {}
-
-        # if self contains 'X' => other_node has no 'Y'
-        if self.token[0] == 'X':
-            wilds_x[self.token] = other_node.to_s()
-        # if self contains 'Y' => other_node may be or contain a 'X' or just constants.
-        # todo: here must be the adaption
-        elif self.token[0] == 'Y':
-            # matches &= True
-            if self.token in wilds_y:
-                wilds_y[self.token].append(other_node.to_s())
-            else:
-                wilds_y[self.token] = [other_node.to_s()]
-        # if there is an exact match (only constants), recursively continue downwards.
-        elif self.token == other_node.token:
-            matches &= True
-            # check if both nodes have children
-            if (bool(self.has_left()) ^ bool(other_node.has_left())) or \
-                    (bool(self.has_right()) ^ bool(other_node.has_right())): # ^ == XOR
-                matches &= False
-            else:
-                if self.has_left() and other_node.has_left():
-                    m, w_x, w_y = self.left.compare_node_to(other_node.left, wilds_y)
-                    matches &= m
-                    wilds_x.update(w_x)
-                if self.has_right() and other_node.has_right():
-                    m, w_x, w_y = self.right.compare_node_to(other_node.right, wilds_y)
-                    matches &= m
-                    wilds_x.update(w_x)
-        # no match and no wilds
-        else:
-            matches &= False
-        return matches, wilds_x, wilds_y
-
     def swap_with(self, replacement):
         '''
 

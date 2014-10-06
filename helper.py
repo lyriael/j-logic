@@ -73,10 +73,6 @@ def replace(consts, swaps):
     return new_consts
 
 
-def config_dict(term, size):
-    return init_dict(unique_wilds(term[1]), size)
-
-
 def unique_wilds(term):
     '''
     List of all different occurring 'Xs'.
@@ -89,13 +85,6 @@ def wild_list(term):
     List of all occurring 'Xs'.
     '''
     return sorted(findall(r'X\d+', term))
-
-
-def init_dict(keys, length):
-    d = {}
-    for k in keys:
-        d[k] = ['']*length
-    return d
 
 
 def configs_to_table(configs, size):
@@ -127,29 +116,6 @@ def configs_to_table(configs, size):
                 term = tpl[0][x]
                 table[row][0][position] = term
             row += 1
-        # todo: what if configs = []? => currently an emtpy List is returned.
         return table
     else:
         return [(['']*size, [])]
-
-
-def y_to_x(wilds_y):
-    '''
-
-    :param wilds_y:
-    :return:
-    '''
-    x_constrains = []
-    for key in wilds_y:
-        if len(wilds_y[key]) == 1:
-            pass
-        else:
-            if _has_contradiction(wilds_y[key]):
-                return False
-            else:
-                x_constrains.append(wilds_y[key])
-    return x_constrains
-
-
-def _has_contradiction(config_for_one_y):
-    print('EEEEERRROOORRR')

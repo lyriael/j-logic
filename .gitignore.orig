@@ -1,7 +1,0 @@
-*.idea
-__pycache__/
-tests/__pycache__/
-<<<<<<< HEAD
-
-=======
->>>>>>> refact2
