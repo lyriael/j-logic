@@ -1,6 +1,5 @@
 __author__ = 'lyriael'
-#aka tree
-from tree_node import Node
+from tree import Tree
 
 
 class Formula(object):
@@ -9,140 +8,139 @@ class Formula(object):
         '''
         string as formula expected. Be careful to put all parentheses.
         '''
-        if isinstance(formula, str):
-            self._tree = Node.make_tree(formula)
-        elif isinstance(formula, Node):
-            self._tree = formula.deep_copy()
-            print('node')
-        elif isinstance(formula, Formula):
-            self._tree = formula.tree()
-            print('formula')
-        #not sure if this part is used.... its a bit confusing...
-        if self._tree.has_left():
-            self._left = str(self._tree.left())
-        if self._tree.has_right():
-            self._right = str(self._tree.right())
-        self._op = self._tree.token()
+        self.formula = formula
+        self._tree = Tree(formula)
 
-
-    def __str__(self):
-        return str(self._tree)
-
-    def to_s(self):
-        return str(self)
-
-    def proof_term(self):
-        if self._op == ':':
-            return Formula(self._left)
-        raise Exception('Has no proof_term')
-
-    def subformula(self):
-        if self._op == ':':
-            return Formula(self._right)
-        raise Exception('Has no subformula')
-
-    def top_operation(self):
+    def atomize(self):
         '''
-        returns the root token of the formula tree if it is a operation (ink. '->'),
-        and 'const' if it is a constant and therefore a leaf.
+        If possible the formula is split into several smaller parts. It is comparable with transforming a formula
+        into DNS.
+
+        -   For each '+', the formula will be split in two corresponding parts. So for the formula to be provable, only
+            one of these subformulas must be provable.
+
+        These splits are further sorted:
+        -   If a '!' is top operation of a formula, the formula is simplified by correctly removing the '!' if possible.
+            If this is not possible, the subformula will be deleted.
+        -   If a '!' is a left child of '*' the (sub)formula is not provable, and so the subformula will be deleted.
+
+        :return:
+        List with Formulas.
         '''
-        if self._tree.token() in ['+', '*', '!', ':', '->']:
-            return self._tree.token()
-        else:
-            return 'const'
+        # first step: make sum-splits
+        parts = self._sum_split()
 
-    def left_operand(self):
-        if self._tree.token() in ['+', '*', '->', ':']:
-            return Formula(self._tree.left())
+        # second step: simplify formula if top operation is bang
+        for f in parts[:]:
+            if f._tree.root.left.token == '!':
+                parts.remove(f)
+                improved_f = f._simplify_bang()
+                if improved_f is not None:
+                    parts.append(improved_f)
 
-    def right_operand(self):
-        if self._tree.token() in ['+', '*', '->', ':', '!']:
-            return Formula(self._tree.right())
-
-    def is_const(self):
-        return len(self._tree) == 1
-
-    def tree(self):
-        '''
-        returns a deep copy of tree
-        '''
-        return self._tree.deep_copy()
-
-    def is_in(self, cs):
-        subformula = str(self.subformula())
-        proof_term = str(self.proof_term())
-        if (proof_term in cs) and subformula in cs[proof_term]:
-            return True
-        else:
-            False
-
-    def split(self):
-        '''
-        Returns an array with formulas, where each formula represents an operand of '+'
-        '''
-        parts = []
-        if self.proof_term().top_operation() == '+':
-            left = Formula.parts_to_formula(self.proof_term().left_operand(), self.subformula())
-            right = Formula.parts_to_formula(self.proof_term().right_operand(), self.subformula())
-            parts = parts + left.split() + right.split()
-        else:
-            parts = [str(self.proof_term())]
+        # third step: remove formulas where '!' is left child of '*'
+        for f in parts[:]:
+            if f._has_bad_bang(): # makes a Tree copy.
+                parts.remove(f)
         return parts
 
-    def _remove_bangs(self):
+    def get_musts(self):
         '''
-        This method is intended only for left subtrees of '*'.
-        It will remove all Nodes, that have '!' as token.
-        '''
-        self._tree.remove_bangs()
+        Analyse Formula and put a List together with entries which must be in CS to proof the Formula. Expects the
+        Formula to be atomic!
+        If the Formula contains any '*', the look up entries will contain so called 'Wilds' (X1, X2, ...). These 'Wilds'
+        do not exists in CS, but can be assigned any constant or formula that fits. But because any Wild can occure more
+        than once for different proof constants, not every configuration is valid.
 
-    def collect(self):
+        :return:
+        Alphabetically sorted List of Tuples.
+        First value of a tuple is the key variable (constant), second value is a List with Formulas.
         '''
-        This method is just a bridge between ProofSearch and TreeNode.
-        !! It returns a array of Nodes!! (not formula)
-        '''
-        return self._tree.collect_nodes(self._tree)
+        return self._tree.musts()
 
-    def _wander(self, stack, formula):
+    def _sum_split(self):
         '''
-        Asserts that top operation of f is '*' and only 'proof_term' is given.
-        Not recursive.
-        If '+' or '!' are within f, f is split and its parts are pushed back to the stack.
-        If nothing can be changed, f is returned.
-        '''
-        #todo: fix so it works in Formula
-        nodes = formula.collect()
-        for node in nodes:
-            if node.top_operation() == '+':
-                stack.push(node.get_left_split())
-                stack.push(node.get_right_split())
-                return
-            elif node.top_operation() == '!':
-                if node.is_left() and node.parent().top_operation() == '*':
-                    stack.push(node.remove())
-                    return
-        return formula
+        Transforms formula to a disjunctive form.
+        algorithm:
 
-    @staticmethod
-    def parts_to_formula(proof_term, subformula):
-        '''
-        returns a new formula, using deep copy.
-        '''
-        return Formula('('+str(proof_term)+':'+str(subformula)+')')
+        search for first '+'
+            if there is none you're done.
+            if there is one, split the formula and repeat the step above for both parts.
 
-    @staticmethod
-    def parts_to_s(proof_term, subformula):
-        '''
-        returns string of combination from proof_term and subformula.
-        '''
-        return '('+str(proof_term)+':'+str(subformula)+')'
+        :return:
+        List of Formulas.
 
-    @staticmethod
-    def match_for_implication(maybes, subformula):
-        imp = []
-        for item in maybes:
-            tree = Node.make_tree(item)
-            if tree.token() == '->' and str(tree.right()) == subformula:
-                imp.append(str(tree.left()))
-        return imp
+        Example:
+        ((a+b):F) => [a:F, b:F]
 
+        Remark:
+        If no sum exists in the formula, the returned list will simply contain the same formula.
+        A empty List should never be returned.
+        '''
+        proof_term = Formula(self._tree.subtree(self._tree.root.left).to_s()) # Formula
+        subformula = self._tree.subtree(self._tree.root.right).to_s() # String
+        done = []
+        todo = [proof_term._tree]
+        while len(todo) > 0:
+            f = todo.pop()
+            if f.first('+') is None:
+                done.append(f)
+            else:
+                left = f.deep_copy()
+                node = left.first('+')
+                left.left_split(node)
+                todo.append(left)
+
+                right = f.deep_copy()
+                node = right.first('+')
+                right.right_split(node)
+                todo.append(right)
+        # make to string and remove duplicates
+        temp = []
+        for tree in done:
+            temp.append('('+tree.to_s()+':'+subformula+')')
+        temp = list(set(temp))
+        # make to Formulas
+        formulas = []
+        for s in temp:
+            formulas.append(Formula(s))
+        return formulas
+
+    def _simplify_bang(self):
+        '''
+        Simplify Formula by resolving top '!'.
+
+        restriction:
+        - Must only be called on a Formula where top operation is ':' and to left operation is '!'.
+
+        :return:
+        new Formula,    if resolvable
+        None,           if not resolvable
+
+        Example:
+        ((!(a)):(a:F))  => (a:F)
+        ((!(b)):F)      => None
+        '''
+        # accessing child of '!'
+        left = self._tree.subtree(self._tree.root.left.right)
+        right = self._tree.subtree(self._tree.root.right.left)
+        if right and left.to_s() == right.to_s():
+            subformula = self._tree.subtree(self._tree.root.right.right)
+            s = '('+right.to_s()+':'+subformula.to_s()+')'
+            return Formula(s)
+        else:
+            return None
+
+    def _has_bad_bang(self):
+        '''
+        Checks if there is a left '!' of '*' somewhere in the Formula.
+
+        restriction:
+        - Must only be called on a Formula where top operation is ':'.
+        :return:
+        '''
+        proof_term_tree = Tree(self._tree.root.left.to_s())
+        if proof_term_tree.has_bad_bang():
+            return True
+        else:
+            return False

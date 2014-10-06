@@ -212,10 +212,10 @@ class Node(object):
 
     def get_left_split(self):
         f1 = self.deep_copy()
-        print(str(f1.is_root()))
+        # print(str(f1.is_root()))
         f1._parent._left = f1.left()
         f1._left._parent = f1.parent()
-        print(str(f1))
+        # print(str(f1))
         return f1
 
     def get_right_split(self):
@@ -233,33 +233,6 @@ class Node(object):
         for item in term:
             if item in [':', '+', '*', '->']:
                 current._token = item
-                if item == '!':
-                    current.tidy_up()
-                current = current.new_right()
-            elif item == '!':
-                current = current._parent
-                current._token = item
-                current._left = None
-                current = current.new_right()
-            elif item == '(':
-                current = current.new_left()
-            elif item == ')':
-                current = current._parent
-            else:
-                current._token = item
-                current = current._parent
-        return root
-
-    @staticmethod
-    def make_tree_extended(term):
-        term = parse(term)
-        root = Node()
-        current = root
-
-        for item in term:
-            if item in [':', '+', '*', '->']:
-                current._token = item
-                #todo: delete invalid subtree
                 current = current.new_right()
             elif item == '!':
                 current = current._parent

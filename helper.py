@@ -1,3 +1,6 @@
+from re import findall
+
+
 def parse(string):
     '''
     separate operators, parentheses and variables and returns them as a list.
@@ -16,3 +19,137 @@ def parse(string):
         l.remove('')
     return l
 
+
+def x_size(musts):
+    '''
+    Takes an list of tuples as input and
+    searches for to highest occurring X..
+    '''
+    all_xs = []
+    for term in musts:
+        all_xs += wild_list(term[1])
+    all_xs = sorted(list(set(all_xs)))
+    return sorted(map(lambda x: int(x[1:]), all_xs)).pop()
+
+
+def merge(a, b):
+    '''
+    compares to lists, if they are mergable return the merge, else return None.
+    '''
+    size = len(a)
+    new = ['']*size
+    for index in range(size):
+        # first check if wilds match
+        if a[index] == b[index]:
+            new[index] = a[index]
+
+        elif a[index] == '':
+            new[index] = b[index]
+
+        elif b[index] == '':
+            new[index] = a[index]
+        else:
+            return None
+    return new
+
+
+def replace(consts, swaps):
+    '''
+    :param:
+    swaps: [('X2', '(b:X3)'), ...]
+    Wilds that must be replaces because of '!'
+
+    consts: [('a', ['(X2->(X1->F))]), ...]
+
+    :return:
+    adjusted const => [('a', ['((b:X3)->(X1->F))]), ...]
+    '''
+    new_consts = []
+    for term in consts:
+        tmp = term[1]
+        for replacement in swaps:
+           tmp = tmp.replace(replacement[0], replacement[1])
+        new_consts.append((term[0], tmp))
+    return new_consts
+
+
+def config_dict(term, size):
+    return init_dict(unique_wilds(term[1]), size)
+
+
+def unique_wilds(term):
+    '''
+    List of all different occurring 'Xs'.
+    '''
+    return sorted(list(set(wild_list(term))))
+
+
+def wild_list(term):
+    '''
+    List of all occurring 'Xs'.
+    '''
+    return sorted(findall(r'X\d+', term))
+
+
+def init_dict(keys, length):
+    d = {}
+    for k in keys:
+        d[k] = ['']*length
+    return d
+
+
+def configs_to_table(configs, size):
+    '''
+
+    :param configs: [   ({'X1':'A', 'X3':'(A->B)'}, [('X2', 'X1')]  ),
+                        ({'X1':'C', 'X3':'C'},      []              ),
+                        ({...},                     []              )],
+                        second return argument of cs, compare_to
+    :param size: highest Xn that occurs for one atomic Formula.
+    :return: table:
+    Example:
+              X1  X2  X3  X4    conditions
+        [   ([   ,   ,   ,   ],  None)
+            ([   ,   ,   ,   ],  [...])
+            ...
+            ([   ,   ,   ,   ],  None)
+        ]
+    '''
+    # init empty matrix of needed size
+    # e.g.: x_size = 5, len(cs) = 3
+    # >> table = [(['', '', '', '', ''], []), (['', '', '', '', ''], []), (['', '', '', '', ''], [])]
+    if configs:
+        table = [(['' for i in range(size)], []) for j in range(len(configs))]
+        row = 0
+        for tpl in configs:
+            for x in tpl[0]: # accessing the wild-dict, ignoring conditions (tpl[1])
+                position = int(x[1:]) - 1
+                term = tpl[0][x]
+                table[row][0][position] = term
+            row += 1
+        # todo: what if configs = []? => currently an emtpy List is returned.
+        return table
+    else:
+        return [(['']*size, [])]
+
+
+def y_to_x(wilds_y):
+    '''
+
+    :param wilds_y:
+    :return:
+    '''
+    x_constrains = []
+    for key in wilds_y:
+        if len(wilds_y[key]) == 1:
+            pass
+        else:
+            if _has_contradiction(wilds_y[key]):
+                return False
+            else:
+                x_constrains.append(wilds_y[key])
+    return x_constrains
+
+
+def _has_contradiction(config_for_one_y):
+    print('EEEEERRROOORRR')
