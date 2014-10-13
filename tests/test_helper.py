@@ -33,7 +33,6 @@ class Tests(unittest.TestCase):
     def test_match3(self):
         self.assertListEqual(['', 'S'], merge(['', 'S'], ['', '']))
 
-
     def test_merge_(self):
         t1 = ['A', 'B', '']
         t2 = ['A', '', 'C']
