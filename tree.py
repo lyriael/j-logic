@@ -1,8 +1,6 @@
 from node import Node
 from helper import parse
 from helper import replace
-from helper import unique_wilds
-from helper import merge
 
 
 class Tree(object):
@@ -60,6 +58,7 @@ class Tree(object):
         return term
 
     def preorder_nodes(self, node):
+        # todo: may be static? so that it can simply be called on a node of a tree
         nodes = [node]
         if node.has_left():
             nodes += self.preorder_nodes(node.left)
@@ -75,6 +74,7 @@ class Tree(object):
         return None
 
     def subtree(self, node):
+        #todo: may be static? so that it can simply be called on a node of a tree.
         if node is None:
             return None
         else:
@@ -83,7 +83,7 @@ class Tree(object):
     def deep_copy(self):
         return Tree(self._inorder_string(self.root))
 
-    def left_split(self, plus_node):
+    def _left_split(self, plus_node):
         '''
         Caution: makes direct changes to the tree
         Expects the node to have token '+'
@@ -97,7 +97,7 @@ class Tree(object):
             elif plus_node.position == 'right':
                 plus_node.parent.set_right(plus_node.left)
 
-    def right_split(self, plus_node):
+    def _right_split(self, plus_node):
         '''
         Caution: makes direct changes to the tree
         Expects the node to have token '+'
@@ -111,17 +111,8 @@ class Tree(object):
             elif plus_node.position == 'right':
                 plus_node.parent.set_right(plus_node.right)
 
-    def has_bad_bang(self):
-        '''
-        This method expects the formula to be splited and simplified already,
-        sucht that only '*', '!' and const are nodes.
-        '''
-        for node in self.preorder_nodes(self.root):
-            if node.token == '!' and node.position == 'left':
-                return True
-        return False
-
-    def musts(self):
+    @staticmethod
+    def musts(must_formula):
         '''
         This method expects the formula to be splited and simplified already,
         such that only '*', '!' and const are nodes.
@@ -131,10 +122,11 @@ class Tree(object):
 
         THE MAGIC HAPPENS RIGHT HERE
         '''
-        consts = []     # returning container.
-        swaps = []      # contains replacements for Wilds from '!'. => ('X2', '(b:X3)')
-        v_count = 1     # needed for Wilds (X1, X2, ...)
-        temp = [self]   # contains Trees
+        must_tree = Tree(must_formula)
+        consts = []         # returning container.
+        swaps = []          # contains replacements for Wilds from '!'. => ('X2', '(b:X3)')
+        v_count = 1         # needed for Wilds (X1, X2, ...)
+        temp = [must_tree]  # contains Trees
         while len(temp) > 0:
             f = temp.pop()
             proof_term = f.subtree(f.root.left)
@@ -222,7 +214,8 @@ class Tree(object):
             if current_node.has_right():
                 Tree._replace_in_tree(current_node.right, old, replacement)
 
-    def _sum_split(self):
+    @staticmethod
+    def sum_split(formula):
         '''
         Transforms formula to a disjunctive form.
         algorithm:
@@ -231,18 +224,20 @@ class Tree(object):
             if there is none you're done.
             if there is one, split the formula and repeat the step above for both parts.
 
-        :return:
-        List of Formulas.
+        :return: list
+            formulas as Strings.
 
         Example:
-        ((a+b):F) => [a:F, b:F]
+        ((a+b):F) => ['(a:F)', '(b:F')]
 
         Remark:
-        If no sum exists in the formula, the returned list will simply contain the same formula.
+        If no sum exists in the formula, the returned list will simply contain the original formula.
         A empty List should never be returned.
         '''
-        proof_term = self.subtree(self.root.left) # Formula
-        subformula = self.subtree(self.root.right).to_s() # String
+        tree = Tree(formula)
+        proof_term = tree.subtree(tree.root.left)   # Tree, e.g.: ((a*b)+c)
+        subformula = tree.root.right.to_s()         # String, e.g.: F
+
         done = []
         todo = [proof_term]
         while len(todo) > 0:
@@ -252,61 +247,88 @@ class Tree(object):
             else:
                 left = f.deep_copy()
                 node = left.first('+')
-                left.left_split(node)
+                left._left_split(node)
                 todo.append(left)
 
                 right = f.deep_copy()
                 node = right.first('+')
-                right.right_split(node)
+                right._right_split(node)
                 todo.append(right)
+
         # make to string and remove duplicates
-        temp = []
+        result = []
         for tree in done:
-            temp.append('('+tree.to_s()+':'+subformula+')')
-        temp = list(set(temp))
-        # make to Formulas
-        formulas = []
-        for s in temp:
-            formulas.append(Tree(s))
-        return formulas
+            result.append('('+tree.to_s()+':'+subformula+')')
+        return list(set(result))
 
-    def _simplify_bang(self):
+    @staticmethod
+    def has_outer_bang(formula):
         '''
-        Simplify Formula by resolving top '!'.
+        Called from ProofSearch in step 'atomize'.
 
-        restriction:
-        - Must only be called on a Formula where top operation is ':' and to left operation is '!'.
+        If the first operation of a proof term is a '!', the formula can be simplified. This method checks if that is
+        the case.
 
-        :return:
-        new Formula,    if resolvable
-        None,           if not resolvable
+        @see Tree.simplify_bang()
 
-        Example:
-        ((!(a)):(a:F))  => (a:F)
-        ((!(b)):F)      => None
+        :param formula: string
+        :return has_outer_bang: boolean
+            True, if '!' is the first operation in proof term
+            False, else.
         '''
-        # accessing child of '!'
-        left = self.subtree(self.root.left.right)
-        right = self.subtree(self.root.right.left)
-        if right and left.to_s() == right.to_s():
-            subformula = self.subtree(self.root.right.right)
-            s = '('+right.to_s()+':'+subformula.to_s()+')'
-            return Tree(s)
-        else:
-            return None
-
-    def _has_bad_bang(self):
-        '''
-        Checks if there is a left '!' of '*' somewhere in the Formula.
-
-        restriction:
-        - Must only be called on a Formula where top operation is ':'.
-        :return:
-        '''
-        proof_term_tree = Tree(self.root.left.to_s())
-        if proof_term_tree.has_bad_bang():
+        tree = Tree(formula)
+        if tree.root.left.token == '!':
             return True
         else:
             return False
 
+    @staticmethod
+    def simplify_bang(formula):
+        '''
+        Called from ProofSearch in step 'atomize'
 
+        Simplify a formula by resolving top '!'.
+
+        restriction: Must only be called on a Formula where top operation is ':' and top left operation is '!'.
+        @see Tree.has_outer_bang()
+
+        Example:
+        ((!a):(a:F))  => (a:F)
+        ((!b):F)      => None
+
+        :return str:
+            new Formula,    if resolvable
+            empty,          if not resolvable
+        '''
+        # accessing child of '!'
+        tree = Tree(formula)
+        left = tree.subtree(tree.root.left.right)
+        right = tree.subtree(tree.root.right.left)
+        assert tree.root.token == ':'
+        assert tree.root.left.token == '!'
+
+        if right and left.to_s() == right.to_s():
+            subformula = tree.subtree(tree.root.right.right)
+            s = '('+right.to_s()+':'+subformula.to_s()+')'
+            return s
+        else:
+            return ''
+
+    @staticmethod
+    def has_bad_bang(formula):
+        '''
+        Checks if there is a left '!' of '*' somewhere in the Formula.
+
+        restriction: Must only be called on a Formula where top operation is ':'.
+
+        :return boolean:
+            True, if a left '!' of '*' is found somewhere in the tree.
+            False, else.
+        '''
+        tree = Tree(formula)
+        proof_term_tree = Tree(tree.root.left.to_s())
+        assert tree.root.token == ':'
+        for node in proof_term_tree.preorder_nodes(tree.root):
+            if node.token == '!' and node.position == 'left':
+                return True
+        return False

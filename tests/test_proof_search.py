@@ -260,3 +260,8 @@ class Tests(unittest.TestCase):
         self.assertEqual(2, len(parts))
         # print(parts[0].tree.to_s())
         # print(parts[1].tree.to_s())
+
+    # def test_atomize2(self):
+    #     p = ProofSearch({}, '')
+    #     empty = p.atomize()
+    #     print(empty)

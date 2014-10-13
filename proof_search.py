@@ -13,9 +13,47 @@ class ProofSearch:
         '''
         expect a string as formula
         '''
-        self._cs = cs
-        self._formula = formula
+        self.cs = cs
+        self.formula = formula
+        self.atoms = None
+        if formula:
+            self.atoms = self.atomize()
         self._atomics_and_musts = {}
+
+    def atomize(self):
+        '''
+        If possible the formula is split into several smaller parts. It is comparable with transforming a formula
+        into disjunctive form. The original formula is exactly then satisfiable, if at least one of the atomic formulas
+        are satisfiable.
+
+        -   For each '+', the formula will be split in two corresponding parts. So for the formula to be provable, only
+            one of these subformulas must be provable.
+
+        These splits are further sorted:
+        -   If a '!' is top operation of a formula, the formula is simplified by correctly removing the '!' if possible.
+            If this is not possible, the subformula is not provable and will be deleted.
+        -   If a '!' is a left child of '*' the (sub)formula is not provable, and so the subformula will be deleted.
+
+        :return: list
+            containing atomic formulas as Strings.
+        '''
+        # first step: make sum-splits
+        splits = Tree.sum_split(self.formula)
+
+        # second step: simplify formula if top operation is bang
+        for formula in splits[:]:
+            if Tree.has_outer_bang(formula):
+                splits.remove(formula)
+                new_formula = Tree.simplify_bang(formula)
+
+                if new_formula:
+                    splits.append(new_formula)
+
+        # third step: remove formulas where '!' is left child of '*'
+        for formula in splits[:]:
+            if Tree.has_bad_bang(formula):
+                splits.remove(formula)
+        return splits
 
     def divide(self):
         '''
@@ -35,10 +73,10 @@ class ProofSearch:
         '''
         # of those tiny-formulas it is enough to prove just one
         atomics_with_musts = {}
-        atoms = self.atomize()
-        for atom in atoms:
+        #atoms = self.atomize()
+        for atom in self.atoms:
             # find how that structre looks in test_formula#test_to_pieces_and_get_terms_to_proof
-            atomics_with_musts[atom.to_s()] = atom.musts()
+            atomics_with_musts[atom] = Tree.musts(atom)
         self._atomics_and_musts = atomics_with_musts
         return atomics_with_musts
 
@@ -273,7 +311,7 @@ class ProofSearch:
         '''
         found_at_least_one = False
         matches_for_proof_constant = []
-        cs_option = self._cs.get(proof_constant)
+        cs_option = self.cs.get(proof_constant)
 
         if cs_option:
             for cs_term in cs_option:
@@ -288,38 +326,7 @@ class ProofSearch:
         else:
             return None
 
-    def atomize(self):
-        '''
-        If possible the formula is split into several smaller parts. It is comparable with transforming a formula
-        into DNS.
 
-        -   For each '+', the formula will be split in two corresponding parts. So for the formula to be provable, only
-            one of these subformulas must be provable.
-
-        These splits are further sorted:
-        -   If a '!' is top operation of a formula, the formula is simplified by correctly removing the '!' if possible.
-            If this is not possible, the subformula will be deleted.
-        -   If a '!' is a left child of '*' the (sub)formula is not provable, and so the subformula will be deleted.
-
-        :return:
-        List with Formulas.
-        '''
-        # first step: make sum-splits
-        parts = Tree(self._formula)._sum_split()
-
-        # second step: simplify formula if top operation is bang
-        for f in parts[:]:
-            if f.root.left.token == '!':
-                parts.remove(f)
-                improved_f = f._simplify_bang()
-                if improved_f is not None:
-                    parts.append(improved_f)
-
-        # third step: remove formulas where '!' is left child of '*'
-        for f in parts[:]:
-            if f._has_bad_bang(): # makes a Tree copy.
-                parts.remove(f)
-        return parts
 
 
 def get_all_with_y(conditions, keys):
