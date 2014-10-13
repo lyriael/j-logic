@@ -253,3 +253,4 @@ class Tests(unittest.TestCase):
         cs = ProofSearch({'a': ['(Y1->Y1)']}, '')
         match = cs.find_all_for('a', orig_term)
         self.assertIsNone(match)
+

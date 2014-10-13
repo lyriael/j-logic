@@ -28,11 +28,11 @@ class Formula(object):
         List with Formulas.
         '''
         # first step: make sum-splits
-        parts = self._sum_split()
+        parts = self._tree._sum_split()
 
         # second step: simplify formula if top operation is bang
         for f in parts[:]:
-            if f._tree.root.left.token == '!':
+            if f.root.left.token == '!':
                 parts.remove(f)
                 improved_f = f._simplify_bang()
                 if improved_f is not None:
@@ -58,89 +58,3 @@ class Formula(object):
         '''
         return self._tree.musts()
 
-    def _sum_split(self):
-        '''
-        Transforms formula to a disjunctive form.
-        algorithm:
-
-        search for first '+'
-            if there is none you're done.
-            if there is one, split the formula and repeat the step above for both parts.
-
-        :return:
-        List of Formulas.
-
-        Example:
-        ((a+b):F) => [a:F, b:F]
-
-        Remark:
-        If no sum exists in the formula, the returned list will simply contain the same formula.
-        A empty List should never be returned.
-        '''
-        proof_term = Formula(self._tree.subtree(self._tree.root.left).to_s()) # Formula
-        subformula = self._tree.subtree(self._tree.root.right).to_s() # String
-        done = []
-        todo = [proof_term._tree]
-        while len(todo) > 0:
-            f = todo.pop()
-            if f.first('+') is None:
-                done.append(f)
-            else:
-                left = f.deep_copy()
-                node = left.first('+')
-                left.left_split(node)
-                todo.append(left)
-
-                right = f.deep_copy()
-                node = right.first('+')
-                right.right_split(node)
-                todo.append(right)
-        # make to string and remove duplicates
-        temp = []
-        for tree in done:
-            temp.append('('+tree.to_s()+':'+subformula+')')
-        temp = list(set(temp))
-        # make to Formulas
-        formulas = []
-        for s in temp:
-            formulas.append(Formula(s))
-        return formulas
-
-    def _simplify_bang(self):
-        '''
-        Simplify Formula by resolving top '!'.
-
-        restriction:
-        - Must only be called on a Formula where top operation is ':' and to left operation is '!'.
-
-        :return:
-        new Formula,    if resolvable
-        None,           if not resolvable
-
-        Example:
-        ((!(a)):(a:F))  => (a:F)
-        ((!(b)):F)      => None
-        '''
-        # accessing child of '!'
-        left = self._tree.subtree(self._tree.root.left.right)
-        right = self._tree.subtree(self._tree.root.right.left)
-        if right and left.to_s() == right.to_s():
-            subformula = self._tree.subtree(self._tree.root.right.right)
-            s = '('+right.to_s()+':'+subformula.to_s()+')'
-            return Formula(s)
-        else:
-            return None
-
-    def _has_bad_bang(self):
-        '''
-        Checks if there is a left '!' of '*' somewhere in the Formula.
-
-        restriction:
-        - Must only be called on a Formula where top operation is ':'.
-        :return:
-        '''
-        proof_term_tree = Tree(self._tree.root.left.to_s())
-        if proof_term_tree.has_bad_bang():
-            return True
-        else:
-            return False

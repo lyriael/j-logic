@@ -222,153 +222,91 @@ class Tree(object):
             if current_node.has_right():
                 Tree._replace_in_tree(current_node.right, old, replacement)
 
-    # @staticmethod
-    # def apply_condition(merged: list, condition: tuple):
-    #     '''
-    #
-    #     :param merged:
-    #     :param condition:
-    #     :return:
-    #     '''
-    #     index = int(condition[0][1:])-1
-    #     condition_term = condition[1]
-    #     # ################
-    #     # ('X2', '(A->B)')
-    #     # ################
-    #     if 'X' not in condition_term and 'Y' not in condition_term:
-    #         # matches what's already there, or empty
-    #         # print(condition_term)
-    #         # print(merged[index])
-    #         if condition_term == merged[index] or merged[index] == '':
-    #             merged[index] = condition_term
-    #             return merged, True
-    #         else:
-    #             return None, None
-    #     # #################
-    #     # ('X1', '(X2->F)')
-    #     # #################
-    #     if 'X' in condition_term and 'Y' not in condition_term:
-    #         # print(merged[index])
-    #         # if 'X1' != ''
-    #         if merged[index]:
-    #             # compare value of 'X1' with condition_term.
-    #             con, wild = Tree.compare_second_try(Tree(condition_term).root, Tree(merged[index]).root, [], {})
-    #             # print(wild)
-    #             # print(con)
-    #             # assert there are no conditions, check if the wilds fit merged.
-    #             assert con == []
-    #             tmp = list(merged)
-    #             for key in wild:
-    #                 i = int(key[1:])-1
-    #                 if wild[key] == merged[i] or merged[i] == '':
-    #                     tmp[i] = wild[key]
-    #                 else:
-    #                     return None, None
-    #             return tmp, True
-    #         # if 'X1' = ''
-    #         else:
-    #             # see if for all occurring 'Xn' in condition_term are already set.
-    #             xs_in_condition = unique_wilds(condition_term)
-    #             tmp = str(condition_term)
-    #             for x in xs_in_condition:
-    #                 i = int(x[1:])-1
-    #                 if merged[i] == '':
-    #                     return merged, False
-    #                 else:
-    #                     tmp = tmp.replace(x, merged[i])
-    #             merged[index] = tmp
-    #             return merged, True
-    #     # ####################
-    #     # if ('X1', '(Y1->F)')
-    #     # ####################
-    #     if 'X' not in condition_term and 'Y' in condition_term:
-    #         # if 'X1' != ''
-    #         if merged[index]:
-    #             # because this method was not intended for what what I'm doing now, here's a little bit of hacking
-    #             # that's doesn't seem to make sense.
-    #             y_to_x_condition_term = str(condition_term.replace('Y', 'X'))
-    #             con, wild = Tree.compare_second_try(Tree(y_to_x_condition_term).root, Tree(merged[index]).root, [], {})
-    #             # print(con)
-    #             # print(wild)
-    #             if wild is None:
-    #                 assert con is None
-    #                 return None, None
-    #             else:
-    #                 assert con == []
-    #                 y_wild ={}
-    #                 for key in wild:
-    #                     y_wild['Y'+key[1:]] = wild[key]
-    #                 return merged, y_wild
-    #         else:
-    #             # if there is no value in 'X1' then 'Y' doesn't matter
-    #             return merged, False
-    #     # ####################
-    #     # if ('X1', '(Y1->F)') !!! THIS SHOULD (HOPEFULLY) NEVER HAPPEN !!!
-    #     # ####################
-    #     if 'X' in condition_term and 'Y' in condition_term:
-    #         print('This should have never happened...')
-    #         assert False
-    #
-    # @staticmethod
-    # def merge_two_tables(first, second):
-    #     '''
-    #     :param first:
-    #     :param second:
-    #     :return:
-    #     '''
-    #     # todo: may be needs to be moved as well
-    #     # holds all matches
-    #     merged_tables = []
-    #     for tpl in first:
-    #         for candidate_tpl in second:
-    #
-    #             simple_merge = merge(tpl[0], candidate_tpl[0])
-    #             conditions = tpl[1] + candidate_tpl[1]
-    #
-    #             if simple_merge:
-    #                 # no conditions, yej!
-    #                 if not conditions:
-    #                     merged_tables.append((simple_merge, []))
-    #
-    #                 # conditions apply to merge, oh noes..
-    #                 else:
-    #                     todo_conditions = list(conditions)
-    #                     done_conditions = []
-    #                     updated_merge = simple_merge
-    #
-    #                     # check every condition
-    #                     while todo_conditions:
-    #                         current = todo_conditions.pop()
-    #                         updated_merge, delete_condition = Tree.apply_condition(updated_merge, current)
-    #
-    #                         # merge can fulfills
-    #                         if updated_merge:
-    #                             # condition is fulfilled an no longer needed, also merge was successful.
-    #                             if delete_condition is True:
-    #                                 # condition was already deleted by poping it.
-    #                                 pass
-    #                             # condition does not matter for this merge, but might be needed later.
-    #                             if delete_condition is False:
-    #                                 done_conditions.append(current)
-    #                             # condition could be fulfilled, but other conditions must be updated.
-    #                             elif isinstance(delete_condition, dict):
-    #                                 change_and_todo = get_all_with_y(todo_conditions, delete_condition.keys()) + \
-    #                                                   get_all_with_y(done_conditions, delete_condition.keys())
-    #                                 for key in delete_condition:
-    #                                     change_and_todo = update_y(change_and_todo, key, delete_condition[key])
-    #                                 todo_conditions = todo_conditions + change_and_todo
-    #                         # condition is not compatible with merge
-    #                         if not updated_merge:
-    #                             updated_merge = None
-    #                             break
-    #                     # end of 'while todo_conditions'
-    #
-    #                     # All conditions were successful apply
-    #                     if updated_merge:
-    #                         merged_tables.append((updated_merge, done_conditions))
-    #     return merged_tables
+    def _sum_split(self):
+        '''
+        Transforms formula to a disjunctive form.
+        algorithm:
 
+        search for first '+'
+            if there is none you're done.
+            if there is one, split the formula and repeat the step above for both parts.
 
+        :return:
+        List of Formulas.
 
+        Example:
+        ((a+b):F) => [a:F, b:F]
+
+        Remark:
+        If no sum exists in the formula, the returned list will simply contain the same formula.
+        A empty List should never be returned.
+        '''
+        proof_term = self.subtree(self.root.left) # Formula
+        subformula = self.subtree(self.root.right).to_s() # String
+        done = []
+        todo = [proof_term]
+        while len(todo) > 0:
+            f = todo.pop()
+            if f.first('+') is None:
+                done.append(f)
+            else:
+                left = f.deep_copy()
+                node = left.first('+')
+                left.left_split(node)
+                todo.append(left)
+
+                right = f.deep_copy()
+                node = right.first('+')
+                right.right_split(node)
+                todo.append(right)
+        # make to string and remove duplicates
+        temp = []
+        for tree in done:
+            temp.append('('+tree.to_s()+':'+subformula+')')
+        temp = list(set(temp))
+        # make to Formulas
+        formulas = []
+        for s in temp:
+            formulas.append(Tree(s))
+        return formulas
+
+    def _simplify_bang(self):
+        '''
+        Simplify Formula by resolving top '!'.
+
+        restriction:
+        - Must only be called on a Formula where top operation is ':' and to left operation is '!'.
+
+        :return:
+        new Formula,    if resolvable
+        None,           if not resolvable
+
+        Example:
+        ((!(a)):(a:F))  => (a:F)
+        ((!(b)):F)      => None
+        '''
+        # accessing child of '!'
+        left = self.subtree(self.root.left.right)
+        right = self.subtree(self.root.right.left)
+        if right and left.to_s() == right.to_s():
+            subformula = self.subtree(self.root.right.right)
+            s = '('+right.to_s()+':'+subformula.to_s()+')'
+            return Tree(s)
+        else:
+            return None
+
+    def _has_bad_bang(self):
+        '''
+        Checks if there is a left '!' of '*' somewhere in the Formula.
+
+        restriction:
+        - Must only be called on a Formula where top operation is ':'.
+        :return:
+        '''
+        proof_term_tree = Tree(self.root.left.to_s())
+        if proof_term_tree.has_bad_bang():
+            return True
+        else:
+            return False
 
 
