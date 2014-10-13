@@ -33,15 +33,6 @@ class Tests(unittest.TestCase):
     def test_match3(self):
         self.assertListEqual(['', 'S'], merge(['', 'S'], ['', '']))
 
-    def test_config_to_table(self):
-        configs = [({'X1': 'A', 'X2': 'B'}, []), ({'X1': '(A->B)', 'X4': 'C'}, [])]
-        self.assertListEqual([(['A', 'B', '', ''], []), (['(A->B)', '', '', 'C'], [])],
-                             configs_to_table(configs, 4))
-
-    def test_config_to_table2(self):
-        # test for no wilds & no condition
-        configs = []
-        self.assertListEqual([(['', '', ''], [])], configs_to_table(configs, 3))
 
     def test_merge_(self):
         t1 = ['A', 'B', '']

@@ -2,6 +2,7 @@ import unittest
 from proof_search import ProofSearch
 from proof_search import get_all_with_y
 from proof_search import update_y
+from proof_search import configs_to_table
 
 
 class Tests(unittest.TestCase):
@@ -189,3 +190,14 @@ class Tests(unittest.TestCase):
         t1 = [(['A', 'B', ''], [])]
         t2 = [(['A', '', 'C'], [])]
         self.assertListEqual([(['A', 'B', 'C'], [])], ProofSearch.merge_two_tables(t1, t2))
+
+
+    def test_config_to_table(self):
+        configs = [({'X1': 'A', 'X2': 'B'}, []), ({'X1': '(A->B)', 'X4': 'C'}, [])]
+        self.assertListEqual([(['A', 'B', '', ''], []), (['(A->B)', '', '', 'C'], [])],
+                             configs_to_table(configs, 4))
+
+    def test_config_to_table2(self):
+        # test for no wilds & no condition
+        configs = []
+        self.assertListEqual([(['', '', ''], [])], configs_to_table(configs, 3))

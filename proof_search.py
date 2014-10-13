@@ -2,7 +2,6 @@ from formula import Formula
 from cs import CS
 from tree import Tree
 from helper import x_size
-from helper import configs_to_table
 from helper import merge
 from helper import unique_wilds
 
@@ -285,5 +284,36 @@ def update_y(conditions, key, value):
     return result
 
 
+def configs_to_table(configs, size):
+    '''
 
+    :param configs: [   ({'X1':'A', 'X3':'(A->B)'}, [('X2', 'X1')]  ),
+                        ({'X1':'C', 'X3':'C'},      []              ),
+                        ({...},                     []              )],
+                        second return argument of cs, compare_to
+    :param size: highest Xn that occurs for one atomic Formula.
+    :return: table:
+    Example:
+              X1  X2  X3  X4    conditions
+        [   ([   ,   ,   ,   ],  None)
+            ([   ,   ,   ,   ],  [...])
+            ...
+            ([   ,   ,   ,   ],  None)
+        ]
+    '''
+    # init empty matrix of needed size
+    # e.g.: x_size = 5, len(cs) = 3
+    # >> table = [(['', '', '', '', ''], []), (['', '', '', '', ''], []), (['', '', '', '', ''], [])]
+    if configs:
+        table = [(['' for i in range(size)], []) for j in range(len(configs))]
+        row = 0
+        for tpl in configs:
+            for x in tpl[0]: # accessing the wild-dict, ignoring conditions (tpl[1])
+                position = int(x[1:]) - 1
+                term = tpl[0][x]
+                table[row][0][position] = term
+            row += 1
+        return table
+    else:
+        return [(['']*size, [])]
 
