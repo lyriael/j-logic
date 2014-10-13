@@ -1,5 +1,7 @@
 import unittest
 from proof_search import ProofSearch
+from proof_search import get_all_with_y
+from proof_search import update_y
 
 
 class Tests(unittest.TestCase):
@@ -60,3 +62,130 @@ class Tests(unittest.TestCase):
         self.assertTrue(ps.conquer())
         self.assertTrue(ps._conquer_one(2, [('s', '(X2->X1)'), ('t', 'X2'), ('v', '(X1->F)')])) # '((v*(s*t)):F)'
         self.assertFalse(ps._conquer_one(2, [('u', 'X2'), ('v', '((u:X2)->F)')]))
+        
+    def test_apply_condition(self):
+        wild = ['A', 'B', '']
+        con = ('X1', 'A')
+        result, delete = ProofSearch.apply_condition(wild, con)
+        self.assertListEqual(wild, result)
+        self.assertTrue(delete)
+
+    def test_apply_condition2(self):
+        wild = ['A', 'B', '']
+        con = ('X1', 'B')
+        result, delete = ProofSearch.apply_condition(wild, con)
+        self.assertIsNone(result)
+        self.assertIsNone(delete)
+
+    def test_apply_condition3(self):
+        wild = ['A', 'B', '']
+        con = ('X3', 'C')
+        result, delete = ProofSearch.apply_condition(wild, con)
+        self.assertListEqual(['A', 'B', 'C'], result)
+        self.assertTrue(delete)
+
+    def test_apply_condition6(self):
+        given = ['(A->F)', 'A']
+        con = ('X1', '(X2->F)')
+        result, delete = ProofSearch.apply_condition(given, con)
+        self.assertListEqual(given, result)
+        self.assertTrue(delete)
+
+    def test_apply_condition7(self):
+        given = ['(B->(A->F))', 'A', '']
+        con = ('X1', '(X3->(X2->F))')
+        result, delete = ProofSearch.apply_condition(given, con)
+        self.assertListEqual(['(B->(A->F))', 'A', 'B'], result)
+        self.assertTrue(delete)
+
+    def test_apply_condition8(self):
+        given = ['(B->(A->F))', 'A', 'C']
+        con = ('X1', '(X3->(X2->F))')
+        result, delete = ProofSearch.apply_condition(given, con)
+        self.assertIsNone(result)
+        self.assertIsNone(delete)
+
+    def test_apply_condition4(self):
+        wild = ['', 'B', '']
+        con = ('X1', 'X3')
+        result, delete = ProofSearch.apply_condition(wild, con)
+        self.assertListEqual(wild, result)
+        self.assertFalse(delete)
+
+    def test_apply_condition5(self):
+        wild = ['A', 'B', '']
+        con = ('X1', 'X3')
+        result, delete = ProofSearch.apply_condition(wild, con)
+        self.assertListEqual(['A', 'B', 'A'], result)
+        self.assertTrue(delete)
+
+    def test_apply_condition9(self):
+        wild = ['', 'B', 'C']
+        con = ('X1', '(X2->X3)')
+        result, delete = ProofSearch.apply_condition(wild, con)
+        self.assertListEqual(['(B->C)', 'B', 'C'], result)
+        self.assertTrue(delete)
+
+    def test_apply_condition10(self):
+        wild = ['', 'B', '']
+        con = ('X1', '(X2->X3)')
+        result, delete = ProofSearch.apply_condition(wild, con)
+        self.assertListEqual(['', 'B', ''], result)
+        self.assertFalse(delete)
+
+    def test_apply_condition11(self):
+        wild = ['', 'B', '']
+        con = ('X1', '(Y2->F)')
+        result, delete = ProofSearch.apply_condition(wild, con)
+        self.assertListEqual(['', 'B', ''], result)
+        self.assertFalse(delete)
+
+    def test_apply_condition12(self):
+        wild = ['(B->F)', '', '']
+        con = ('X1', '(Y2->F)')
+        result, delete = ProofSearch.apply_condition(wild, con)
+        self.assertListEqual(['(B->F)', '', ''], result)
+        self.assertDictEqual({'Y2': 'B'}, delete)
+
+    def test_apply_condition13(self):
+        wild = ['(B->(A->B))', '', '']
+        con = ('X1', '(Y1->Y2)')
+        result, delete = ProofSearch.apply_condition(wild, con)
+        self.assertListEqual(['(B->(A->B))', '', ''], result)
+        self.assertDictEqual({'Y1': 'B', 'Y2': '(A->B)'}, delete)
+
+    def test_apply_condition14(self):
+        wild = ['B', '', '']
+        con = ('X1', '(Y2->F)')
+        result, delete = ProofSearch.apply_condition(wild, con)
+        self.assertIsNone(result)
+        self.assertIsNone(delete)
+
+    def test_get_all_with_y(self):
+        result = get_all_with_y([('X2', '(Y1->A)'), ('X1', '(Y2)'), ('X3', '(Y1->Y2)')], ['Y1'])
+        self.assertListEqual([('X2', '(Y1->A)'), ('X3', '(Y1->Y2)')], result)
+
+    def test_get_all_with_y2(self):
+        result = get_all_with_y([('X2', '(Y1->A)'), ('X1', 'Y2'), ('X3', '(Y1->Y2)')], ['Y2'])
+        self.assertListEqual([('X1', 'Y2'), ('X3', '(Y1->Y2)')], result)
+
+    def test_get_all_with_y3(self):
+        result = get_all_with_y([('X2', '(Y1->A)'), ('X1', 'Y2'), ('X3', '(Y1->Y2)')], ['Y3'])
+        self.assertListEqual([], result)
+
+    def test_update_y(self):
+        x = [('X2', '(Y1->A)'), ('X1', 'Y2'), ('X3', '(Y1->Y2)')]
+        x = update_y(x, 'Y1', 'F')
+        self.assertListEqual([('X2', '(F->A)'), ('X1', 'Y2'), ('X3', '(F->Y2)')], x)
+
+    def test_update_y2(self):
+        x = [('X2', '(Y1->A)'), ('X1', 'Y2'), ('X3', '(Y1->Y2)')]
+        wilds = {'Y1': 'F', 'Y2': 'G'}
+        for entry in wilds:
+            x = update_y(x, entry, wilds[entry])
+        self.assertListEqual([('X2', '(F->A)'), ('X1', 'G'), ('X3', '(F->G)')], x)
+
+    def test_merge_two_tables(self):
+        t1 = [(['A', 'B', ''], [])]
+        t2 = [(['A', '', 'C'], [])]
+        self.assertListEqual([(['A', 'B', 'C'], [])], ProofSearch.merge_two_tables(t1, t2))
