@@ -1,4 +1,3 @@
-from formula import Formula
 from tree import Tree
 from helper import x_size
 from helper import merge
@@ -15,7 +14,7 @@ class ProofSearch:
         expect a string as formula
         '''
         self._cs = cs
-        self._formula = Formula(formula)
+        self._formula = formula
         self._atomics_and_musts = {}
 
     def divide(self):
@@ -36,9 +35,10 @@ class ProofSearch:
         '''
         # of those tiny-formulas it is enough to prove just one
         atomics_with_musts = {}
-        for small in self._formula.atomize():
+        atoms = self.atomize()
+        for atom in atoms:
             # find how that structre looks in test_formula#test_to_pieces_and_get_terms_to_proof
-            atomics_with_musts[small.formula] = small.get_musts()
+            atomics_with_musts[atom.to_s()] = atom.musts()
         self._atomics_and_musts = atomics_with_musts
         return atomics_with_musts
 
@@ -288,6 +288,39 @@ class ProofSearch:
         else:
             return None
 
+    def atomize(self):
+        '''
+        If possible the formula is split into several smaller parts. It is comparable with transforming a formula
+        into DNS.
+
+        -   For each '+', the formula will be split in two corresponding parts. So for the formula to be provable, only
+            one of these subformulas must be provable.
+
+        These splits are further sorted:
+        -   If a '!' is top operation of a formula, the formula is simplified by correctly removing the '!' if possible.
+            If this is not possible, the subformula will be deleted.
+        -   If a '!' is a left child of '*' the (sub)formula is not provable, and so the subformula will be deleted.
+
+        :return:
+        List with Formulas.
+        '''
+        # first step: make sum-splits
+        parts = Tree(self._formula)._sum_split()
+
+        # second step: simplify formula if top operation is bang
+        for f in parts[:]:
+            if f.root.left.token == '!':
+                parts.remove(f)
+                improved_f = f._simplify_bang()
+                if improved_f is not None:
+                    parts.append(improved_f)
+
+        # third step: remove formulas where '!' is left child of '*'
+        for f in parts[:]:
+            if f._has_bad_bang(): # makes a Tree copy.
+                parts.remove(f)
+        return parts
+
 
 def get_all_with_y(conditions, keys):
     '''
@@ -303,8 +336,6 @@ def get_all_with_y(conditions, keys):
             conditions.pop()
             result.append(con)
     return result
-
-
 
 
 def update_y(conditions, key, value):

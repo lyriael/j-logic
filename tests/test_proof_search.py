@@ -254,3 +254,9 @@ class Tests(unittest.TestCase):
         match = cs.find_all_for('a', orig_term)
         self.assertIsNone(match)
 
+    def test_atomize(self):
+        f = ProofSearch({}, '(((!b)+a):(b:X))')
+        parts = f.atomize()
+        self.assertEqual(2, len(parts))
+        # print(parts[0].tree.to_s())
+        # print(parts[1].tree.to_s())
