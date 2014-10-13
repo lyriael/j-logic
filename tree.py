@@ -9,9 +9,15 @@ class Tree(object):
 
     def __init__(self, formula):
         self.root = Node()
-        self.parse_formula(formula)
+        self._parse_formula(formula)
 
-    def parse_formula(self, formula):
+    def _parse_formula(self, formula):
+        """
+        Makes a binary tree from the given Formula.
+
+        :param formula: String
+        :return: None
+        """
         term = parse(formula)
         current = self.root
         current.set_root()
@@ -222,7 +228,6 @@ class Tree(object):
         :return:
         '''
         index = int(condition[0][1:])-1
-        size = len(merged)
         condition_term = condition[1]
         # ################
         # ('X2', '(A->B)')
@@ -261,7 +266,6 @@ class Tree(object):
             else:
                 # see if for all occurring 'Xn' in condition_term are already set.
                 xs_in_condition = unique_wilds(condition_term)
-                wilds = {}
                 tmp = str(condition_term)
                 for x in xs_in_condition:
                     i = int(x[1:])-1

@@ -2,7 +2,6 @@ from formula import Formula
 from cs import CS
 from tree import Tree
 from helper import x_size
-from helper import merge
 from helper import configs_to_table
 
 

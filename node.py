@@ -2,19 +2,31 @@ class Node(object):
 
     def __init__(self):
         self.token = ''
-        self.position = ''
         self.parent = None
+        self.position = ''
         self.left = None
         self.right = None
         self.sibling = None
 
-    def is_lonely(self):
-        return self.parent is None
-
     def is_root(self):
+        """
+        Simple check if self is root of a tree.
+
+        :return is_root
+            True if parent of self is self.
+            False if self has a parent that is not self.
+        """
         return self.parent == self
 
     def is_leaf(self):
+        """
+        Simple check if self is leaf of a tree.
+
+        :return: is_leaf
+            True if both children are None.
+            False if at least one child is not None.
+
+        """
         return self.left is None and self.right is None
 
     def set_root(self):
@@ -65,6 +77,11 @@ class Node(object):
             self.position = 'right'
 
     def set_left(self, node):
+        """
+
+        :param node:
+        :return:
+        """
         self.left = node
         node.parent = self
         node.set_position()

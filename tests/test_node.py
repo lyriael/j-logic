@@ -13,7 +13,6 @@ class Tests(unittest.TestCase):
         self.assertIsNone(node.left)
         self.assertIsNone(node.right)
         self.assertIsNone(node.sibling)
-        self.assertTrue(node.is_lonely())
         self.assertFalse(node.is_root())
 
     def init_sibling(self):
@@ -29,7 +28,6 @@ class Tests(unittest.TestCase):
         node.set_root()
         self.assertTrue(node.is_root())
         self.assertEqual('root', node.position)
-        self.assertFalse(node.is_lonely())
         self.assertTrue(node.is_leaf())
 
     def test_new_right(self):
