@@ -91,17 +91,17 @@ class Tests(unittest.TestCase):
         self.assertTrue(Tree.has_bad_bang('((((!a)*b)*(!c)):F)'))
         self.assertFalse(Tree.has_bad_bang('(((a*(!b))*(!c)):F)'))
 
-    def test_proof_terms1(self):
+    def test_musts1(self):
         c = Tree.musts('((a*b):F)')
         self.assertListEqual([('a', '(X1->F)'), ('b', 'X1')], c)
         c = Tree.musts('(((a*b)*c):F)')
         self.assertListEqual([('a', '(X2->(X1->F))'), ('b', 'X2'), ('c', 'X1')], c)
 
-    def test_proof_terms2(self):
+    def test_musts2(self):
         c = Tree.musts('((a*(!b)):F)')
         self.assertListEqual([('a', '((b:X2)->F)'), ('b', 'X2')], c)
 
-    def test_proof_terms3(self):
+    def test_musts3(self):
         c = Tree.musts('(((a*(b*c))*(!(d*(!e)))):F)')
         self.assertListEqual([('a', '(X5->(((d*(!e)):X2)->F))'), ('b', '(X6->X5)'), ('c', 'X6'), ('d', '((e:X4)->X2)'), ('e', 'X4')], c)
 

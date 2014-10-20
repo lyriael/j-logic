@@ -6,19 +6,31 @@ from helper import unique_wilds
 
 class ProofSearch:
     '''
-    Prepares the stepts for the actual stuff that needs to be done.
+    Prepares the steps for the actual stuff that needs to be done.
     '''
 
     def __init__(self, cs, formula):
         '''
         expect a string as formula
         '''
+        # todo: doku
         self.cs = cs
         self.formula = formula
         self.atoms = None
+        self.musts = {}
         if formula:
             self.atoms = self.atomize()
-        self._atomics_and_musts = {}
+            for atom in self.atoms:
+                self.musts[atom] = Tree.musts(atom)
+
+    def set_formula(self, formula):
+        self.formula = formula
+        self.atoms = self.atomize()
+        for atom in self.atoms:
+            self.musts[atom] = Tree.musts(atom)
+
+    def set_cs(self, cs):
+        self.cs = cs
 
     def atomize(self):
         '''
@@ -36,6 +48,7 @@ class ProofSearch:
 
         :return: list
             containing atomic formulas as Strings.
+            Example: '((!d)+((a*b)+c))' => ['(a*b)', 'c']
         '''
         # first step: make sum-splits
         splits = Tree.sum_split(self.formula)
@@ -55,30 +68,31 @@ class ProofSearch:
                 splits.remove(formula)
         return splits
 
-    def divide(self):
-        '''
-        Does two things:
-
-        1. splits for + and eliminates bad placed !
-        2. returns 'musts'
-
-        For the further proof search one entry of the returning dict must be satisfiable.
-        For an entry to be satisfiable, all tuples must be satisfiable.
-
-        Example: '(((c*(a*b))+d):F)'
-
-        -> {
-            '(d:F)':            [('d', 'F')],
-            '((c*(a*b)):F)':    [('a', '(X2->X1)'), ('b', 'X2'), ('c', '(X1->F)')]}
-        '''
-        # of those tiny-formulas it is enough to prove just one
-        atomics_with_musts = {}
-        #atoms = self.atomize()
-        for atom in self.atoms:
-            # find how that structre looks in test_formula#test_to_pieces_and_get_terms_to_proof
-            atomics_with_musts[atom] = Tree.musts(atom)
-        self._atomics_and_musts = atomics_with_musts
-        return atomics_with_musts
+    # def divide(self):
+    #     #todo: may be delete this method?
+    #     '''
+    #     Does two things:
+    #
+    #     1. splits for + and eliminates bad placed !
+    #     2. returns 'musts'
+    #
+    #     For the further proof search one entry of the returning dict must be satisfiable.
+    #     For an entry to be satisfiable, all tuples must be satisfiable.
+    #
+    #     Example: '(((c*(a*b))+d):F)'
+    #
+    #     -> {
+    #         '(d:F)':            [('d', 'F')],
+    #         '((c*(a*b)):F)':    [('a', '(X2->X1)'), ('b', 'X2'), ('c', '(X1->F)')]}
+    #     '''
+    #     # of those tiny-formulas it is enough to prove just one
+    #     atomics_with_musts = {}
+    #     #atoms = self.atomize()
+    #     for atom in self.atoms:
+    #         # find how that structre looks in test_formula#test_to_pieces_and_get_terms_to_proof
+    #         atomics_with_musts[atom] = Tree.musts(atom)
+    #     self._atomics_and_musts = atomics_with_musts
+    #     return atomics_with_musts
 
     def conquer(self):
         '''
@@ -86,15 +100,18 @@ class ProofSearch:
         # todo: doku
         :return:
         '''
+        #todo: remove?
         # atomic_formula: '(d:F)'
-        for atomic_formula in self._atomics_and_musts:
+        for atomic_formula in self.atoms:
             # procedure for each possible option
-            musts = self._atomics_and_musts[atomic_formula]
-            max_x = x_size(musts)
-            table = self._conquer_one(max_x, musts)
+            table = self.conquer_one(atomic_formula)
             if table:
                 return atomic_formula, table
         return None
+
+    @staticmethod
+    def get_musts_for(atom):
+        return Tree.musts(atom)
 
     def conquer_all_solutions(self):
         '''
@@ -104,46 +121,71 @@ class ProofSearch:
         # todo: doku
         :return:
         '''
+        #todo: remove?
         all = []
         # atomic_formula: '(d:F)'
-        for atomic_formula in self._atomics_and_musts:
+        for atomic_formula in self.atoms:
             # procedure for each possible option
-            musts = self._atomics_and_musts[atomic_formula]
+            musts = self.musts[atomic_formula]
             max_x = x_size(musts)
-            table = self._conquer_one(max_x, musts)
+            table = self.conquer_one(musts)
             if table:
                 all.append((atomic_formula, table))
         return all
 
-    def _conquer_one(self, max_x, musts):
+    def conquer_one(self, atom):
         '''
+        Checks one atomic formula for satisfiability.
+        Asserts that self.musts is already set.
 
-        :param musts: [('a': '(A->B)'), ...]
+        There are two important steps:
+
+            1. Look up all possible entries in cs that can match form of a 'must'.
+            If there are X-Wilds a configuration is returned, that says, which Xn corresponds to which formula/constant.
+            Also if there are Y-Wilds a second argument, that gives restrictions to the choice of the wild value is
+            returned.
+
+                Example:
+                must = [('a', ((b:X3)->(X2->F)), ...]
+                cs['a'] = ['((b:B)->(C->F)), 'A', '(Y1->(Y2->Y3))', ...]
+
+                => config_for_one_must =
+                    [({'X1':'', 'X2':'C', 'X3':'B'}, []),
+                     ({'X1':'', 'X2':'}
+                     # todo not done here!!
+
+        :param atom: atomic formula
+            e.g. '((a*b)*(!c))'
         :return: satisfiable: True, False
         '''
         # todo: write some more tests!!
         # todo: -> may be for good testing method needs to be changed.
+        max_x = x_size(self.musts[atom])
         finale_table = [(['']*max_x, [])]
-        # each of 'must' has to be satisfiable!
-        for must in musts:           # [('a': '(A->B)'), ...]
-            proof_constant = must[0] #   'a'
-            condition_term = must[1] #   '(A->B)'
 
-            configs_for_one_must = self.find_all_for(proof_constant, condition_term)
-            # print('\tconfigs for: ' + str(must))
+        # each entry of 'musts' has to be satisfiable!
+        for entry in self.musts[atom]:        # [('a': '(A->B)'), ...]
+            proof_constant = entry[0]   # 'a'
+            condition_term = entry[1]   # '(A->B)'
+
+            # todo: IMPORTANT STEP
+            configs_for_one_must = self._find_all_for(proof_constant, condition_term)
+            # print('\tconfigs for: ' + str(entry))
             # print('\tcurrent finale table: ' + str(finale_table))
             # if configs_for_one != None => 'must' is satisfiable with no further conditions.
             if configs_for_one_must is None:
                 return None
             else:
                 configs_for_one_must = configs_to_table(configs_for_one_must, max_x)
-                # print('\t\tas table: ' + str(configs_for_one_must))
+                # print('\t\tas table: ' + str(conf
+                # igs_for_one_must))
+                # todo: IMPORTANT STEP
                 finale_table = ProofSearch.merge_two_tables(finale_table, configs_for_one_must)
                 # print('\t\tfinale table: ' + str(finale_table))
         return finale_table
 
     @staticmethod
-    def apply_condition(merged: list, condition: tuple):
+    def _apply_condition(merged: list, condition: tuple):
         '''
 
         :param merged:
@@ -236,7 +278,7 @@ class ProofSearch:
         :param second:
         :return:
         '''
-        # todo: may be needs to be moved as well
+        # todo: may be needs to be moved to helper
         # holds all matches
         merged_tables = []
         for tpl in first:
@@ -259,7 +301,7 @@ class ProofSearch:
                         # check every condition
                         while todo_conditions:
                             current = todo_conditions.pop()
-                            updated_merge, delete_condition = ProofSearch.apply_condition(updated_merge, current)
+                            updated_merge, delete_condition = ProofSearch._apply_condition(updated_merge, current)
 
                             # merge can fulfills
                             if updated_merge:
@@ -288,27 +330,15 @@ class ProofSearch:
                             merged_tables.append((updated_merge, done_conditions))
         return merged_tables
 
-    def find_all_for(self, proof_constant, orig_term):
+    def _find_all_for(self, proof_constant, orig_term):
         '''
         :param proof_constant:
         :param orig_term:
         :return:
         =>  [({wilds},      [conditions]),   (...), ...]
             [ (first proof_constant-match),  (second proof_constant_match), ...]
-
-
-        Alte Doku von find():
-        :param proof_constant: constant proof term, which can be looked up in cs. Example: 'a'
-        :param orig_term: required term that must be proven by key. Example: '(X1->F)'
-        :return :
-            [match_found, wilds]
-            match_found:
-                False, if key is not in present in cs, or simply no match can be found.
-                True, if a exact match is found, or a wild match is possible.
-            wilds: if match depends on Wilds, else empty.
-                Example: [{'X1':'A','X4':'A->B'}, {'X1': ...,'X4': ..}, {...,...}]
-
         '''
+        #todo: more doku
         found_at_least_one = False
         matches_for_proof_constant = []
         cs_option = self.cs.get(proof_constant)
@@ -321,12 +351,11 @@ class ProofSearch:
                     found_at_least_one = True
             if found_at_least_one:
                 # remove emtpy entries
+                # todo: what does this line on code mean?
                 matches_for_proof_constant[:] = (value for value in matches_for_proof_constant if value != ({}, []))
                 return matches_for_proof_constant
         else:
             return None
-
-
 
 
 def get_all_with_y(conditions, keys):
