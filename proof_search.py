@@ -145,43 +145,46 @@ class ProofSearch:
             Also if there are Y-Wilds a second argument, that gives restrictions to the choice of the wild value is
             returned.
 
-                Example:
+            Example
                 must = [('a', ((b:X3)->(X2->F)), ...]
                 cs['a'] = ['((b:B)->(C->F)), 'A', '(Y1->(Y2->Y3))', ...]
 
                 => config_for_one_must =
-                    [({'X1':'', 'X2':'C', 'X3':'B'}, []),
-                     ({'X1':'', 'X2':'}
-                     # todo not done here!!
+                    [({'X1':'', 'X2':'C', 'X3':'B'}, [('X2', 'X1'),... ]), ... ]
+                    [({'wilds configurations},       [conditions for this configuration]
 
-        :param atom: atomic formula
-            e.g. '((a*b)*(!c))'
-        :return: satisfiable: True, False
+            2. One 'must' may have several configurations, but some can be in contradiction with the configurations of
+            other 'musts'. So the configurations of a 'must' get merged to the previous ones. In a merge, the conditions
+            must be upheld.
+
+            Example
+                config_for_one_must =       [({'X1':'', 'X2':'C', 'X3':'B'}, [('X2', 'X1'),... ]), ... ]
+                config_for_one_must_new =   [({'X1':'C', 'X2':'', 'X3':''}, [('X3', 'B'),... ]), ... ]
+
+                => merge_two_tables =       [({'X1':'C', 'X2':'C', 'X3':'B'}, []), ...]
+
+        :param atom: atomic formula, e.g. '((a*b)*(!c))'.
+        :return: finale_table, if there is a possible configuration.
         '''
-        # todo: write some more tests!!
-        # todo: -> may be for good testing method needs to be changed.
         max_x = x_size(self.musts[atom])
         finale_table = [(['']*max_x, [])]
 
         # each entry of 'musts' has to be satisfiable!
-        for entry in self.musts[atom]:        # [('a': '(A->B)'), ...]
+        for entry in self.musts[atom]:  # [('a': '(A->B)'), ...]
             proof_constant = entry[0]   # 'a'
-            condition_term = entry[1]   # '(A->B)'
+            term = entry[1]             # '(A->B)'
 
-            # todo: IMPORTANT STEP
-            configs_for_one_must = self._find_all_for(proof_constant, condition_term)
-            # print('\tconfigs for: ' + str(entry))
-            # print('\tcurrent finale table: ' + str(finale_table))
-            # if configs_for_one != None => 'must' is satisfiable with no further conditions.
+            configs_for_one_must = self._find_all_for(proof_constant, term)
+
+            # if there is no entry in CS that fits the term, this must is not satisfiable.
             if configs_for_one_must is None:
                 return None
             else:
+                # restructuring data
                 configs_for_one_must = configs_to_table(configs_for_one_must, max_x)
-                # print('\t\tas table: ' + str(conf
-                # igs_for_one_must))
-                # todo: IMPORTANT STEP
+                # merge configuration with those of previous 'musts'
                 finale_table = ProofSearch.merge_two_tables(finale_table, configs_for_one_must)
-                # print('\t\tfinale table: ' + str(finale_table))
+
         return finale_table
 
     @staticmethod
