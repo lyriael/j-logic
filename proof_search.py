@@ -119,7 +119,7 @@ class ProofSearch:
                 # restructuring data
                 configs_for_one_must = configs_to_table(configs_for_one_must, max_x)
                 # merge configuration with those of previous 'musts'
-                finale_table = ProofSearch.merge_two_tables(finale_table, configs_for_one_must)
+                finale_table = ProofSearch._merge_two_tables(finale_table, configs_for_one_must)
 
         return finale_table
 
@@ -159,7 +159,7 @@ class ProofSearch:
         return all
 
     @staticmethod
-    def merge_two_tables(first, second):
+    def _merge_two_tables(first, second):
         '''
         For two given configuration tables (with conditions!) merge them into one configuration table, if possible.
         First step of the merge is to see, if the wilds of the two table are in no contradiction.
@@ -207,7 +207,6 @@ class ProofSearch:
                         # check every condition
                         while todo_conditions:
                             current_condition = todo_conditions.pop()
-                            # todo: clean up 'apply_condition'
                             updated_merge, delete_condition = ProofSearch._apply_condition(updated_merge, current_condition)
 
                             # The merge is possible and ...
@@ -224,15 +223,21 @@ class ProofSearch:
                                 if delete_condition is False:
                                     done_conditions.append(current_condition)
 
-                                # ... condition can be fulfilled, but it caused changes in 'updated_merge' and thus
-                                # all related other conditions must be checked again.
+                                # ... condition can be fulfilled, but it caused changes in other conditions.
                                 elif isinstance(delete_condition, dict):
-                                    #todo: get whats going on here
-                                    change_and_todo = (get_all_with_y(todo_conditions, delete_condition.keys()) +
-                                                       get_all_with_y(done_conditions, delete_condition.keys()))
-                                    for key in delete_condition:
-                                        change_and_todo = update_y(change_and_todo, key, delete_condition[key])
-                                    todo_conditions = todo_conditions + change_and_todo
+
+                                    # from all conditions (those done already and those still to to), select all which
+                                    # contain the 'Yn' given from the dict.
+                                    y_wilds = delete_condition
+                                    updated_conditions = get_all_with_y(todo_conditions, y_wilds.keys()) \
+                                                         + get_all_with_y(done_conditions, y_wilds.keys())
+
+                                    # Update conditions that contain 'Yn'.
+                                    for key in y_wilds:
+                                        updated_conditions = update_y(updated_conditions, key, y_wilds[key])
+
+                                    # Add updated conditions to the todo_conditions.
+                                    todo_conditions = todo_conditions + updated_conditions
 
                             # The merge is not possible with this condition.
                             if not updated_merge:
@@ -377,63 +382,44 @@ class ProofSearch:
 
     def _find_all_for(self, proof_constant, orig_term):
         '''
-        :param proof_constant:
-        :param orig_term:
-        :return:
-        =>  [({wilds},      [conditions]),   (...), ...]
-            [ (first proof_constant-match),  (second proof_constant_match), ...]
-        '''
-        #todo: more doku
-        found_at_least_one = False
-        matches_for_proof_constant = []
-        cs_option = self.cs.get(proof_constant)
+        Finds all possible configuration for a given term pair by looking up the proof_constant in CS.
 
-        if cs_option:
-            for cs_term in cs_option:
+        wilds:
+            If there are 'Xn' in the term, so-called 'wilds' will be returned. It will connect a 'Xn' to a value found
+            in CS, if the rest of the term fits the one from CS.
+
+        conditions:
+            As a consequence of 'Yn' in CS, different kind of conditions may apply to one configuration. The condition
+            may connect one 'Xn' to a constant, to another 'Xm' or to a 'Yn' itself. 'Yn' can freely be chosen, as long
+            as all 'Yn' have the same value for one selection.
+
+        :param proof_constant: String
+        :param orig_term: String
+        :return: List
+        =>  [({wilds},      [conditions]),   ({...}, [...]),                ...]
+        '''
+
+        matches_for_proof_constant = []
+        cs_options = self.cs.get(proof_constant)
+
+        # If there are entries for the given proof constant.
+        if cs_options:
+
+            # Compare each cs_term with the given original term.
+            for cs_term in cs_options:
+
                 condition, wilds = Tree.compare_second_try(Tree(orig_term).root, Tree(cs_term).root, [], {})
+
+                # A match (with or without wilds) is possible
                 if condition is not None and wilds is not None:
                     matches_for_proof_constant.append((wilds, condition))
-                    found_at_least_one = True
-            if found_at_least_one:
+
+            # If there is a least one match, even if it needs no wilds, we return a list.
+            if len(matches_for_proof_constant) > 0:
                 # remove emtpy entries
-                # todo: what does this line on code mean?
                 matches_for_proof_constant[:] = (value for value in matches_for_proof_constant if value != ({}, []))
                 return matches_for_proof_constant
+
+        # There are no entries for the given proof constant.
         else:
             return None
-
-
-def get_all_with_y(conditions, keys):
-    '''
-    Elements will be removed from list!
-    :param conditions:
-    :param keys:
-    :return:
-    '''
-    result = []
-    for con in conditions[:]:
-        # check in con[1] if anything from keys occurrs
-        if any(y in con[1] for y in keys):
-            conditions.pop()
-            result.append(con)
-    return result
-
-
-def update_y(conditions, key, value):
-    '''
-
-    :param conditions:
-    :param wilds:
-    :return:
-    '''
-    result = []
-    for con in conditions:
-        if key in con[1]:
-            result.append((con[0], con[1].replace(key, value)))
-        else:
-            result.append((con[0], con[1]))
-    return result
-
-
-
-

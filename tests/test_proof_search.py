@@ -1,7 +1,5 @@
 import unittest
 from proof_search import ProofSearch
-from proof_search import get_all_with_y
-from proof_search import update_y
 
 
 class Tests(unittest.TestCase):
@@ -140,41 +138,17 @@ class Tests(unittest.TestCase):
         self.assertIsNone(result)
         self.assertIsNone(delete)
 
-    def test_get_all_with_y(self):
-        result = get_all_with_y([('X2', '(Y1->A)'), ('X1', '(Y2)'), ('X3', '(Y1->Y2)')], ['Y1'])
-        self.assertListEqual([('X2', '(Y1->A)'), ('X3', '(Y1->Y2)')], result)
-
-    def test_get_all_with_y2(self):
-        result = get_all_with_y([('X2', '(Y1->A)'), ('X1', 'Y2'), ('X3', '(Y1->Y2)')], ['Y2'])
-        self.assertListEqual([('X1', 'Y2'), ('X3', '(Y1->Y2)')], result)
-
-    def test_get_all_with_y3(self):
-        result = get_all_with_y([('X2', '(Y1->A)'), ('X1', 'Y2'), ('X3', '(Y1->Y2)')], ['Y3'])
-        self.assertListEqual([], result)
-
-    def test_update_y(self):
-        x = [('X2', '(Y1->A)'), ('X1', 'Y2'), ('X3', '(Y1->Y2)')]
-        x = update_y(x, 'Y1', 'F')
-        self.assertListEqual([('X2', '(F->A)'), ('X1', 'Y2'), ('X3', '(F->Y2)')], x)
-
-    def test_update_y2(self):
-        x = [('X2', '(Y1->A)'), ('X1', 'Y2'), ('X3', '(Y1->Y2)')]
-        wilds = {'Y1': 'F', 'Y2': 'G'}
-        for entry in wilds:
-            x = update_y(x, entry, wilds[entry])
-        self.assertListEqual([('X2', '(F->A)'), ('X1', 'G'), ('X3', '(F->G)')], x)
-
     def test_merge_two_tables(self):
         t1 = [(['A', 'B', ''], [])]
         t2 = [(['A', '', 'C'], [])]
-        self.assertListEqual([(['A', 'B', 'C'], [])], ProofSearch.merge_two_tables(t1, t2))
+        self.assertListEqual([(['A', 'B', 'C'], [])], ProofSearch._merge_two_tables(t1, t2))
 
     def test_merge_two_tables2(self):
         t1 = [(['D', 'C', '', 'B', ''], []),
               (['C', 'C', '', 'C', ''], [])]
         t2 = [(['D', '', '', '', 'A'], []),
               (['A', '', '', '', 'D'], [])]
-        self.assertListEqual([(['D', 'C', '', 'B', 'A'], [])], ProofSearch.merge_two_tables(t1, t2))
+        self.assertListEqual([(['D', 'C', '', 'B', 'A'], [])], ProofSearch._merge_two_tables(t1, t2))
 
     def test_find_all_for_none(self):
         ps = ProofSearch({'a': [1, 2, 3]}, '')

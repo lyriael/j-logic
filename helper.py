@@ -121,3 +121,33 @@ def configs_to_table(configs, size):
         return [(['']*size, [])]
 
 
+def get_all_with_y(conditions, keys):
+    '''
+    Elements will be removed from list!
+    :param conditions:
+    :param keys:
+    :return:
+    '''
+    result = []
+    for con in conditions[:]:
+        # check in con[1] if anything from keys occurrs
+        if any(y in con[1] for y in keys):
+            conditions.pop()
+            result.append(con)
+    return result
+
+
+def update_y(conditions, key, value):
+    '''
+
+    :param conditions:
+    :param wilds:
+    :return:
+    '''
+    result = []
+    for con in conditions:
+        if key in con[1]:
+            result.append((con[0], con[1].replace(key, value)))
+        else:
+            result.append((con[0], con[1]))
+    return result

@@ -47,3 +47,27 @@ class Tests(unittest.TestCase):
         # test for no wilds & no condition
         configs = []
         self.assertListEqual([(['', '', ''], [])], configs_to_table(configs, 3))
+
+    def test_get_all_with_y(self):
+        result = get_all_with_y([('X2', '(Y1->A)'), ('X1', '(Y2)'), ('X3', '(Y1->Y2)')], ['Y1'])
+        self.assertListEqual([('X2', '(Y1->A)'), ('X3', '(Y1->Y2)')], result)
+
+    def test_get_all_with_y2(self):
+        result = get_all_with_y([('X2', '(Y1->A)'), ('X1', 'Y2'), ('X3', '(Y1->Y2)')], ['Y2'])
+        self.assertListEqual([('X1', 'Y2'), ('X3', '(Y1->Y2)')], result)
+
+    def test_get_all_with_y3(self):
+        result = get_all_with_y([('X2', '(Y1->A)'), ('X1', 'Y2'), ('X3', '(Y1->Y2)')], ['Y3'])
+        self.assertListEqual([], result)
+
+    def test_update_y(self):
+        x = [('X2', '(Y1->A)'), ('X1', 'Y2'), ('X3', '(Y1->Y2)')]
+        x = update_y(x, 'Y1', 'F')
+        self.assertListEqual([('X2', '(F->A)'), ('X1', 'Y2'), ('X3', '(F->Y2)')], x)
+
+    def test_update_y2(self):
+        x = [('X2', '(Y1->A)'), ('X1', 'Y2'), ('X3', '(Y1->Y2)')]
+        wilds = {'Y1': 'F', 'Y2': 'G'}
+        for entry in wilds:
+            x = update_y(x, entry, wilds[entry])
+        self.assertListEqual([('X2', '(F->A)'), ('X1', 'G'), ('X3', '(F->G)')], x)
