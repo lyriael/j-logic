@@ -14,7 +14,7 @@ class Tree(object):
 
     def _parse_formula(self, formula):
         """
-        Makes a binary tree from the given Formula.
+        Makes a binary tree from the given Formula. Used only for initialization.
 
         :param formula: String
         :return: None
@@ -57,24 +57,34 @@ class Tree(object):
             term += self._inorder_string(node.right) + ')'
         return term
 
-    def preorder_nodes(self, node):
-        # todo: may be static? so that it can simply be called on a node of a tree
+    def _preorder_nodes(self, node):
         nodes = [node]
         if node.has_left():
-            nodes += self.preorder_nodes(node.left)
+            nodes += self._preorder_nodes(node.left)
         if node.has_right():
-            nodes += self.preorder_nodes(node.right)
+            nodes += self._preorder_nodes(node.right)
         return nodes
 
     def first(self, token):
-        nodes = self.preorder_nodes(self.root)
+        '''
+        Find first occurrence of a certain token in the tree using preorder.
+
+        :param token: String
+        :return node: Node
+        '''
+        nodes = self._preorder_nodes(self.root)
         for node in nodes:
             if node.token == token:
                 return node
         return None
 
     def subtree(self, node):
-        #todo: may be static? so that it can simply be called on a node of a tree.
+        '''
+        Returns a deep copy from the subtree of the given node.
+
+        :param node:
+        :return subtree: Tree
+        '''
         if node is None:
             return None
         else:
@@ -150,9 +160,8 @@ class Tree(object):
         return sorted(replace(consts, swaps))
 
     @staticmethod
-    def compare_second_try(orig_node, cs_node, conditions, wilds):
+    def compare(orig_node, cs_node, conditions, wilds):
         '''
-        from 2.10.14
         changes the tree while comparing.
         self == x (orig)
         mutable == y/const (cs)
@@ -160,7 +169,7 @@ class Tree(object):
         :param mutable:
         :return:
         '''
-        # todo: rename this method!!
+        # todo: This needs checking an cleaning
         # if current node is Yn, then replace all occurring Yn's with whatever is in orig.
         if cs_node.token[0] == 'Y':
             Tree._replace_in_tree(cs_node.get_root(), cs_node.token, Tree(orig_node.to_s()).root)
@@ -187,8 +196,8 @@ class Tree(object):
         # if both are same
         elif orig_node.token == cs_node.token:
             if orig_node.token in ['->', ':']:
-                conditions, wilds = Tree.compare_second_try(orig_node.left, cs_node.left, conditions, wilds)
-                conditions, wilds = Tree.compare_second_try(orig_node.right, cs_node.right, conditions, wilds)
+                conditions, wilds = Tree.compare(orig_node.left, cs_node.left, conditions, wilds)
+                conditions, wilds = Tree.compare(orig_node.right, cs_node.right, conditions, wilds)
             else:
                 # same constant
                 pass
@@ -328,7 +337,7 @@ class Tree(object):
         tree = Tree(formula)
         proof_term_tree = Tree(tree.root.left.to_s())
         assert tree.root.token == ':'
-        for node in proof_term_tree.preorder_nodes(tree.root):
+        for node in proof_term_tree._preorder_nodes(tree.root):
             if node.token == '!' and node.position == 'left':
                 return True
         return False

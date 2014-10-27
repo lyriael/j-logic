@@ -310,7 +310,7 @@ class ProofSearch:
 
                 # compare (and match) value of 'X1' in 'merged' with condition_term.
                 # Example: merged[n-1] = '(G->F)', => wild = {'X2': 'G'}
-                con, wild = Tree.compare_second_try(Tree(condition_term).root, Tree(merged[index]).root, [], {})
+                con, wild = Tree.compare(Tree(condition_term).root, Tree(merged[index]).root, [], {})
                 assert con == []    # assert there are no conditions
 
                 # check if the wilds from the previous match fit other 'Xm' entries in 'merged'.
@@ -361,7 +361,7 @@ class ProofSearch:
                 # going on, that might not seem to make any sense.
                 # It makes a compare-check, but with the 'Yn', where usually the 'Xn' should be.
                 y_to_x_condition_term = str(condition_term.replace('Y', 'X'))
-                con, wild = Tree.compare_second_try(Tree(y_to_x_condition_term).root, Tree(merged[index]).root, [], {})
+                con, wild = Tree.compare(Tree(y_to_x_condition_term).root, Tree(merged[index]).root, [], {})
 
                 # No configuration is found, so the condition is not possible.
                 if wild is None:
@@ -416,7 +416,7 @@ class ProofSearch:
             # Compare each cs_term with the given original term.
             for cs_term in cs_options:
 
-                condition, wilds = Tree.compare_second_try(Tree(orig_term).root, Tree(cs_term).root, [], {})
+                condition, wilds = Tree.compare(Tree(orig_term).root, Tree(cs_term).root, [], {})
 
                 # A match (with or without wilds) is possible
                 if condition is not None and wilds is not None:
