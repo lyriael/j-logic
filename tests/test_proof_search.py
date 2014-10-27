@@ -8,7 +8,7 @@ class Tests(unittest.TestCase):
         ps = ProofSearch({'a': ['(A->(A->F))', '((b:B)->A)', 'B', '(C->(A->F))', '((b:B)->(B->F))'], 'b': ['B']}, '')
         ps.atoms = ['test']
         ps.musts['test'] = [('a', '(X2->(X1->F))'), ('b', 'B')]
-        one = ps.conquer_one('test')
+        one = ps._conquer_one('test')
         self.assertListEqual([(['A', 'A'], []),
                               (['A', 'C'], []),
                               (['B', '(b:B)'], [])],
@@ -18,7 +18,7 @@ class Tests(unittest.TestCase):
         ps = ProofSearch({'a': ['(A->(A->F))', '((b:B)->A)', 'B', '(C->(A->F))', '((b:B)->(B->F))'], 'b': ['B']}, '')
         ps.atoms = ['test']
         ps.musts['test'] = [('a', '(X2->(X1->F))'), ('b', 'C')]
-        one = ps.conquer_one('test')
+        one = ps._conquer_one('test')
         self.assertIsNone(one)
 
     def test_conquer_one2(self):
@@ -27,7 +27,7 @@ class Tests(unittest.TestCase):
         ps.musts['test'] = [('a', '(X3->(X2->F))')]
         self.assertListEqual([(['', 'C', '(b:B)'], []),
                               (['', '', 'F'], [])],
-                             ps.conquer_one('test'))
+                             ps._conquer_one('test'))
 
     def test_conquer(self):
         cs = {'s': ['(B->A)'],
@@ -37,8 +37,8 @@ class Tests(unittest.TestCase):
         ps = ProofSearch(cs, formula)
         # so sollte das erste aus must erfüllbar sein, aber nicht das zweite.
         self.assertTrue(ps.conquer())
-        self.assertTrue(ps.conquer_one('((v*(s*t)):F)'))
-        self.assertFalse(ps.conquer_one('((v*(!u)):F)'))
+        self.assertTrue(ps._conquer_one('((v*(s*t)):F)'))
+        self.assertFalse(ps._conquer_one('((v*(!u)):F)'))
 
     def test_apply_condition(self):
         wild = ['A', 'B', '']

@@ -7,14 +7,25 @@ from helper import configs_to_table
 
 class ProofSearch:
     '''
-    Prepares the steps for the actual stuff that needs to be done.
+    Checks for satisfiability for a given formula and a cs list.
+
+    Example:
+        cs = {'a' : ['A', '(A->B)'], 'b' : ['(b:B)', '(A->B)'], 'c' : ['(Y1->(Y2->Y1))']}
+        formula = '((((a*b)+c)*((!a)+(b*c))):F)'
+
+    Make sure to set braces right. There is no input check.
+    Possible operations for proof constants: '+', '*' and '!'.
+    Possible operations for formulas: '->'
     '''
 
     def __init__(self, cs, formula):
         '''
-        expect a string as formula
+        If formula is given, it will be split into atomic formulas right away.
+
+        :param cs: Dict
+        :param formula: String
+        :return: None
         '''
-        # todo: doku
         self.cs = cs
         self.formula = formula
         self.atoms = None
@@ -69,7 +80,39 @@ class ProofSearch:
                 splits.remove(formula)
         return splits
 
-    def conquer_one(self, atom):
+    def conquer(self):
+        '''
+        Check if formula is satisfiable. Should only be called, if atoms and musts for ProofSearch are set.
+        Returns the first atomic formula with configuration table that is satisfiable.
+        @see #conquer_all_solutions
+
+        :return atomic_formula, table: String, List
+        '''
+        assert self.atoms
+
+        for atomic_formula in self.atoms:
+            table = self._conquer_one(atomic_formula)
+            if table:
+                return atomic_formula, table
+        return None
+
+    def conquer_all_solutions(self):
+        '''
+        Check if formula is satisfiable. Should only be called, if atoms and musts for ProofSearch are set.
+        Same as conquer, but doesn't stop at the first solution, instead it goes on and collects all proofs.
+
+        :return solutions: List
+            List contains tuples as in #conquer
+        '''
+        all = []
+        for atomic_formula in self.atoms:
+            musts = self.musts[atomic_formula]
+            table = self._conquer_one(musts)
+            if table:
+                all.append((atomic_formula, table))
+        return all
+
+    def _conquer_one(self, atom):
         '''
         Checks one atomic formula for satisfiability.
         Asserts that self.musts is already set.
@@ -122,41 +165,6 @@ class ProofSearch:
                 finale_table = ProofSearch._merge_two_tables(finale_table, configs_for_one_must)
 
         return finale_table
-
-    def conquer(self):
-        '''
-        Should only be called if divide was called before.
-        # todo: doku
-        :return:
-        '''
-        #todo: remove?
-        # atomic_formula: '(d:F)'
-        for atomic_formula in self.atoms:
-            # procedure for each possible option
-            table = self.conquer_one(atomic_formula)
-            if table:
-                return atomic_formula, table
-        return None
-
-    def conquer_all_solutions(self):
-        '''
-        Should only be called if divide was called before.
-        Same as conquer, but doesn't stop with first solution
-
-        # todo: doku
-        :return:
-        '''
-        #todo: remove?
-        all = []
-        # atomic_formula: '(d:F)'
-        for atomic_formula in self.atoms:
-            # procedure for each possible option
-            musts = self.musts[atomic_formula]
-            max_x = x_size(musts)
-            table = self.conquer_one(musts)
-            if table:
-                all.append((atomic_formula, table))
-        return all
 
     @staticmethod
     def _merge_two_tables(first, second):
