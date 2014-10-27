@@ -9,24 +9,9 @@ class Node(object):
         self.sibling = None
 
     def is_root(self):
-        """
-        Simple check if self is root of a tree.
-
-        :return is_root
-            True if parent of self is self.
-            False if self has a parent that is not self.
-        """
         return self.parent == self
 
     def is_leaf(self):
-        """
-        Simple check if self is leaf of a tree.
-
-        :return: is_leaf
-            True if both children are None.
-            False if at least one child is not None.
-
-        """
         return self.left is None and self.right is None
 
     def set_root(self):
@@ -77,11 +62,6 @@ class Node(object):
             self.position = 'right'
 
     def set_left(self, node):
-        """
-
-        :param node:
-        :return:
-        """
         self.left = node
         node.parent = self
         node.set_position()
@@ -100,10 +80,6 @@ class Node(object):
         return current
 
     def _inorder_string(self, node):
-        '''
-        This is an exact copy of the same-named method in Tree.
-        todo: find cleaner solution
-        '''
         term = ''
         if not node.is_leaf():
             term += '('
@@ -118,13 +94,6 @@ class Node(object):
         return self._inorder_string(self)
 
     def swap_with(self, replacement):
-        '''
-
-        :param replacement: node of a tree
-        :return:
-        '''
-        # assert self.is_root()
-        # assert self.token[0] == 'Y'
         replacement.position = self.position
         if replacement.position == 'left':
             self.parent.left = replacement
