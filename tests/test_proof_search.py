@@ -3,6 +3,7 @@ from proof_search import ProofSearch
 from proof_search import get_all_with_y
 from proof_search import update_y
 
+
 class Tests(unittest.TestCase):
 
     def test__conquer_one(self):

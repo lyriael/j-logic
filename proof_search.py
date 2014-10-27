@@ -207,6 +207,7 @@ class ProofSearch:
                         # check every condition
                         while todo_conditions:
                             current_condition = todo_conditions.pop()
+                            # todo: clean up 'apply_condition'
                             updated_merge, delete_condition = ProofSearch._apply_condition(updated_merge, current_condition)
 
                             # The merge is possible and ...
@@ -252,38 +253,55 @@ class ProofSearch:
     @staticmethod
     def _apply_condition(merged: list, condition: tuple):
         '''
+        For a configuration, test if it:
+            - holds the condition anyway
+            - can be adjusted to hold the condition
 
-        :param merged:
-        :param condition:
-        :return:
+        The conditions are on the wilds 'Xn'. A Condition can either be
+            - a constant: ('Xn', 'F')
+            - a relation to another 'Xm': ('Xn', 'Xm')
+            - a combination of the both: ('Xn', '(F->Xm)')
+            - a relation that contains 'Yn': ('Xn', '(Y1->Y2)')
+
+        Take a look at the examples to get a better idea.
+
+        :param merged: List
+            contains the current merge, 'Xn' must be accessed by merged[n-1].
+        :param condition: Tuple
+            first value in tuple is 'Xn', second states the condition it must fit.
+        :return merged: List
+        :return delete: Boolean or Dict
+            Boolean says if the condition can be dropped, because it's fullfilled (True), or if it could not be
+            validated at this point and has to be carried on.
+            If the returned value is a Dict, it contains y_wilds. Those values must be apply to the other conditions.
         '''
+
         index = int(condition[0][1:])-1
         condition_term = condition[1]
-        # ################
-        # ('X2', '(A->B)')
-        # ################
+
+        # 1. Condition is for a constant formula. Example: ('X2', '(A->B)')
         if 'X' not in condition_term and 'Y' not in condition_term:
-            # matches what's already there, or empty
-            # print(condition_term)
-            # print(merged[index])
+
+            # If either it matches with what's already there, or there is nothing yet.
             if condition_term == merged[index] or merged[index] == '':
                 merged[index] = condition_term
                 return merged, True
             else:
                 return None, None
-        # #################
-        # ('X1', '(X2->F)')
-        # #################
+
+        # 2. Condition contains a relation to another 'Xm'. Example: ('X1', '(X2->F)')
         if 'X' in condition_term and 'Y' not in condition_term:
-            # print(merged[index])
-            # if 'X1' != ''
+
+            # a) If there is already an entry for 'Xn' in 'merged', see if it is compatible with the condition.
             if merged[index]:
-                # compare value of 'X1' with condition_term.
+
+                # compare (and match) value of 'X1' in 'merged' with condition_term.
+                # Example: merged[n-1] = '(G->F)', => wild = {'X2': 'G'}
                 con, wild = Tree.compare_second_try(Tree(condition_term).root, Tree(merged[index]).root, [], {})
-                # print(wild)
-                # print(con)
-                # assert there are no conditions, check if the wilds fit merged.
-                assert con == []
+                assert con == []    # assert there are no conditions
+
+                # check if the wilds from the previous match fit other 'Xm' entries in 'merged'.
+                # Example: merged[m-1] = 'G'
                 tmp = list(merged)
                 for key in wild:
                     i = int(key[1:])-1
@@ -291,49 +309,70 @@ class ProofSearch:
                         tmp[i] = wild[key]
                     else:
                         return None, None
+
                 return tmp, True
-            # if 'X1' = ''
+
+            # b) There is no entry for 'Xn' in 'merged'.
             else:
-                # see if for all occurring 'Xn' in condition_term are already set.
-                xs_in_condition = unique_wilds(condition_term)
-                tmp = str(condition_term)
-                for x in xs_in_condition:
+                # see if for a occurring 'Xm' in condition_term its value is already set in 'merged'.
+                # Example: For ('Xn', '(Xm->F)'), merged[n-1] = '', but merged[m-1] = 'G', => merged[n-1] = 'F'
+                xm_in_condition = unique_wilds(condition_term)
+                copy_condition_term = str(condition_term)
+
+                # Check for each 'Xm' relation in condition.
+                for x in xm_in_condition:
                     i = int(x[1:])-1
                     if merged[i] == '':
+                        # It's all or nothing: either all 'Xm' can be replaced, or we leave it as it is. We will not
+                        # change only part of the condition, because that can lead to an nasty 'Yn'-'Xn'-mix.
+                        # See test 9 and 10 as example, as well as 4.
                         return merged, False
                     else:
-                        tmp = tmp.replace(x, merged[i])
-                merged[index] = tmp
+                        # If we have a proper entry for 'Xm' in 'merged', we'll change the condition to fit it.
+                        copy_condition_term = copy_condition_term.replace(x, merged[i])
+                # Eventually the copy_condition_term contains only constants and is the value for 'Xn'.
+                merged[index] = copy_condition_term
+
                 return merged, True
-        # ####################
-        # if ('X1', '(Y1->F)')
-        # ####################
+
+        # 3. There is a 'Yn' relation to 'Xn'. Example: ('X1', '(Y1->F)')
         if 'X' not in condition_term and 'Y' in condition_term:
-            # if 'X1' != ''
+
+            # a) If there is already an entry for 'Xn' in 'merged', see if it is compatible with the condition.
             if merged[index]:
-                # because this method was not intended for what what I'm doing now, here's a little bit of hacking
-                # that's doesn't seem to make sense.
+
+                # See if there is a configuration for the 'Yn' in the condition when compared to the value of 'Xn'
+                # in 'merged'.
+
+                # Note: because this method was not intended for what what I'm doing now, here's a little bit of hacking
+                # going on, that might not seem to make any sense.
+                # It makes a compare-check, but with the 'Yn', where usually the 'Xn' should be.
                 y_to_x_condition_term = str(condition_term.replace('Y', 'X'))
                 con, wild = Tree.compare_second_try(Tree(y_to_x_condition_term).root, Tree(merged[index]).root, [], {})
-                # print(con)
-                # print(wild)
+
+                # No configuration is found, so the condition is not possible.
                 if wild is None:
                     assert con is None
                     return None, None
+                # A configuration was found, so the information about the 'Yn' must be past forward!
                 else:
                     assert con == []
-                    y_wild ={}
+                    y_wild = {}
                     for key in wild:
+                        # undone name-hacking.
                         y_wild['Y'+key[1:]] = wild[key]
+
+                    # merged is unchanged,
                     return merged, y_wild
             else:
-                # if there is no value in 'X1' then 'Y' doesn't matter
+                # if there is no value in 'Xn' then 'Yn' doesn't matter (now).
                 return merged, False
-        # ####################
-        # if ('X1', '(Y1->F)') !!! THIS SHOULD (HOPEFULLY) NEVER HAPPEN !!!
-        # ####################
+
+        # 4. There are 'Yn' as well as 'Xm' relations to 'Xn'. Example: ('X1', '(Y1->X2)')
+        # !!! THIS SHOULD NEVER HAPPEN !!!
         if 'X' in condition_term and 'Y' in condition_term:
-            print('This should have never happened...')
+            print('Exception! There should never be a condition with \'Yn\' and \'Xn\' as a relation '
+                  'to \'Xn\' at the same time')
             assert False
 
     def _find_all_for(self, proof_constant, orig_term):
