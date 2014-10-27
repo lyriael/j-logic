@@ -2,6 +2,7 @@ from tree import Tree
 from helper import x_size
 from helper import merge
 from helper import unique_wilds
+from helper import configs_to_table
 
 
 class ProofSearch:
@@ -68,71 +69,6 @@ class ProofSearch:
                 splits.remove(formula)
         return splits
 
-    # def divide(self):
-    #     #todo: may be delete this method?
-    #     '''
-    #     Does two things:
-    #
-    #     1. splits for + and eliminates bad placed !
-    #     2. returns 'musts'
-    #
-    #     For the further proof search one entry of the returning dict must be satisfiable.
-    #     For an entry to be satisfiable, all tuples must be satisfiable.
-    #
-    #     Example: '(((c*(a*b))+d):F)'
-    #
-    #     -> {
-    #         '(d:F)':            [('d', 'F')],
-    #         '((c*(a*b)):F)':    [('a', '(X2->X1)'), ('b', 'X2'), ('c', '(X1->F)')]}
-    #     '''
-    #     # of those tiny-formulas it is enough to prove just one
-    #     atomics_with_musts = {}
-    #     #atoms = self.atomize()
-    #     for atom in self.atoms:
-    #         # find how that structre looks in test_formula#test_to_pieces_and_get_terms_to_proof
-    #         atomics_with_musts[atom] = Tree.musts(atom)
-    #     self._atomics_and_musts = atomics_with_musts
-    #     return atomics_with_musts
-
-    def conquer(self):
-        '''
-        Should only be called if divide was called before.
-        # todo: doku
-        :return:
-        '''
-        #todo: remove?
-        # atomic_formula: '(d:F)'
-        for atomic_formula in self.atoms:
-            # procedure for each possible option
-            table = self.conquer_one(atomic_formula)
-            if table:
-                return atomic_formula, table
-        return None
-
-    @staticmethod
-    def get_musts_for(atom):
-        return Tree.musts(atom)
-
-    def conquer_all_solutions(self):
-        '''
-        Should only be called if divide was called before.
-        Same as conquer, but doesn't stop with first solution
-
-        # todo: doku
-        :return:
-        '''
-        #todo: remove?
-        all = []
-        # atomic_formula: '(d:F)'
-        for atomic_formula in self.atoms:
-            # procedure for each possible option
-            musts = self.musts[atomic_formula]
-            max_x = x_size(musts)
-            table = self.conquer_one(musts)
-            if table:
-                all.append((atomic_formula, table))
-        return all
-
     def conquer_one(self, atom):
         '''
         Checks one atomic formula for satisfiability.
@@ -186,6 +122,132 @@ class ProofSearch:
                 finale_table = ProofSearch.merge_two_tables(finale_table, configs_for_one_must)
 
         return finale_table
+
+    def conquer(self):
+        '''
+        Should only be called if divide was called before.
+        # todo: doku
+        :return:
+        '''
+        #todo: remove?
+        # atomic_formula: '(d:F)'
+        for atomic_formula in self.atoms:
+            # procedure for each possible option
+            table = self.conquer_one(atomic_formula)
+            if table:
+                return atomic_formula, table
+        return None
+
+    def conquer_all_solutions(self):
+        '''
+        Should only be called if divide was called before.
+        Same as conquer, but doesn't stop with first solution
+
+        # todo: doku
+        :return:
+        '''
+        #todo: remove?
+        all = []
+        # atomic_formula: '(d:F)'
+        for atomic_formula in self.atoms:
+            # procedure for each possible option
+            musts = self.musts[atomic_formula]
+            max_x = x_size(musts)
+            table = self.conquer_one(musts)
+            if table:
+                all.append((atomic_formula, table))
+        return all
+
+    @staticmethod
+    def merge_two_tables(first, second):
+        '''
+        For two given configuration tables (with conditions!) merge them into one configuration table, if possible.
+        First step of the merge is to see, if the wilds of the two table are in no contradiction.
+        Second step is to check, if there is a contradiction with the given conditions (see #_apply_conditions).
+
+        Example (without conditions, for more simple demonstration)
+
+            t1 = [(['D', 'C', '', 'B', ''], []),
+                  (['C', 'C', '', 'C', ''], [])]
+            t2 = [(['D', '', '', '', 'A'], []),
+                  (['A', '', '', '', 'D'], [])]
+
+            => [(['D', 'C', '', 'B', 'A'], [])]
+
+        :param first: List
+        :param second: List
+        :return merged_table: List
+        '''
+        # holds all matches
+        merged_table = []
+
+        # try to merge each configuration from the first table with each configuration from the
+        # the second table.
+        for tpl in first:
+            for candidate_tpl in second:
+
+                # Try simple merge, and collect all conditions that must be count for this
+                # merge.
+                simple_merge = merge(tpl[0], candidate_tpl[0])
+                conditions = tpl[1] + candidate_tpl[1]
+
+                # If a simple merge is not possible, we can move on the the next combination.
+                if simple_merge is None:
+                    pass
+
+                # A simple merge is possible, so now it must be checked for the conditions.
+                else:
+
+                    # conditions apply to merge, oh noes..
+                    if conditions:
+                        todo_conditions = list(conditions)
+                        done_conditions = []
+                        updated_merge = simple_merge
+
+                        # check every condition
+                        while todo_conditions:
+                            current_condition = todo_conditions.pop()
+                            updated_merge, delete_condition = ProofSearch._apply_condition(updated_merge, current_condition)
+
+                            # The merge is possible and ...
+                            if updated_merge:
+
+                                # ... condition is fulfilled and therefore no longer needed.
+                                # (There is actually nothing more to done; the condition was 'deleted', when we used
+                                # 'pop'.)
+                                if delete_condition is True:
+                                    pass
+
+                                # ... condition does not matter in this merge, but it might be needed later on
+                                # for another merge.
+                                if delete_condition is False:
+                                    done_conditions.append(current_condition)
+
+                                # ... condition can be fulfilled, but it caused changes in 'updated_merge' and thus
+                                # all related other conditions must be checked again.
+                                elif isinstance(delete_condition, dict):
+                                    #todo: get whats going on here
+                                    change_and_todo = (get_all_with_y(todo_conditions, delete_condition.keys()) +
+                                                       get_all_with_y(done_conditions, delete_condition.keys()))
+                                    for key in delete_condition:
+                                        change_and_todo = update_y(change_and_todo, key, delete_condition[key])
+                                    todo_conditions = todo_conditions + change_and_todo
+
+                            # The merge is not possible with this condition.
+                            if not updated_merge:
+                                updated_merge = None
+                                break
+
+                        # All conditions were successful apply, else 'updated_merge' would be 'None'.
+                        if updated_merge:
+                            merged_table.append((updated_merge, done_conditions))
+
+                    # There are no conditions, so we're done for this combination.
+                    else:
+                        merged_table.append((simple_merge, []))
+
+        # If the merge was not successful, an empty table will be returned.
+        return merged_table
 
     @staticmethod
     def _apply_condition(merged: list, condition: tuple):
@@ -274,65 +336,6 @@ class ProofSearch:
             print('This should have never happened...')
             assert False
 
-    @staticmethod
-    def merge_two_tables(first, second):
-        '''
-        :param first:
-        :param second:
-        :return:
-        '''
-        # todo: may be needs to be moved to helper
-        # holds all matches
-        merged_tables = []
-        for tpl in first:
-            for candidate_tpl in second:
-
-                simple_merge = merge(tpl[0], candidate_tpl[0])
-                conditions = tpl[1] + candidate_tpl[1]
-
-                if simple_merge:
-                    # no conditions, yej!
-                    if not conditions:
-                        merged_tables.append((simple_merge, []))
-
-                    # conditions apply to merge, oh noes..
-                    else:
-                        todo_conditions = list(conditions)
-                        done_conditions = []
-                        updated_merge = simple_merge
-
-                        # check every condition
-                        while todo_conditions:
-                            current = todo_conditions.pop()
-                            updated_merge, delete_condition = ProofSearch._apply_condition(updated_merge, current)
-
-                            # merge can fulfills
-                            if updated_merge:
-                                # condition is fulfilled an no longer needed, also merge was successful.
-                                if delete_condition is True:
-                                    # condition was already deleted by poping it.
-                                    pass
-                                # condition does not matter for this merge, but might be needed later.
-                                if delete_condition is False:
-                                    done_conditions.append(current)
-                                # condition could be fulfilled, but other conditions must be updated.
-                                elif isinstance(delete_condition, dict):
-                                    change_and_todo = (get_all_with_y(todo_conditions, delete_condition.keys()) +
-                                                       get_all_with_y(done_conditions, delete_condition.keys()))
-                                    for key in delete_condition:
-                                        change_and_todo = update_y(change_and_todo, key, delete_condition[key])
-                                    todo_conditions = todo_conditions + change_and_todo
-                            # condition is not compatible with merge
-                            if not updated_merge:
-                                updated_merge = None
-                                break
-                        # end of 'while todo_conditions'
-
-                        # All conditions were successful apply
-                        if updated_merge:
-                            merged_tables.append((updated_merge, done_conditions))
-        return merged_tables
-
     def _find_all_for(self, proof_constant, orig_term):
         '''
         :param proof_constant:
@@ -393,36 +396,5 @@ def update_y(conditions, key, value):
     return result
 
 
-def configs_to_table(configs, size):
-    '''
 
-    :param configs: [   ({'X1':'A', 'X3':'(A->B)'}, [('X2', 'X1')]  ),
-                        ({'X1':'C', 'X3':'C'},      []              ),
-                        ({...},                     []              )],
-                        second return argument of cs, compare_to
-    :param size: highest Xn that occurs for one atomic Formula.
-    :return: table:
-    Example:
-              X1  X2  X3  X4    conditions
-        [   ([   ,   ,   ,   ],  None)
-            ([   ,   ,   ,   ],  [...])
-            ...
-            ([   ,   ,   ,   ],  None)
-        ]
-    '''
-    # init empty matrix of needed size
-    # e.g.: x_size = 5, len(cs) = 3
-    # >> table = [(['', '', '', '', ''], []), (['', '', '', '', ''], []), (['', '', '', '', ''], [])]
-    if configs:
-        table = [(['' for i in range(size)], []) for j in range(len(configs))]
-        row = 0
-        for tpl in configs:
-            for x in tpl[0]: # accessing the wild-dict, ignoring conditions (tpl[1])
-                position = int(x[1:]) - 1
-                term = tpl[0][x]
-                table[row][0][position] = term
-            row += 1
-        return table
-    else:
-        return [(['']*size, [])]
 
