@@ -62,6 +62,7 @@ class ProofSearch:
             containing atomic formulas as Strings.
             Example: '((!d)+((a*b)+c))' => ['(a*b)', 'c']
         '''
+        #todo private, so that it is only used with 'set_formula'
         # first step: make sum-splits
         splits = Tree.sum_split(self.formula)
 

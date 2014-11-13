@@ -285,6 +285,7 @@ class Tree(object):
             True, if '!' is the first operation in proof term
             False, else.
         '''
+        #todo: integrate this method in 'simplify_bang'
         tree = Tree(formula)
         if tree.root.left.token == '!':
             return True
