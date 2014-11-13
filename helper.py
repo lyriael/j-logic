@@ -29,6 +29,9 @@ def x_size(musts):
     for term in musts:
         all_xs += wild_list(term[1])
     all_xs = sorted(list(set(all_xs)))
+    #todo: fix this!
+    if len(all_xs) == 0:
+        return 0
     return sorted(map(lambda x: int(x[1:]), all_xs)).pop()
 
 

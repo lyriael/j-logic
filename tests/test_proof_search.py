@@ -235,3 +235,18 @@ class Tests(unittest.TestCase):
                               '((((c*d)*g)*(h*i)):F)': [('c', '(X4->(X3->(X1->F)))'), ('d', 'X4'), ('g', 'X3'),
                                                         ('h', '(X2->X1)'), ('i', 'X2')]},
                              ps.musts)
+
+    def test_presentation(self):
+        formula = '(((((a*b)*(!b))+((!b)+c))+((!b)*d)):(b:F))'
+        cs = {'a': ['(G->((b:B)->(b:F)))', '(Y1->(Y2->Y1))'], 'b': ['(b:F)', 'G']}
+        ps = ProofSearch(cs, formula)
+        for a in ps.atoms:
+            print('--------')
+            print('DIVIDE')
+            print('atom: ' + a)
+            print('musts: ' + str(ps.musts[a]))
+            print('CONQUER')
+            print('config tables:')
+            for m in ps.musts[a]:
+                print(str(m) + ': ' + str(ps._find_all_for(m[0], m[1])))
+            print('merged:' + str(ps._conquer_one(a)))
