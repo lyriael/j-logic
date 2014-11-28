@@ -1,0 +1,36 @@
+\beamer@endinputifotherversion {3.10pt}
+\select@language {english}
+\beamer@sectionintoc {1}{Introduction}{3}{0}{1}
+\beamer@subsectionintoc {1}{1}{Motivation}{3}{0}{1}
+\beamer@subsectionintoc {1}{2}{Requirements}{4}{0}{1}
+\beamer@subsectionintoc {1}{3}{Technologies and Methods}{6}{0}{1}
+\beamer@subsectionintoc {1}{4}{Result}{8}{0}{1}
+\beamer@sectionintoc {2}{Structure}{9}{0}{2}
+\beamer@subsectionintoc {2}{1}{Justification Logic}{9}{0}{2}
+\beamer@subsectionintoc {2}{2}{Data Structure}{12}{0}{2}
+\beamer@subsubsectionintoc {2}{2}{1}{Binary Trees}{13}{0}{2}
+\beamer@sectionintoc {3}{Algorithm}{14}{0}{3}
+\beamer@subsectionintoc {3}{1}{Strategy}{14}{0}{3}
+\beamer@subsectionintoc {3}{2}{Divide}{15}{0}{3}
+\beamer@subsubsectionintoc {3}{2}{1}{Atomize}{15}{0}{3}
+\beamer@subsubsectionintoc {3}{2}{2}{Musts}{18}{0}{3}
+\beamer@subsectionintoc {3}{3}{Conquer}{19}{0}{3}
+\beamer@subsubsectionintoc {3}{3}{1}{Configs}{19}{0}{3}
+\beamer@subsubsectionintoc {3}{3}{2}{Merge}{21}{0}{3}
+\beamer@sectionintoc {4}{Example}{22}{0}{4}
+\beamer@subsectionintoc {4}{1}{Start}{22}{0}{4}
+\beamer@subsectionintoc {4}{2}{Divide}{23}{0}{4}
+\beamer@subsubsectionintoc {4}{2}{1}{Sumsplit}{23}{0}{4}
+\beamer@subsubsectionintoc {4}{2}{2}{Bangs}{24}{0}{4}
+\beamer@subsubsectionintoc {4}{2}{3}{Atomized}{25}{0}{4}
+\beamer@subsubsectionintoc {4}{2}{4}{Musts}{26}{0}{4}
+\beamer@subsectionintoc {4}{3}{Conquer}{27}{0}{4}
+\beamer@subsubsectionintoc {4}{3}{1}{Configs}{27}{0}{4}
+\beamer@subsubsectionintoc {4}{3}{2}{Merge}{28}{0}{4}
+\beamer@sectionintoc {5}{Retrospect}{29}{0}{5}
+\beamer@subsectionintoc {5}{1}{Challenges}{29}{0}{5}
+\beamer@subsubsectionintoc {5}{1}{1}{How to get started}{29}{0}{5}
+\beamer@subsubsectionintoc {5}{1}{2}{Class Design when implementing an Algorithm}{30}{0}{5}
+\beamer@subsubsectionintoc {5}{1}{3}{Obstacles}{32}{0}{5}
+\beamer@subsectionintoc {5}{2}{Continuation}{33}{0}{5}
+\beamer@subsectionintoc {5}{3}{Conclusion}{35}{0}{5}
