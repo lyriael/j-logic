@@ -1,0 +1,142 @@
+
+\documentclass[a4paper]{report}
+
+\usepackage{natbib}
+\bibpunct{[}{]}{,}{a}{}{;}
+\usepackage{fancyheadings}
+\usepackage{iamdip}
+\usepackage[pdftex]{graphicx}
+% ignore missing images
+%\usepackage[demo]{graphicx}
+\usepackage[labelfont=bf, font={sf,normalsize}, margin=0.5cm]{caption}
+\usepackage{caption}
+\usepackage{subcaption}
+\usepackage{amsmath}
+\usepackage{amsthm}
+\usepackage{amssymb}
+\usepackage{amsfonts}
+\usepackage{url}
+\usepackage{hyperref}
+\usepackage{listings}
+\usepackage{chngpage}
+
+% For notation table
+\usepackage{tabulary}
+\usepackage{booktabs}
+
+
+\usepackage{here}
+
+\headrulewidth 0.5pt \addtolength{\headheight}{5pt}
+
+
+\lhead[\fancyplain{}{\rm\thepage}]{\fancyplain{}{\rightmark}}
+\rhead[\fancyplain{}{\leftmark}]{\fancyplain{}{\rm\thepage}}
+\cfoot{}
+
+\graphicspath{{Figures/}}
+
+\newcommand{\T}{^\text{T}}
+% for fancy todo
+\usepackage[disable]{todonotes}
+\newcommand{\todoRef}{\todo[color=green!20]}
+\newcommand{\todoEnglish}{\todo[color=red!20]}
+\newcommand{\todoFormat}{\todo[color=blue!20]}
+\newcommand{\todoWriteMore}{\todo[color=yellow!40, inline]}
+
+
+\begin{document}
+
+\pagestyle{fancyplain} \thispagestyle{empty}
+
+\title{Justification Proof Search Implementation in Python}
+\author{Judith Fuog}
+\betreuer{Prof.\ Dr.\ Thomas Studer}
+\ort{Bern}
+\datum{2014}
+
+
+\pagenumbering{roman} \setcounter{page}{1}
+\maketitle
+
+\newpage
+\thispagestyle{empty}
+\vspace{8cm}
+\noindent
+{\centerline {\bf \large Abstract}}
+\vspace{1cm}
+
+\noindent In short what's it all about.
+
+\pagenumbering{roman} \setcounter{page}{1}
+\tableofcontents
+
+%Introduction
+%	Motivation
+%	Goal
+%	Overview
+%
+%Background
+%	Justification Logic
+%	Operation Tree 
+%
+%Algorithm: A Divide and Conquer Approach
+%	Core Idea
+%	Divide
+%		Atomize
+%			Sumsplit
+%			Simplify
+%			Remove Band Bang
+%		Get Must
+%	Conquer
+%		Congifurations and Conditions
+%		Merge
+%	Implementation
+%
+%Result
+%	Application
+%	Enhancement
+
+\newpage{\pagestyle{empty} \cleardoublepage}
+
+% Hauptdokument
+\pagenumbering{arabic} \setcounter{page}{1}
+\pagestyle{fancy}
+
+\input{Content/Introduction}
+\input{Content/Background}
+
+\newpage{\pagestyle{empty} \cleardoublepage}
+\chapter{A Divide and Conquer Algorithm}
+\label{chap: Algorithm A Divide and Conquer Approach}
+
+\input{Content/algorithm/Core_Idea}
+\input{Content/algorithm/Divide}
+\input{Content/algorithm/Conquer}
+\input{Content/algorithm/Implementation}
+
+%\newpage{\pagestyle{empty} \cleardoublepage}
+%
+%\input{Content/guidedImageFiltering}
+%
+%\newpage{\pagestyle{empty} \cleardoublepage}
+
+\input{Content/results}
+
+\newpage{\pagestyle{empty} \cleardoublepage}
+
+%\addcontentsline{toc}{chapter}{\numberline{}List of Tables}
+%\listoftables
+
+%\addcontentsline{toc}{chapter}{\numberline{}List of Figures}
+%\listoffigures
+
+\addcontentsline{toc}{chapter}{\numberline{}Bibliography}
+\bibliographystyle{alphadin}
+\nocite{*}
+
+\bibliography{thesis}
+\newpage{\pagestyle{empty} \cleardoublepage}
+\chapter*{Authorship}
+\listoftodos
+\end{document}
