@@ -1,5 +1,23 @@
+%!TEX root = ../bachelors_thesis.tex
 \chapter{Introduction}
-\section{Motivation}
-\section{Goal}
-\section{Overview}
 
+\section{Motivation}
+\todoWriteMore{What's the motivation behind it? Not \textbf{MY} motivation, but the scientific motivation.}
+
+\section{Goal}
+\par
+The initial goal was to extend an existing proof search engine \footnote{Z3 from Microsoft Research} \todoRef{Z3} such that it could also handle Justification Logic. Deeper investigation into that project revealed that to make it handle also Justification Logic the given interface in Python would not be enough, but the expenses it would require to get so much deeper into the material that the actual indented work would be only secondary.
+So instead of extending \emph{Z3} the actual goal changed to implementing a simplified proof search for Justification Logic.
+\par The program should satisfy to following conditions:
+
+\begin{itemize}
+	\item[Input] The formula to be proven as well as a list of formulas needed for the proof is given as string. It may be presumed that the string is exactly formatted in the way needed. It must not be checked for syntax error or general typing mistakes.
+	\item[Output] A simple \emph{True} or \emph{False} for the provability of the formula. \footnote{Optional the output could give information about how a proof was found if the formula is provable.}
+\end{itemize}
+
+\section{Overview}
+The second chapter will present a short introduction to Justification Logic, but will go only as deep as needed to understand the problem as well as the develop algorithm.
+\par
+The heart of the third chapter will introduce the algorithm used in the \todoFormat{j-logic} program. Since this thesis concerns itself more with the practical side of implementation and not the theoretical side of mathematical logic theory there will be little proof here but instead many example to show how the algorithm works.
+\par
+Finally the last chapter will discuss the result of the work and give some ideas about how the work of a Justification Logic proof search implementation could be improved. 

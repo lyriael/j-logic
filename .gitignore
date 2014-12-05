@@ -9,10 +9,14 @@ code/tests/__pycache__/
 
 # latex for thesis
 # we want only the tex and the pdf
-thesis/*.aufx
-thesis/*.lof
-thesis/*.lot
-thesis/*.log
-thesis/*.out
-thesis/*.synctex.gz
-thesis/*.toc
+*.aux
+*.lof
+*.lot
+*.log
+*.out
+*.synctex.gz
+*.toc
+*.tdo
+*.fdb_latexmk
+*sublime-*
+thesis/todonotes.pdf
