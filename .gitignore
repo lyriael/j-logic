@@ -28,3 +28,7 @@ thesis/todonotes.pdf
 # test stuff
 test.*
 sample.*
+
+# latex documentation
+thesis/aslsyms.ps
+thesis/short-math-guide.pdf
