@@ -1,8 +1,10 @@
 
 \documentclass[a4paper]{report}
 
+% bibliography
 \usepackage{natbib}
-\bibpunct{[}{]}{,}{a}{}{;}
+%\bibpunct{[}{]}{,}{a}{}{;}
+
 \usepackage{fancyheadings}
 \usepackage{iamdip}
 \usepackage[pdftex]{graphicx}
@@ -12,7 +14,6 @@
 \usepackage{caption}
 \usepackage{subcaption}
 \usepackage{amsmath}
-\usepackage{amsthm}
 \usepackage{amssymb}
 \usepackage{amsfonts}
 \usepackage{url}
@@ -24,12 +25,9 @@
 \usepackage{tabulary}
 \usepackage{booktabs}
 
-
 \usepackage{here}
 
 \headrulewidth 0.5pt \addtolength{\headheight}{5pt}
-
-
 \lhead[\fancyplain{}{\rm\thepage}]{\fancyplain{}{\rightmark}}
 \rhead[\fancyplain{}{\leftmark}]{\fancyplain{}{\rm\thepage}}
 \cfoot{}
@@ -37,6 +35,7 @@
 \graphicspath{{Figures/}}
 
 \newcommand{\T}{^\text{T}}
+
 % for fancy todo
 \usepackage{todonotes}
 \newcommand{\todoRef}{\todo[color=green!20]}
@@ -44,8 +43,15 @@
 \newcommand{\todoFormat}{\todo[color=blue!20]}
 \newcommand{\todoWriteMore}{\todo[color=yellow!40, inline]}
 \newcommand{\todoRewrite}{\todo[color=purple!20, inline]}
+\newcommand{\todoQ}{\todo[color=blue!20]}
 
+% math definitions, propositions and such
+\usepackage{amsthm}
+\newtheorem*{definition}{Definition}
+\newtheorem*{rules}{Rules}
 
+%%%%%%%%%%%%%%%%%
+% begin document
 \begin{document}
 
 \pagestyle{fancyplain} \thispagestyle{empty}
@@ -104,6 +110,7 @@
 \pagenumbering{arabic} \setcounter{page}{1}
 \pagestyle{fancy}
 
+
 \input{Content/Introduction}
 \input{Content/Background}
 
@@ -123,21 +130,21 @@
 %\newpage{\pagestyle{empty} \cleardoublepage}
 
 \input{Content/results}
-
-\newpage{\pagestyle{empty} \cleardoublepage}
-
+ 
 %\addcontentsline{toc}{chapter}{\numberline{}List of Tables}
 %\listoftables
 
 %\addcontentsline{toc}{chapter}{\numberline{}List of Figures}
 %\listoffigures
-
 \addcontentsline{toc}{chapter}{\numberline{}Bibliography}
-\bibliographystyle{alphadin}
+\bibliographystyle{plainnat}
+%\bibliographstyle{plain}
+\bibliography{sources}
+%\bibliographystyle{alphadin}
 \nocite{*}
 
-\bibliography{thesis}
 \newpage{\pagestyle{empty} \cleardoublepage}
-\chapter*{Authorship}
+%\chapter*{Authorship}
 \listoftodos
+
 \end{document}

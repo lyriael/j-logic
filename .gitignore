@@ -20,3 +20,11 @@ code/tests/__pycache__/
 *.fdb_latexmk
 *sublime-*
 thesis/todonotes.pdf
+
+# bibliography
+*.bbl
+*.blg
+
+# test stuff
+test.*
+sample.*

@@ -6,9 +6,10 @@
 
 \section{Goal}
 \par
-The initial goal was to extend an existing proof search engine \footnote{Z3 from Microsoft Research} \todoRef{Z3} such that it could also handle Justification Logic. Deeper investigation into that project revealed that to make it handle also Justification Logic the given interface in Python would not be enough, but the expenses it would require to get so much deeper into the material that the actual indented work would be only secondary.
-So instead of extending \emph{Z3} the actual goal changed to implementing a simplified proof search for Justification Logic.
-\par The program should satisfy to following conditions:
+The initial goal was to extend an existing proof search engine Z3 [\cite{z3}] such that it could also handle Justification Logic. Deeper investigation into that project revealed that to make it handle also Justification Logic the given interface in Python would not work. Instead it would have to be look into the core of the programm which is written in C. The expenses it would require to get so much deeper into the material that the actual indented work would be only secondary.
+So instead of extending Microsoft Research project the actual goal changed to implementing a simplified proof search for Justification Logic. It meant that the implementation would be easier since it does not depend on anything else anymore. As a downside a lot of the functionallity that was hoped go get from Z3 would have to be implemented as well or left out.
+
+\par The program should satisfy to following conditions: \todoQ{Should this really be here in this chaper?}
 
 \begin{itemize}
 	\item[Input] The formula to be proven as well as a list of formulas needed for the proof is given as string. It may be presumed that the string is exactly formatted in the way needed. It must not be checked for syntax error or general typing mistakes.
