@@ -3,7 +3,8 @@ from helper import x_size
 from helper import merge
 from helper import unique_wilds
 from helper import configs_to_table
-
+from helper import get_all_with_y
+from helper import update_y
 
 class ProofSearch:
     '''

@@ -236,17 +236,26 @@ class Tests(unittest.TestCase):
                                                         ('h', '(X2->X1)'), ('i', 'X2')]},
                              ps.musts)
 
-    def test_presentation(self):
-        formula = '(((((a*b)*(!b))+((!b)+c))+((!b)*d)):(b:F))'
-        cs = {'a': ['(G->((b:B)->(b:F)))', '(Y1->(Y2->Y1))'], 'b': ['(b:F)', 'G']}
-        ps = ProofSearch(cs, formula)
-        for a in ps.atoms:
-            print('--------')
-            print('DIVIDE')
-            print('atom: ' + a)
-            print('musts: ' + str(ps.musts[a]))
-            print('CONQUER')
-            print('config tables:')
-            for m in ps.musts[a]:
-                print(str(m) + ': ' + str(ps._find_all_for(m[0], m[1])))
-            print('merged:' + str(ps._conquer_one(a)))
+    def test_mix_y_and_x(self):
+        # matching Y1->(Y2->Y1) to the must of b: X2->X1 results in a condition with mixed x-y-wilds.
+        # this was not expected to happen!
+        cs = ProofSearch({'b': ['(Y1->(Y2->Y1))'], 'a': ['A->F'], 'c': ['C']}, '((a*(b*c)):F)')
+        self.assertIn(('b', '(X2->X1)'), cs.musts.get('((a*(b*c)):F)'))
+        condition = cs._find_all_for('b', '(X2->X1)')[0][1][0]
+        self.assertEqual(('X1', '(Y2->X2)'), condition)
+        cs.conquer()
+
+    # def test_presentation(self):
+    #     formula = '(((((a*b)*(!b))+((!b)+c))+((!b)*d)):(b:F))'
+    #     cs = {'a': ['(G->((b:B)->(b:F)))', '(Y1->(Y2->Y1))'], 'b': ['(b:F)', 'G']}
+    #     ps = ProofSearch(cs, formula)
+    #     for a in ps.atoms:
+    #         print('--------')
+    #         print('DIVIDE')
+    #         print('atom: ' + a)
+    #         print('musts: ' + str(ps.musts[a]))
+    #         print('CONQUER')
+    #         print('config tables:')
+    #         for m in ps.musts[a]:
+    #             print(str(m) + ': ' + str(ps._find_all_for(m[0], m[1])))
+    #         print('merged:' + str(ps._conquer_one(a)))

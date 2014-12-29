@@ -1,6 +1,5 @@
 import unittest
 from node import Node
-from tree import Tree
 
 
 class Tests(unittest.TestCase):

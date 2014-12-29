@@ -12,4 +12,16 @@
 	    }
 	  child {node [arn_w]{$r$}};
 \end{tikzpicture}
+\begin{tikzpicture}[level distance=1cm,
+  level 1/.style={sibling distance=3cm},
+  level 2/.style={sibling distance=1.2cm}]
+	\node [arn_n]{$*$}
+	  child {node [arn_w]{\(* \)}
+	    child {node [arn_r] {$!$}
+	    		child[right] {node [arn_w] {$t$}}
+	    	}
+	    child {node [arn_w] {$s$}}
+	    }
+	  child {node [arn_w]{$r$}};
+\end{tikzpicture}
 \end{center}

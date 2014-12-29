@@ -24,8 +24,8 @@ In this section \emph{formula} usually refers only to the justification term of 
 \end{definition}
 To make the content presented here more understandable the following example will illustrate the steps taken.\footnote{It is on purpose that the \emph{justification term} is by far more complicated than statement $b:F$ that follows the \emph{justification term}. As far as this algorithm goes the complexity of the statement is of no further consequence and thus is kept as simple as possible to allow a easier overview.}
 
-
 \subsubsection{Sumsplit}
+\label{sumsplit}
 From the XX Rule of Justification Logic it follows that checking for provability in a formula where the top operation is a sum is equal to checking either operant of the sum and if any of it is provable so is the original formula.
 
 \begin{equation}\label{ss1}
@@ -85,4 +85,6 @@ The last line gives a contradiction since there is no possible $x$ or $y$ such t
 
 \input{/home/lyriael/BA/j-logic/thesis/Figures/tree_bb01.tex}
 
-\subsection{Get Must}
+\par
+This concludes the \emph{atomization} of one formula to many simple formulas which can be checked for provability individually. A formula now consists only of Multiplication-Operations and valid Bang-Operations. The next chapter will show how one atomized formula can be checked for provability.
+

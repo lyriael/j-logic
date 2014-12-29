@@ -193,6 +193,7 @@ class Tree(object):
         # todo: check if a X in wilds can be overwritten by accident
         elif orig_node.token[0] == 'X':
             wilds[orig_node.to_s()] = cs_node.to_s()
+        
         # if both are same
         elif orig_node.token == cs_node.token:
             if orig_node.token in ['->', ':']:
