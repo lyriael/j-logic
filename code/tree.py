@@ -169,6 +169,7 @@ class Tree(object):
         :param mutable:
         :return:
         '''
+
         # todo: This needs checking an cleaning
         # if current node is Yn, then replace all occurring Yn's with whatever is in orig.
         if cs_node.token[0] == 'Y':
@@ -193,7 +194,7 @@ class Tree(object):
         # todo: check if a X in wilds can be overwritten by accident
         elif orig_node.token[0] == 'X':
             wilds[orig_node.to_s()] = cs_node.to_s()
-        
+
         # if both are same
         elif orig_node.token == cs_node.token:
             if orig_node.token in ['->', ':']:
@@ -205,6 +206,37 @@ class Tree(object):
         else:
             # no match possible
             # no idea how to make that nicer
+            conditions, wilds = None, None
+        return conditions, wilds
+
+    @staticmethod
+    def compare_new(orig_node, cs_node, conditions, wilds):
+        '''
+
+        :param orig_node: term from 'musts'. May contain x-wilds
+        :param cs_node: term from cs-list. May contain y-wilds
+        :param conditions: condition is on one wild. May be x-wild or y-wild.
+        :param wilds: x-wilds
+        :return:
+        '''
+        if orig_node.token == cs_node.token:
+            if cs_node.token in ['->', ':']:
+                conditions, wilds = Tree.compare_new(orig_node.left, cs_node.left, conditions, wilds)
+                conditions, wilds = Tree.compare_new(orig_node.right, cs_node.right, conditions, wilds)
+            else:
+                pass
+
+        elif orig_node.is_x_wild():
+            if cs_node.has_no_wilds():
+                wilds[orig_node.token] = cs_node.to_s()
+            else:
+                t = (orig_node.token, cs_node.to_s())
+                conditions.append(t)
+
+        elif cs_node.is_y_wild():
+                t = (cs_node.token, orig_node.to_s())
+                conditions.append(t)
+        else:
             conditions, wilds = None, None
         return conditions, wilds
 

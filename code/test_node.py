@@ -161,5 +161,3 @@ class Tests(unittest.TestCase):
         self.assertEqual(b.parent, c)
         self.assertEqual(b.sibling, d)
         self.assertEqual(d.sibling, b)
-
-

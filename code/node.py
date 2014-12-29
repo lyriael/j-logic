@@ -14,6 +14,15 @@ class Node(object):
     def is_leaf(self):
         return self.left is None and self.right is None
 
+    def is_x_wild(self):
+        return self.token[0] == 'X'
+
+    def is_y_wild(self):
+        return self.token[0] == 'Y'
+
+    def has_no_wilds(self):
+        return not ('X' in self.to_s() or 'Y' in self.to_s())
+
     def set_root(self):
         self.parent = self
         self.position = 'root'
