@@ -47,12 +47,28 @@ class Tests(unittest.TestCase):
         self.assertListEqual(wild, result)
         self.assertTrue(delete)
 
+    def test_apply_condition_new(self):
+        wild = ['A', 'B', '']
+        con = ('X1', 'A')
+        config, condition, y_wilds = ProofSearch.apply_condition_new(wild, con)
+        self.assertListEqual(wild, config)
+        self.assertIsNone(condition)
+        self.assertIsNone(y_wilds)
+
     def test_apply_condition2(self):
         wild = ['A', 'B', '']
         con = ('X1', 'B')
         result, delete = ProofSearch._apply_condition(wild, con)
         self.assertIsNone(result)
         self.assertIsNone(delete)
+
+    def test_apply_condition_new2(self):
+        wild = ['A', 'B', '']
+        con = ('X1', 'B')
+        config, condition, y_wilds = ProofSearch.apply_condition_new(wild, con)
+        self.assertIsNone(config)
+        self.assertIsNone(condition)
+        self.assertIsNone(y_wilds)
 
     def test_apply_condition3(self):
         wild = ['A', 'B', '']
@@ -61,12 +77,28 @@ class Tests(unittest.TestCase):
         self.assertListEqual(['A', 'B', 'C'], result)
         self.assertTrue(delete)
 
+    def test_apply_condition_new3(self):
+        wild = ['A', 'B', '']
+        con = ('X3', 'C')
+        config, condition, y_wilds = ProofSearch.apply_condition_new(wild, con)
+        self.assertListEqual(['A', 'B', 'C'], config)
+        self.assertIsNone(condition)
+        self.assertIsNone(y_wilds)
+
     def test_apply_condition6(self):
         given = ['(A->F)', 'A']
         con = ('X1', '(X2->F)')
         result, delete = ProofSearch._apply_condition(given, con)
         self.assertListEqual(given, result)
         self.assertTrue(delete)
+
+    def test_apply_condition_new6(self):
+        wild = ['(A->F)', 'A']
+        con = ('X1', '(X2->F)')
+        config, condition, y_wilds = ProofSearch.apply_condition_new(wild, con)
+        self.assertListEqual(wild, config)
+        self.assertIsNone(condition)
+        self.assertIsNone(y_wilds)
 
     def test_apply_condition7(self):
         given = ['(B->(A->F))', 'A', '']
@@ -75,12 +107,28 @@ class Tests(unittest.TestCase):
         self.assertListEqual(['(B->(A->F))', 'A', 'B'], result)
         self.assertTrue(delete)
 
+    def test_apply_condition_new7(self):
+        wild = ['(B->(A->F))', 'A', '']
+        con = ('X1', '(X3->(X2->F))')
+        config, condition, y_wilds = ProofSearch.apply_condition_new(wild, con)
+        self.assertListEqual(['(B->(A->F))', 'A', 'B'], config)
+        self.assertIsNone(condition)
+        self.assertIsNone(y_wilds)
+
     def test_apply_condition8(self):
         given = ['(B->(A->F))', 'A', 'C']
         con = ('X1', '(X3->(X2->F))')
         result, delete = ProofSearch._apply_condition(given, con)
         self.assertIsNone(result)
         self.assertIsNone(delete)
+
+    def test_apply_condition_new8(self):
+        wild = ['(B->(A->F))', 'A', 'C']
+        con = ('X1', '(X3->(X2->F))')
+        config, condition, y_wilds = ProofSearch.apply_condition_new(wild, con)
+        self.assertIsNone(config)
+        self.assertIsNone(condition)
+        self.assertIsNone(y_wilds)
 
     def test_apply_condition4(self):
         wild = ['', 'B', '']
@@ -89,12 +137,28 @@ class Tests(unittest.TestCase):
         self.assertListEqual(wild, result)
         self.assertFalse(delete)
 
+    def test_apply_condition_new4(self):
+        wild = ['', 'B', '']
+        con = ('X1', 'X3')
+        config, condition, y_wilds = ProofSearch.apply_condition_new(wild, con)
+        self.assertListEqual(wild, config)
+        self.assertEqual(con, condition)
+        self.assertIsNone(y_wilds)
+
     def test_apply_condition5(self):
         wild = ['A', 'B', '']
         con = ('X1', 'X3')
         result, delete = ProofSearch._apply_condition(wild, con)
         self.assertListEqual(['A', 'B', 'A'], result)
         self.assertTrue(delete)
+
+    def test_apply_condition_new5(self):
+        wild = ['A', 'B', '']
+        con = ('X1', 'X3')
+        config, condition, y_wilds = ProofSearch.apply_condition_new(wild, con)
+        self.assertListEqual(['A', 'B', 'A'], config)
+        self.assertIsNone(condition)
+        self.assertIsNone(y_wilds)
 
     def test_apply_condition9(self):
         wild = ['', 'B', 'C']
@@ -103,12 +167,28 @@ class Tests(unittest.TestCase):
         self.assertListEqual(['(B->C)', 'B', 'C'], result)
         self.assertTrue(delete)
 
+    def test_apply_condition_new9(self):
+        wild = ['', 'B', 'C']
+        con = ('X1', '(X2->X3)')
+        config, condition, y_wilds = ProofSearch.apply_condition_new(wild, con)
+        self.assertListEqual(['(B->C)', 'B', 'C'], config)
+        self.assertIsNone(condition)
+        self.assertIsNone(y_wilds)
+
     def test_apply_condition10(self):
         wild = ['', 'B', '']
         con = ('X1', '(X2->X3)')
         result, delete = ProofSearch._apply_condition(wild, con)
         self.assertListEqual(['', 'B', ''], result)
         self.assertFalse(delete)
+
+    def test_apply_condition_new10(self):
+        wild = ['', 'B', '']
+        con = ('X1', '(X2->X3)')
+        config, condition, y_wilds = ProofSearch.apply_condition_new(wild, con)
+        self.assertListEqual(wild, config)
+        self.assertEqual(('X1', '(B->X3)'), condition)
+        self.assertIsNone(y_wilds)
 
     def test_apply_condition11(self):
         wild = ['', 'B', '']
@@ -117,12 +197,28 @@ class Tests(unittest.TestCase):
         self.assertListEqual(['', 'B', ''], result)
         self.assertFalse(delete)
 
+    def test_apply_condition_new11(self):
+        wild = ['', 'B', '']
+        con = ('X1', '(Y2->F)')
+        config, condition, y_wilds = ProofSearch.apply_condition_new(wild, con)
+        self.assertListEqual(['', 'B', ''], config)
+        self.assertEqual(con, condition)
+        self.assertIsNone(y_wilds)
+
     def test_apply_condition12(self):
         wild = ['(B->F)', '', '']
         con = ('X1', '(Y2->F)')
         result, delete = ProofSearch._apply_condition(wild, con)
         self.assertListEqual(['(B->F)', '', ''], result)
         self.assertDictEqual({'Y2': 'B'}, delete)
+
+    def test_apply_condition_new12(self):
+        wild = ['(B->F)', '', '']
+        con = ('X1', '(Y2->F)')
+        config, condition, y_wilds = ProofSearch.apply_condition_new(wild, con)
+        self.assertListEqual(['(B->F)', '', ''], config)
+        self.assertEqual(con, condition)
+        self.assertDictEqual({'Y2': 'B'}, y_wilds)
 
     def test_apply_condition13(self):
         wild = ['(B->(A->B))', '', '']
@@ -131,12 +227,60 @@ class Tests(unittest.TestCase):
         self.assertListEqual(['(B->(A->B))', '', ''], result)
         self.assertDictEqual({'Y1': 'B', 'Y2': '(A->B)'}, delete)
 
+    def test_apply_condition_new13(self):
+        wild = ['(B->(A->B))', '', '']
+        con = ('X1', '(Y1->Y2)')
+        config, condition, y_wilds = ProofSearch.apply_condition_new(wild, con)
+        self.assertListEqual(wild, config)
+        self.assertEqual(con, condition)
+        self.assertDictEqual({'Y1': 'B', 'Y2': '(A->B)'}, y_wilds)
+
     def test_apply_condition14(self):
         wild = ['B', '', '']
         con = ('X1', '(Y2->F)')
         result, delete = ProofSearch._apply_condition(wild, con)
         self.assertIsNone(result)
         self.assertIsNone(delete)
+
+    def test_apply_condition_new14(self):
+        wild = ['B', '', '']
+        con = ('X1', '(Y2->F)')
+        config, condition, y_wilds = ProofSearch.apply_condition_new(wild, con)
+        self.assertIsNone(config)
+        self.assertIsNone(condition)
+        self.assertIsNone(y_wilds)
+
+    def test_apply_condition_new15(self):
+        wild = ['', 'B']
+        con = ('X1', '(Y2->X2)')
+        config, condition, y_wilds = ProofSearch.apply_condition_new(wild, con)
+        self.assertListEqual(wild, config)
+        self.assertEqual(('X1', '(Y2->B)'), condition)
+        self.assertIsNone(y_wilds)
+
+    def test_apply_condition_new16(self):
+        wild = ['(A->B)', '']
+        con = ('X1', '(Y2->X2)')
+        config, condition, y_wilds = ProofSearch.apply_condition_new(wild, con)
+        self.assertListEqual(['(A->B)', 'B'], config)
+        self.assertEqual(con, condition)
+        self.assertEqual({'Y2': 'A'}, y_wilds)
+
+    def test_apply_condition_new17(self):
+        wild = ['(A->B)', 'C']
+        con = ('X1', '(Y2->X2)')
+        config, condition, y_wilds = ProofSearch.apply_condition_new(wild, con)
+        self.assertIsNone(config)
+        self.assertIsNone(condition)
+        self.assertIsNone(y_wilds)
+
+    def test_apply_condition_new18(self):
+        wild = ['(A->B)', 'B']
+        con = ('X1', '(Y2->X2)')
+        config, condition, y_wilds = ProofSearch.apply_condition_new(wild, con)
+        self.assertListEqual(['(A->B)', 'B'], config)
+        self.assertEqual(('X1', '(Y2->B)'), condition)
+        self.assertEqual({'Y2': 'A'}, y_wilds)
 
     def test_merge_two_tables(self):
         t1 = [(['A', 'B', ''], [])]
@@ -243,7 +387,7 @@ class Tests(unittest.TestCase):
         self.assertIn(('b', '(X2->X1)'), cs.musts.get('((a*(b*c)):F)'))
         condition = cs._find_all_for('b', '(X2->X1)')[0][1][0]
         self.assertEqual(('X1', '(Y2->X2)'), condition)
-        cs.conquer()
+#        cs.conquer()
 
     # def test_presentation(self):
     #     formula = '(((((a*b)*(!b))+((!b)+c))+((!b)*d)):(b:F))'

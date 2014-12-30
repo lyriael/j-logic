@@ -1,10 +1,5 @@
 from tree import Tree
-from helper import x_size
-from helper import merge
-from helper import unique_wilds
-from helper import configs_to_table
-from helper import get_all_with_y
-from helper import update_y
+from helper import *
 
 class ProofSearch:
     '''
@@ -193,13 +188,13 @@ class ProofSearch:
 
         # try to merge each configuration from the first table with each configuration from the
         # the second table.
-        for tpl in first:
-            for candidate_tpl in second:
+        for first_tpl in first:
+            for second_tpl in second:
 
                 # Try simple merge, and collect all conditions that must be count for this
                 # merge.
-                simple_merge = merge(tpl[0], candidate_tpl[0])
-                conditions = tpl[1] + candidate_tpl[1]
+                simple_merge = merge_config(first_tpl[0], second_tpl[0])
+                conditions = first_tpl[1] + second_tpl[1]
 
                 # If a simple merge is not possible, we can move on the the next combination.
                 if simple_merge is None:
@@ -264,6 +259,85 @@ class ProofSearch:
 
         # If the merge was not successful, an empty table will be returned.
         return merged_table
+
+    @staticmethod
+    def apply_condition_new(config, condition):
+        '''
+        Checks if the condition can be fulfilled for the given configuration.
+        :param config:
+        :param conditions: tuple ('X1', 'A->Y2')
+        :return:
+        '''
+        x_index = int(condition[0][1:])-1
+        config_term = config[x_index]
+        condition_term = update_condition_with_x(condition[1], config)
+
+        # if there is still a 'X' within the condition that is not set yet, there is nothing to do for the moment.
+        if 'X' in condition_term:
+            if config_term == '':
+                return config, (condition[0], condition_term), None
+            elif 'Y' in condition_term:
+                conds, wilds = Tree.compare(Tree(condition_term).root, Tree(config_term).root, [], {})
+                assert conds == []
+                y_wilds = {}
+                for key in wilds:
+                    if key[0] == 'X':
+                        i = int(key[1:])-1
+                        if wilds[key] == config[i] or config[i] == '':
+                            config[i] = wilds[key]
+                        else:
+                            return None, None, None
+                    elif key[0] == 'Y':
+                        y_wilds[key] = wilds[key]
+                if y_wilds:
+                    return config, (condition[0], condition_term), y_wilds
+                else:
+                    return config, (condition[0], condition_term), None
+            else:
+                conds, wilds = Tree.compare(Tree(condition_term).root, Tree(config_term).root, [], {})
+                assert conds == [] or conds is None
+                if conds:
+                    print(conds)
+                assert wilds != {} or wilds is None
+
+                if wilds:
+                    for key in wilds:
+                        i = int(key[1:])-1
+                        if config[i] == wilds[key] or config[i] == '':
+                            config[i] = wilds[key]
+                    return config, None, None
+                else:
+                    return None, None, None
+
+        if 'Y' in condition_term:
+            if config_term == '':
+                return config, (condition[0], condition_term), None
+            else:
+                # Zhu Li: "do the thing"!
+                # match condition_term with the config_term
+                # requires so ugly renaming because 'compare' method was not meant to be used that way.
+                y_to_x_condition_term = condition_term.replace('Y', 'X')
+
+                conds, wilds = Tree.compare(Tree(y_to_x_condition_term).root, Tree(config_term).root, [], {})
+                assert conds == [] or conds is None
+                assert wilds != {} or wilds is None
+
+                if wilds:
+                    y_wilds = rename_dict_from_x_to_y_wilds(wilds)
+                    return config, (condition[0], condition_term), y_wilds
+                else:
+                    return None, None, None
+
+        if 'Y' not in condition_term:
+            if config_term == condition_term or config_term == '':
+                config[x_index] = condition_term
+                return config, None, None
+            else:
+                return None, None, None
+        #todo: I'm working here!
+
+
+
 
     @staticmethod
     def _apply_condition(merged: list, condition: tuple):

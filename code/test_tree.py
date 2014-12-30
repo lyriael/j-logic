@@ -333,6 +333,13 @@ class Tests(unittest.TestCase):
         self.assertListEqual([('X2', 'Y1'), ('X1', '(Y2->Y1)')], con)
         self.assertDictEqual({}, wil)
 
+    def test_compare_x_and_y_mix2(self):
+        cs = Tree('(Y1->(Y2->Y1)')
+        orig = Tree('((X1->F)->(B->(X2->G)))')
+        con, wil = Tree.compare(orig.root, cs.root, [], {})
+        self.assertIsNone(con)
+        self.assertIsNone(wil)
+
     def test_sum_split1(self):
         self.assertEqual(2, len(Tree.sum_split('((a+b):F)')))
         # print(f.sum_split()[0].tree.to_s())

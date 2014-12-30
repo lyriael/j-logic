@@ -25,18 +25,18 @@ class Tests(unittest.TestCase):
 
     def test_match1(self):
         self.assertListEqual(['A', 'A', '', '', 'B', ''],
-                             merge(['A', 'A', '', '', '', ''], ['', 'A', '', '', 'B', '', '']))
+                             merge_config(['A', 'A', '', '', '', ''], ['', 'A', '', '', 'B', '', '']))
 
     def test_match2(self):
-        self.assertIsNone(merge(['B', '(b:B)', '', '', '', ''], ['', '(B->F)', '', '', 'B', '']))
+        self.assertIsNone(merge_config(['B', '(b:B)', '', '', '', ''], ['', '(B->F)', '', '', 'B', '']))
 
     def test_match3(self):
-        self.assertListEqual(['', 'S'], merge(['', 'S'], ['', '']))
+        self.assertListEqual(['', 'S'], merge_config(['', 'S'], ['', '']))
 
     def test_merge_(self):
         t1 = ['A', 'B', '']
         t2 = ['A', '', 'C']
-        self.assertListEqual(['A', 'B', 'C'], merge(t1, t2))
+        self.assertListEqual(['A', 'B', 'C'], merge_config(t1, t2))
 
     def test_config_to_table(self):
         configs = [({'X1': 'A', 'X2': 'B'}, []), ({'X1': '(A->B)', 'X4': 'C'}, [])]
@@ -71,3 +71,11 @@ class Tests(unittest.TestCase):
         for entry in wilds:
             x = update_y(x, entry, wilds[entry])
         self.assertListEqual([('X2', '(F->A)'), ('X1', 'G'), ('X3', '(F->G)')], x)
+
+    def test_update_condition_with_x(self):
+        list = ['Q', '', '(A->B)']
+        term = '(X1->(X2->X3))'
+        self.assertEqual('(Q->(X2->(A->B)))', update_condition_with_x(term, list))
+
+    def test_rename_dict_from_x_to_y_wilds(self):
+        self.assertDictEqual(rename_dict_from_x_to_y_wilds({'X1': 'bla', 'X2': 'blubb'}), {'Y1': 'bla', 'Y2': 'blubb'})

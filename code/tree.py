@@ -162,19 +162,35 @@ class Tree(object):
     @staticmethod
     def compare(orig_node, cs_node, conditions, wilds):
         '''
-        changes the tree while comparing.
-        self == x (orig)
-        mutable == y/const (cs)
+        Compares to trees recursively. Used to get 'musts' and also to merge configurations. The first and the second
+        argument are not freely interchangeable!
 
-        :param mutable:
-        :return:
+        :param orig_node: Containing X's and constants. In exceptional cases it may also contain a mix of X's and Y's as
+        it is uesd in #apply_condition. If this method is used to match a tree with only Y's to a tree with only
+        constants rename the Y's to X's.
+        :param cs_node: This should only hold Y's and constants. Since the method makes changes within this tree, there
+        might  also be X's. But they should not be here from the start.
+        :param conditions: List of tuples. The conditions are always on a Xi.
+        The condition term may contain constants, other X's or also Y's. Initially this is empty.
+        :param wilds: Dictionary where a X is assigned to a constant. If there is no constant, it will be assigned to ''.
+        Initially this is empty.
+        :return: conditions and wilds.
         '''
 
-        # todo: This needs checking an cleaning
+        # if both are same
+        if orig_node.token == cs_node.token:
+            if orig_node.token in ['->', ':']:
+                conditions, wilds = Tree.compare(orig_node.left, cs_node.left, conditions, wilds)
+                conditions, wilds = Tree.compare(orig_node.right, cs_node.right, conditions, wilds)
+            else:
+                # same constant
+                pass
+
         # if current node is Yn, then replace all occurring Yn's with whatever is in orig.
-        if cs_node.token[0] == 'Y':
+        # Remember consequently cs_term may have Y's and X's!
+        elif cs_node.token[0] == 'Y':
             Tree._replace_in_tree(cs_node.get_root(), cs_node.token, Tree(orig_node.to_s()).root)
-            #todo: maybe there is replacement needed in conditions as well.
+
         # if current node is Xn, then this is the consequence of a Yn being replaced. What
         # ever is in orig is a condition to Xn.
         elif cs_node.token[0] == 'X':
@@ -192,17 +208,9 @@ class Tree(object):
         # normal wild config
         # todo: OMG, what shall be done, if there is a Y inside??!!
         # todo: check if a X in wilds can be overwritten by accident
-        elif orig_node.token[0] == 'X':
+        elif orig_node.token[0] == 'X' or orig_node.token[0] == 'Y':
             wilds[orig_node.to_s()] = cs_node.to_s()
 
-        # if both are same
-        elif orig_node.token == cs_node.token:
-            if orig_node.token in ['->', ':']:
-                conditions, wilds = Tree.compare(orig_node.left, cs_node.left, conditions, wilds)
-                conditions, wilds = Tree.compare(orig_node.right, cs_node.right, conditions, wilds)
-            else:
-                # same constant
-                pass
         else:
             # no match possible
             # no idea how to make that nicer

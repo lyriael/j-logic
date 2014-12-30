@@ -35,7 +35,7 @@ def x_size(musts):
     return sorted(map(lambda x: int(x[1:]), all_xs)).pop()
 
 
-def merge(a, b):
+def merge_config(a, b):
     '''
     compares to lists, if they are mergable return the merge, else return None.
     '''
@@ -54,6 +54,19 @@ def merge(a, b):
         else:
             return None
     return new
+
+
+
+def update_condition_with_x(term, list):
+    for i in range(len(list)):
+        if list[i] != '':
+            x = 'X'+str(i+1)
+            term = term.replace(x, list[i])
+    return term
+
+
+def has_no_wilds(term):
+    return not ('X' in term or 'Y' in term)
 
 
 def replace(consts, swaps):
@@ -154,3 +167,11 @@ def update_y(conditions, key, value):
         else:
             result.append((con[0], con[1]))
     return result
+
+
+def rename_dict_from_x_to_y_wilds(wilds):
+    y_wilds = {}
+    for key in wilds:
+        y_key = str('Y'+key[1:])
+        y_wilds[y_key] = wilds[key]
+    return y_wilds
