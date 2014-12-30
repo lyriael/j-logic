@@ -5,15 +5,15 @@ from helper import configs_to_table
 
 class Tests(unittest.TestCase):
 
-    # def test__conquer_one(self):
-    #     ps = ProofSearch({'a': ['(A->(A->F))', '((b:B)->A)', 'B', '(C->(A->F))', '((b:B)->(B->F))'], 'b': ['B']}, '')
-    #     ps.atoms = ['test']
-    #     ps.musts['test'] = [('a', '(X2->(X1->F))'), ('b', 'B')]
-    #     one = ps._conquer_one('test')
-    #     self.assertListEqual([(['A', 'A'], []),
-    #                           (['A', 'C'], []),
-    #                           (['B', '(b:B)'], [])],
-    #                          one)
+    def test__conquer_one(self):
+        ps = ProofSearch({'a': ['(A->(A->F))', '((b:B)->A)', 'B', '(C->(A->F))', '((b:B)->(B->F))'], 'b': ['B']}, '')
+        ps.atoms = ['test']
+        ps.musts['test'] = [('a', '(X2->(X1->F))'), ('b', 'B')]
+        one = ps._conquer_one('test')
+        self.assertListEqual([(['A', 'A'], []),
+                              (['A', 'C'], []),
+                              (['B', '(b:B)'], [])],
+                             one)
 
     def test__conquer_one1(self):
         ps = ProofSearch({'a': ['(A->(A->F))', '((b:B)->A)', 'B', '(C->(A->F))', '((b:B)->(B->F))'], 'b': ['B']}, '')
@@ -22,13 +22,13 @@ class Tests(unittest.TestCase):
         one = ps._conquer_one('test')
         self.assertIsNone(one)
 
-    # def test_conquer_one2(self):
-    #     ps = ProofSearch({'a': ['((b:B)->(C->F))', 'A', '(Y1->(Y2->Y1))']}, '')
-    #     ps.atoms = ['test']
-    #     ps.musts['test'] = [('a', '(X3->(X2->F))')]
-    #     self.assertListEqual([(['', 'C', '(b:B)'], []),
-    #                           (['', '', 'F'], [])],
-    #                          ps._conquer_one('test'))
+    def test_conquer_one2(self):
+        ps = ProofSearch({'a': ['((b:B)->(C->F))', 'A', '(Y1->(Y2->Y1))']}, '')
+        ps.atoms = ['test']
+        ps.musts['test'] = [('a', '(X3->(X2->F))')]
+        self.assertListEqual([(['', 'C', '(b:B)'], []),
+                              (['', '', 'F'], [])],
+                             ps._conquer_one('test'))
 
     def test_conquer(self):
         cs = {'s': ['(B->A)'],
@@ -283,17 +283,25 @@ class Tests(unittest.TestCase):
         self.assertIsNone(condition)
         self.assertEqual({'Y2': 'A'}, y_wilds)
 
-    # def test_merge_two_tables(self):
-    #     t1 = [(['A', 'B', ''], [])]
-    #     t2 = [(['A', '', 'C'], [])]
-    #     self.assertListEqual([(['A', 'B', 'C'], [])], ProofSearch._merge_two_tables(t1, t2))
+    def test_apply_condition_new19(self):
+        wild = ['(A->B)', '', 'B']
+        con = ('X2', '(X3->Y1)')
+        config, condition, y_wilds = ProofSearch.apply_condition_new3(wild, con)
+        self.assertEqual(wild, config)
+        self.assertEqual(('X2', '(B->Y1)'), condition)
+        self.assertIsNone(y_wilds)
 
-    # def test_merge_two_tables2(self):
-    #     t1 = [(['D', 'C', '', 'B', ''], []),
-    #           (['C', 'C', '', 'C', ''], [])]
-    #     t2 = [(['D', '', '', '', 'A'], []),
-    #           (['A', '', '', '', 'D'], [])]
-    #     self.assertListEqual([(['D', 'C', '', 'B', 'A'], [])], ProofSearch._merge_two_tables(t1, t2))
+    def test_merge_two_tables(self):
+        t1 = [(['A', 'B', ''], [])]
+        t2 = [(['A', '', 'C'], [])]
+        self.assertListEqual([(['A', 'B', 'C'], [])], ProofSearch.merge_two_tables(t1, t2))
+
+    def test_merge_two_tables2(self):
+        t1 = [(['D', 'C', '', 'B', ''], []),
+              (['C', 'C', '', 'C', ''], [])]
+        t2 = [(['D', '', '', '', 'A'], []),
+              (['A', '', '', '', 'D'], [])]
+        self.assertListEqual([(['D', 'C', '', 'B', 'A'], [])], ProofSearch.merge_two_tables(t1, t2))
 
     def test_find_all_for_none(self):
         ps = ProofSearch({'a': [1, 2, 3]}, '')
@@ -381,6 +389,46 @@ class Tests(unittest.TestCase):
                                                         ('h', '(X2->X1)'), ('i', 'X2')]},
                              ps.musts)
 
+    def test_apply_all_conditions1(self):
+        wild = ['(A->B)', 'C', '']
+        con = [('X1', '(Y2->X3)'), ('X3', 'B')]
+        config, conditions = ProofSearch.apply_all_conditions(wild, con)
+        self.assertEqual(['(A->B)', 'C', 'B'], config)
+        self.assertEqual([], conditions)
+
+    def test_apply_all_conditions2(self):
+        wild = ['(A->B)', 'C', '']
+        con = [('X1', '(Y2->X3)'), ('X3', 'C')]
+        config, conditions = ProofSearch.apply_all_conditions(wild, con)
+        self.assertIsNone(config)
+        self.assertEqual([], conditions)
+
+    def test_apply_all_conditions4(self):
+        wild = ['(A->B)', '', 'B']
+        con = [('X2', '(X3->Y1)')]
+        config, conditions = ProofSearch.apply_all_conditions(wild, con)
+        self.assertEqual(['(A->B)', '', 'B'], config)
+        self.assertEqual([('X2', '(B->Y1)')], conditions)
+
+    def test_full_merge_of_two_configs(self):
+        config1 = ['(A->B)', '', '']
+        cond1 = [('X1', '(Y2->X3)'), ('X3', 'B')]
+        config2 = ['', '', 'B']
+        cond2 = [('X2', '(X3->Y1)')]
+        config_a, cond_a = ProofSearch.full_merge_of_two_configs((config1, cond1), (config2, cond2))
+        self.assertEqual(['(A->B)', '', 'B'], config_a)
+        self.assertEqual([('X2', '(B->Y1)')], cond_a)
+        config_b, cond_b = ProofSearch.full_merge_of_two_configs((config2, cond2), (config1, cond1))
+        self.assertEqual(['(A->B)', '', 'B'], config_b)
+        self.assertEqual([('X2', '(B->Y1)')], cond_b)
+
+    def test_merge_two_tables3(self):
+        t1 = [(['', ''], [('X1', '(Y2->X2)')])]
+        t2 = [(['', 'C'], [])]
+        table = ProofSearch.merge_two_tables(t1, t2)
+        table2 = ProofSearch.merge_two_tables(t2, t1)
+        self.assertEqual(table, table2)
+
     def test_mix_y_and_x(self):
         # matching Y1->(Y2->Y1) to the must of b: X2->X1 results in a condition with mixed x-y-wilds.
         # this was not expected to happen!
@@ -397,10 +445,20 @@ class Tests(unittest.TestCase):
         self.assertEqual([({},                  [('X1', '(Y2->X2)')])], configs_and_con_b)
         self.assertEqual([({'X2': 'C'},         [])],                   configs_and_con_c)
 
-        merge_a_b = cs._merge_two_tables(configs_to_table(configs_and_con_a, 2), configs_to_table(configs_and_con_b, 2))
-        print(merge_a_b)
-        # self.assertEqual([(['(A->C)', 'C'], )
+        merge_a_b = cs.merge_two_tables(configs_to_table(configs_and_con_a, 2), configs_to_table(configs_and_con_b, 2))
+        merge_b_a = cs.merge_two_tables(configs_to_table(configs_and_con_b, 2), configs_to_table(configs_and_con_a, 2))
+        merge_a_c = cs.merge_two_tables(configs_to_table(configs_and_con_a, 2), configs_to_table(configs_and_con_c, 2))
+        merge_c_a = cs.merge_two_tables(configs_to_table(configs_and_con_c, 2), configs_to_table(configs_and_con_a, 2))
+        merge_b_c = cs.merge_two_tables(configs_to_table(configs_and_con_b, 2), configs_to_table(configs_and_con_c, 2))
+        merge_c_b = cs.merge_two_tables(configs_to_table(configs_and_con_c, 2), configs_to_table(configs_and_con_b, 2))
+        self.assertEqual([(['(A->C)', 'C'], [])],                   merge_a_b)
+        self.assertEqual([(['(A->C)', 'C'], [])],                   merge_a_c)
+        self.assertEqual([(['', 'C'],       [('X1', '(Y2->C)')])],  merge_b_c)
+        self.assertEqual(merge_a_b, merge_b_a)
+        self.assertEqual(merge_a_c, merge_c_a)
+        self.assertEqual(merge_b_c, merge_c_b)
 
+    #todo: what if two Y's with same name but different origin end up in a condition?
 
     # def test_presentation(self):
     #     formula = '(((((a*b)*(!b))+((!b)+c))+((!b)*d)):(b:F))'

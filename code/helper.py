@@ -37,7 +37,7 @@ def x_size(musts):
 
 def merge_config(a, b):
     '''
-    compares to lists, if they are mergable return the merge, else return None.
+    compares to lists, if they are mergeable return the merge, else return None.
     '''
     size = len(a)
     new = ['']*size
@@ -54,7 +54,6 @@ def merge_config(a, b):
         else:
             return None
     return new
-
 
 
 def update_condition_with_x(term, list):
@@ -178,3 +177,11 @@ def rename_dict_from_x_to_y_wilds(wilds):
         y_key = str('Y'+key[1:])
         y_wilds[y_key] = wilds[key]
     return y_wilds
+
+
+def uniq(some_list):
+    uniq_list = []
+    for item in some_list:
+        if item not in uniq_list:
+            uniq_list.append(item)
+    return uniq_list

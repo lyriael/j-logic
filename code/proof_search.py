@@ -1,6 +1,7 @@
 from tree import Tree
 from helper import *
 
+
 class ProofSearch:
     '''
     Checks for satisfiability for a given formula and a cs list.
@@ -164,6 +165,61 @@ class ProofSearch:
         return finale_table
 
     @staticmethod
+    def apply_all_conditions(config, conditions):
+        todo_conditions = list(conditions)
+        updated_config = config
+        remaining_conditions = []
+
+        while todo_conditions:
+            current_condition = todo_conditions.pop()
+            updated_config, mod_conditions, y_wilds = ProofSearch.apply_condition_new3(config, current_condition)
+
+            if updated_config:
+                # If mod_condition is not None, then there is no contradiction with the current
+                # config, but it must be kept for later.
+                if mod_conditions:
+                    remaining_conditions.append(mod_conditions)
+                # If there are y_wilds, then condition_term has been match to a constant, meaning
+                # either the match worked and thus the current condition is not needed anymore, or
+                # else the match would not have worked and we wouldn't be here :)
+                if y_wilds:
+                    # update all relevant conditions
+                    updated_conditions = get_all_with_y(todo_conditions, y_wilds.keys()) \
+                                         + get_all_with_y(remaining_conditions, y_wilds.keys())
+                    for key in y_wilds:
+                        updated_conditions = update_y(updated_conditions, key, y_wilds[key])
+                    # Add updated conditions to the todo_conditions.
+                    todo_conditions = todo_conditions + updated_conditions
+            else:
+                break
+        return updated_config, remaining_conditions
+
+    @staticmethod
+    def full_merge_of_two_configs(first, second):
+        merge = merge_config(first[0], second[0])
+        if merge:
+            merge_first, conditions_first = ProofSearch.apply_all_conditions(merge, first[1])
+            merge_second, conditions_second = ProofSearch.apply_all_conditions(merge, second[1])
+            if merge_first and merge_second:
+                full_merge = merge_config(merge_first, merge_second)
+                if full_merge:
+                    final_merge, final_conditions = ProofSearch.apply_all_conditions(full_merge, conditions_first + conditions_second)
+                    if final_merge:
+                        return final_merge, final_conditions
+        return None, None
+
+    @staticmethod
+    def merge_two_tables(first, second):
+        merged_table = []
+        for first_tpl in first:
+            for second_tpl in second:
+                table, conditions = ProofSearch.full_merge_of_two_configs(first_tpl, second_tpl)
+                if table:
+                    t = (table, conditions)
+                    merged_table.append(t)
+        return uniq(merged_table)
+
+    @staticmethod
     def _merge_two_tables(first, second):
         '''
         For two given configuration tables (with conditions!) merge them into one configuration table, if possible.
@@ -201,7 +257,6 @@ class ProofSearch:
                 else:
                     # do each condition list separably to avoid name clashes from Y's.
                     for conditions in [first_tpl[1], second_tpl[1]]:
-                        print('for-------')
                         if conditions:
                             todo_conditions = list(conditions)
                             done_conditions = []
@@ -210,51 +265,45 @@ class ProofSearch:
                             # check every condition
                             while todo_conditions:
                                 current_condition = todo_conditions.pop()
-                                print('condition: ' + str(current_condition))
                                 updated_merge, mod_condition, y_wilds = ProofSearch.apply_condition_new3(updated_merge, current_condition)
-                                print(updated_merge)
-                                print(mod_condition)
-                                print(y_wilds)
 
-                                # The merge is possible and ...
+                                # The condition is not in contradiction with the given config term.
                                 if updated_merge:
 
+                                    # If there are y_wilds, then condition_term has been match to a constant, meaning
+                                    # either the match worked and thus the current condition is not needed anymore, or
+                                    # else the match would not have worked and we wouldn't be here :)
                                     if y_wilds:
-                                        # from all conditions (those done already and those still to to),
-                                        # select all which
-                                        # contain the 'Yn' given from the dict.
+                                        # update all relevant conditions
                                         updated_conditions = get_all_with_y(todo_conditions, y_wilds.keys()) \
-                                                             + get_all_with_y(done_conditions, y_wilds.keys()) \
-                                                             + [current_condition]
-
-                                        # Update conditions that contain 'Yn'.
+                                                             + get_all_with_y(done_conditions, y_wilds.keys())
                                         for key in y_wilds:
                                             updated_conditions = update_y(updated_conditions, key, y_wilds[key])
-
                                         # Add updated conditions to the todo_conditions.
                                         todo_conditions = todo_conditions + updated_conditions
-                                    else:
-                                        if mod_condition:
-                                            todo_conditions.append(mod_condition)
-                                        else:
-                                            done_conditions.append(current_condition)
 
-                                # The merge is not possible with this condition.
-                                elif not updated_merge:
+                                    else:
+                                        done_conditions.append(current_condition)
+
+                                # The condition is in contradiction with the config term.
+                                else:
                                     updated_merge = None
                                     break
 
                             # All conditions were successful apply, else 'updated_merge' would be 'None'.
-                            print('todos: ' + str(todo_conditions))
                             if updated_merge:
                                 merged_table.append((updated_merge, done_conditions))
 
                         # There are no conditions, so we're done for this combination.
                         else:
                             merged_table.append((simple_merge, []))
-
+        # removing duplicates
+        final_table = []
+        for tpl in merged_table:
+            if tpl not in final_table:
+                final_table.append(tpl)
         # If the merge was not successful, an empty table will be returned.
-        return merged_table
+        return final_table
 
     @staticmethod
     def apply_condition_new(config, condition):

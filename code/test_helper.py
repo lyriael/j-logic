@@ -38,6 +38,9 @@ class Tests(unittest.TestCase):
         t2 = ['A', '', 'C']
         self.assertListEqual(['A', 'B', 'C'], merge_config(t1, t2))
 
+    def test_merge2(self):
+        self.assertEqual(['(A->B)', '', 'B'], merge_config(['(A->B)', '', 'B'], ['(A->B)', '', 'B']))
+
     def test_config_to_table(self):
         configs = [({'X1': 'A', 'X2': 'B'}, []), ({'X1': '(A->B)', 'X4': 'C'}, [])]
         self.assertListEqual([(['A', 'B', '', ''], []), (['(A->B)', '', '', 'C'], [])],
