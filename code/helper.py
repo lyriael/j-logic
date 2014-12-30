@@ -124,15 +124,18 @@ def configs_to_table(configs, size):
     # e.g.: x_size = 5, len(cs) = 3
     # >> table = [(['', '', '', '', ''], []), (['', '', '', '', ''], []), (['', '', '', '', ''], [])]
     if configs:
-        table = [(['' for i in range(size)], []) for j in range(len(configs))]
+        table = [['' for i in range(size)] for j in range(len(configs))]
+        finale_table = []
         row = 0
         for tpl in configs:
             for x in tpl[0]: # accessing the wild-dict, ignoring conditions (tpl[1])
                 position = int(x[1:]) - 1
                 term = tpl[0][x]
-                table[row][0][position] = term
+                table[row][position] = term
+            t = (table[row], tpl[1])
+            finale_table.append(t)
             row += 1
-        return table
+        return finale_table
     else:
         return [(['']*size, [])]
 

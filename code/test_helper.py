@@ -48,6 +48,10 @@ class Tests(unittest.TestCase):
         configs = []
         self.assertListEqual([(['', '', ''], [])], configs_to_table(configs, 3))
 
+    def test_config_to_table3(self):
+        configs = [({}, [('X1', '(Y2->X2)')])]
+        self.assertListEqual([(['', ''], [('X1', '(Y2->X2)')])], configs_to_table(configs, 2))
+
     def test_get_all_with_y(self):
         result = get_all_with_y([('X2', '(Y1->A)'), ('X1', '(Y2)'), ('X3', '(Y1->Y2)')], ['Y1'])
         self.assertListEqual([('X2', '(Y1->A)'), ('X3', '(Y1->Y2)')], result)

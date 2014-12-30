@@ -190,72 +190,68 @@ class ProofSearch:
         # the second table.
         for first_tpl in first:
             for second_tpl in second:
-
                 # Try simple merge, and collect all conditions that must be count for this
                 # merge.
                 simple_merge = merge_config(first_tpl[0], second_tpl[0])
-                conditions = first_tpl[1] + second_tpl[1]
 
                 # If a simple merge is not possible, we can move on the the next combination.
                 if simple_merge is None:
                     pass
-
                 # A simple merge is possible, so now it must be checked for the conditions.
                 else:
+                    # do each condition list separably to avoid name clashes from Y's.
+                    for conditions in [first_tpl[1], second_tpl[1]]:
+                        print('for-------')
+                        if conditions:
+                            todo_conditions = list(conditions)
+                            done_conditions = []
+                            updated_merge = simple_merge
 
-                    # conditions apply to merge, oh noes..
-                    if conditions:
-                        todo_conditions = list(conditions)
-                        done_conditions = []
-                        updated_merge = simple_merge
+                            # check every condition
+                            while todo_conditions:
+                                current_condition = todo_conditions.pop()
+                                print('condition: ' + str(current_condition))
+                                updated_merge, mod_condition, y_wilds = ProofSearch.apply_condition_new3(updated_merge, current_condition)
+                                print(updated_merge)
+                                print(mod_condition)
+                                print(y_wilds)
 
-                        # check every condition
-                        while todo_conditions:
-                            current_condition = todo_conditions.pop()
-                            updated_merge, delete_condition = ProofSearch._apply_condition(updated_merge, current_condition)
+                                # The merge is possible and ...
+                                if updated_merge:
 
-                            # The merge is possible and ...
+                                    if y_wilds:
+                                        # from all conditions (those done already and those still to to),
+                                        # select all which
+                                        # contain the 'Yn' given from the dict.
+                                        updated_conditions = get_all_with_y(todo_conditions, y_wilds.keys()) \
+                                                             + get_all_with_y(done_conditions, y_wilds.keys()) \
+                                                             + [current_condition]
+
+                                        # Update conditions that contain 'Yn'.
+                                        for key in y_wilds:
+                                            updated_conditions = update_y(updated_conditions, key, y_wilds[key])
+
+                                        # Add updated conditions to the todo_conditions.
+                                        todo_conditions = todo_conditions + updated_conditions
+                                    else:
+                                        if mod_condition:
+                                            todo_conditions.append(mod_condition)
+                                        else:
+                                            done_conditions.append(current_condition)
+
+                                # The merge is not possible with this condition.
+                                elif not updated_merge:
+                                    updated_merge = None
+                                    break
+
+                            # All conditions were successful apply, else 'updated_merge' would be 'None'.
+                            print('todos: ' + str(todo_conditions))
                             if updated_merge:
+                                merged_table.append((updated_merge, done_conditions))
 
-                                # ... condition is fulfilled and therefore no longer needed.
-                                # (There is actually nothing more to done; the condition was 'deleted', when we used
-                                # 'pop'.)
-                                if delete_condition is True:
-                                    pass
-
-                                # ... condition does not matter in this merge, but it might be needed later on
-                                # for another merge.
-                                if delete_condition is False:
-                                    done_conditions.append(current_condition)
-
-                                # ... condition can be fulfilled, but it caused changes in other conditions.
-                                elif isinstance(delete_condition, dict):
-
-                                    # from all conditions (those done already and those still to to), select all which
-                                    # contain the 'Yn' given from the dict.
-                                    y_wilds = delete_condition
-                                    updated_conditions = get_all_with_y(todo_conditions, y_wilds.keys()) \
-                                                         + get_all_with_y(done_conditions, y_wilds.keys())
-
-                                    # Update conditions that contain 'Yn'.
-                                    for key in y_wilds:
-                                        updated_conditions = update_y(updated_conditions, key, y_wilds[key])
-
-                                    # Add updated conditions to the todo_conditions.
-                                    todo_conditions = todo_conditions + updated_conditions
-
-                            # The merge is not possible with this condition.
-                            if not updated_merge:
-                                updated_merge = None
-                                break
-
-                        # All conditions were successful apply, else 'updated_merge' would be 'None'.
-                        if updated_merge:
-                            merged_table.append((updated_merge, done_conditions))
-
-                    # There are no conditions, so we're done for this combination.
-                    else:
-                        merged_table.append((simple_merge, []))
+                        # There are no conditions, so we're done for this combination.
+                        else:
+                            merged_table.append((simple_merge, []))
 
         # If the merge was not successful, an empty table will be returned.
         return merged_table
@@ -334,10 +330,55 @@ class ProofSearch:
                 return config, None, None
             else:
                 return None, None, None
-        #todo: I'm working here!
 
+    @staticmethod
+    def apply_condition_new3(config, condition):
+        '''
+        Checks if a condition given to a configuration is ok. The outcome can either be:
+            - Something in the condition is in contradiction to the configuration.
+            - The condition gives no contradiction but neither can it be discarded yet.
+            - The condition is possible and is no longer needed.
 
+        :param config: List. Example: ['', '(A->B)', '']
+        :param condition: Tuple. Example: ('X2', '(X1->Y2)')
 
+        :return config: List or None. May differ from given param. Example: ['A', '(A->B), '']
+        :return condition: Tuple or None. May differ from given param.
+        :return y_wilds: Dict or None. Y-Wilds in here must be replaced in other conditions.
+        '''
+        x_index = int(condition[0][1:])-1
+        config_term = config[x_index]
+        condition_term = update_condition_with_x(condition[1], config)
+
+        # If config_term is not empty, it contains only constants. In that case we can determine all
+        # X's and Y's that occur in condition_term if there are any. If there are no wilds simply check
+        # if config_term and condition_term are the same, else get all remaining X's and Y's.
+        if config_term != '':
+            conds, wilds = Tree.compare(Tree(condition_term).root, Tree(config_term).root, [], {})
+            if wilds is not None:
+                assert conds == []
+                y_wilds = {}
+                for key in wilds:
+                    if key[0] == 'X':
+                        i = int(key[1:])-1
+                        if wilds[key] == config[i] or config[i] == '':
+                            config[i] = wilds[key]
+                        else:
+                            return None, None, None
+                    elif key[0] == 'Y':
+                        y_wilds[key] = wilds[key]
+                return config, None, None if y_wilds == {} else y_wilds
+            else:
+                return None, None, None
+        # If config_term is empty the only chance to solve the condition is, if the condition consists
+        # only of constants. If that is the case it can be put into config and the condition may be
+        # dismissed. Else nothing more can be done.
+        elif config_term == '':
+            if 'X' not in condition_term and 'Y' not in condition_term:
+                config[x_index] = condition_term
+                return config, None, None
+            else:
+                return config, (condition[0], condition_term), None
 
     @staticmethod
     def _apply_condition(merged: list, condition: tuple):
