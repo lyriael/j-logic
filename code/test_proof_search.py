@@ -361,6 +361,9 @@ class Tests(unittest.TestCase):
         self.assertEqual(merge_a_c, merge_c_a)
         self.assertEqual(merge_b_c, merge_c_b)
 
+        result = cs.conquer()
+        print(result)
+
     #todo: what if two Y's with same name but different origin end up in a condition?
 
     # def test_presentation(self):
