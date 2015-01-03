@@ -35,7 +35,7 @@ def x_size(musts):
     return sorted(map(lambda x: int(x[1:]), all_xs)).pop()
 
 
-def merge_config(a, b):
+def simple_merge(a, b):
     '''
     compares to lists, if they are mergeable return the merge, else return None.
     '''

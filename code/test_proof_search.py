@@ -214,19 +214,19 @@ class Tests(unittest.TestCase):
 
     def test_find_all1(self):
         ps = ProofSearch({'a': [1, 2, 3]}, '')
-        match = ps.find_all_for('b', '')
+        match = ps.look_up_in_cs('b', '')
         self.assertIsNone(match)
 
     def test_find_all2(self):
         cs = ProofSearch({'a': ['(A->B)', 'C', '(C->D)', '((A->B)->C)']}, '')
         orig_term = '(X1->X2)'
-        match = cs.find_all_for('a', orig_term)
+        match = cs.look_up_in_cs('a', orig_term)
         self.assertListEqual([({'X2': 'B', 'X1': 'A'}, []), ({'X2': 'D', 'X1': 'C'}, []), ({'X2': 'C', 'X1': '(A->B)'}, [])], match)
 
     def test_find_all3(self):
         cs = ProofSearch({'a': ['(A->(A->F))', '((b:B)->A)', 'B', '(C->(A->F))', '((b:B)->(B->F))'], 'b': ['B']}, '')
         orig_term = '(X2->(X1->F))'
-        match = cs.find_all_for('a', orig_term)
+        match = cs.look_up_in_cs('a', orig_term)
         self.assertListEqual([({'X2': 'A',      'X1': 'A'}, []),
                               ({'X2': 'C',      'X1': 'A'}, []),
                               ({'X2': '(b:B)',  'X1': 'B'}, [])],
@@ -236,7 +236,7 @@ class Tests(unittest.TestCase):
     def test_find_all4(self):
         cs = ProofSearch({'a': ['(Y1->(Y2->Y3))', '(Y1->Y2)']}, '')
         orig_term = '(X1->X2)'
-        match = cs.find_all_for('a', orig_term)
+        match = cs.look_up_in_cs('a', orig_term)
         # second fits, but needs no wild
         self.assertListEqual([({}, [('X2', '(Y2->Y3)')])], match)
 
@@ -244,25 +244,25 @@ class Tests(unittest.TestCase):
     def test_find_all5(self):
         orig_term = '(X2->(X1->F))'
         cs = ProofSearch({'a': ['(Y1->(Y2->Y1))'], 'b': ['B']}, '')
-        match = cs.find_all_for('a', orig_term)
+        match = cs.look_up_in_cs('a', orig_term)
         self.assertListEqual([({'X2': 'F'}, [])], match)
 
     def test_find_all6(self):
         orig_term = '(X1->(X2->X3))'
         cs = ProofSearch({'a': ['(Y1->(Y2->Y3))']}, '')
-        match = cs.find_all_for('a', orig_term)
+        match = cs.look_up_in_cs('a', orig_term)
         self.assertListEqual([], match)
 
     def test_find_all7(self):
         orig_term = '(A->B)'
         cs = ProofSearch({'a': ['(A->B)', '(Y1->Y2)']}, '')
-        match = cs.find_all_for('a', orig_term)
+        match = cs.look_up_in_cs('a', orig_term)
         self.assertListEqual([], match)
 
     def test_find_all8(self):
         orig_term = '(A->B)'
         cs = ProofSearch({'a': ['(Y1->Y1)']}, '')
-        match = cs.find_all_for('a', orig_term)
+        match = cs.look_up_in_cs('a', orig_term)
         self.assertIsNone(match)
 
     def test_atomize(self):
@@ -341,9 +341,9 @@ class Tests(unittest.TestCase):
         self.assertIn(('b', '(X2->X1)'),    cs.musts.get('((a*(b*c)):F)'))
         self.assertIn(('c', 'X2'),          cs.musts.get('((a*(b*c)):F)'))
 
-        configs_and_con_a = cs.find_all_for('a', '(X1->F)')
-        configs_and_con_b = cs.find_all_for('b', '(X2->X1)')
-        configs_and_con_c = cs.find_all_for('c', 'X2')
+        configs_and_con_a = cs.look_up_in_cs('a', '(X1->F)')
+        configs_and_con_b = cs.look_up_in_cs('b', '(X2->X1)')
+        configs_and_con_c = cs.look_up_in_cs('c', 'X2')
         self.assertEqual([({'X1': '(A->C)'},    [])],                   configs_and_con_a)
         self.assertEqual([({},                  [('X1', '(Y2->X2)')])], configs_and_con_b)
         self.assertEqual([({'X2': 'C'},         [])],                   configs_and_con_c)

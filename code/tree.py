@@ -122,7 +122,7 @@ class Tree(object):
                 plus_node.parent.set_right(plus_node.right)
 
     @staticmethod
-    def musts(must_formula):
+    def musts(formula: str):
         '''
         This method expects the formula to be splited and simplified already,
         such that only '*', '!' and const are nodes.
@@ -132,11 +132,11 @@ class Tree(object):
 
         THE MAGIC HAPPENS RIGHT HERE
         '''
-        must_tree = Tree(must_formula)
+        tree = Tree(formula)
         consts = []         # returning container.
         swaps = []          # contains replacements for Wilds from '!'. => ('X2', '(b:X3)')
         v_count = 1         # needed for Wilds (X1, X2, ...)
-        temp = [must_tree]  # contains Trees
+        temp = [tree]  # contains Trees
         while len(temp) > 0:
             f = temp.pop()
             proof_term = f.subtree(f.root.left)
@@ -160,7 +160,7 @@ class Tree(object):
         return sorted(replace(consts, swaps))
 
     @staticmethod
-    def compare(orig_node, cs_node, conditions, wilds):
+    def compare(orig_node: Node, cs_node: Node, conditions, wilds):
         '''
         Compares to trees recursively. Used to get 'musts' and also to merge configurations. The first and the second
         argument are not freely interchangeable!
@@ -206,45 +206,12 @@ class Tree(object):
             t = (orig_node.token, cs_node.to_s())
             conditions.append(t)
         # normal wild config
-        # todo: OMG, what shall be done, if there is a Y inside??!!
-        # todo: check if a X in wilds can be overwritten by accident
         elif orig_node.token[0] == 'X' or orig_node.token[0] == 'Y':
             wilds[orig_node.to_s()] = cs_node.to_s()
 
         else:
             # no match possible
             # no idea how to make that nicer
-            conditions, wilds = None, None
-        return conditions, wilds
-
-    @staticmethod
-    def compare_new(orig_node, cs_node, conditions, wilds):
-        '''
-
-        :param orig_node: term from 'musts'. May contain x-wilds
-        :param cs_node: term from cs-list. May contain y-wilds
-        :param conditions: condition is on one wild. May be x-wild or y-wild.
-        :param wilds: x-wilds
-        :return:
-        '''
-        if orig_node.token == cs_node.token:
-            if cs_node.token in ['->', ':']:
-                conditions, wilds = Tree.compare_new(orig_node.left, cs_node.left, conditions, wilds)
-                conditions, wilds = Tree.compare_new(orig_node.right, cs_node.right, conditions, wilds)
-            else:
-                pass
-
-        elif orig_node.is_x_wild():
-            if cs_node.has_no_wilds():
-                wilds[orig_node.token] = cs_node.to_s()
-            else:
-                t = (orig_node.token, cs_node.to_s())
-                conditions.append(t)
-
-        elif cs_node.is_y_wild():
-                t = (cs_node.token, orig_node.to_s())
-                conditions.append(t)
-        else:
             conditions, wilds = None, None
         return conditions, wilds
 
@@ -312,58 +279,37 @@ class Tree(object):
         return list(set(result))
 
     @staticmethod
-    def has_outer_bang(formula):
-        '''
-        Called from ProofSearch in step 'atomize'.
-
-        If the first operation of a proof term is a '!', the formula can be simplified. This method checks if that is
-        the case.
-
-        @see Tree.simplify_bang()
-
-        :param formula: string
-        :return has_outer_bang: boolean
-            True, if '!' is the first operation in proof term
-            False, else.
-        '''
-        #todo: integrate this method in 'simplify_bang'
-        tree = Tree(formula)
-        if tree.root.left.token == '!':
-            return True
-        else:
-            return False
-
-    @staticmethod
     def simplify_bang(formula):
         '''
-        Called from ProofSearch in step 'atomize'
-
-        Simplify a formula by resolving top '!'.
-
-        restriction: Must only be called on a Formula where top operation is ':' and top left operation is '!'.
-        @see Tree.has_outer_bang()
+        Called from ProofSearch in step 'atomize'. Simplifies a formula for top '!' operations.
 
         Example:
+        (a:F)         => (a:F)
         ((!a):(a:F))  => (a:F)
         ((!b):F)      => None
 
         :return str:
+            old Formula,    if '!' is not top operation
             new Formula,    if resolvable
             empty,          if not resolvable
         '''
-        # accessing child of '!'
         tree = Tree(formula)
-        left = tree.subtree(tree.root.left.right)
-        right = tree.subtree(tree.root.right.left)
         assert tree.root.token == ':'
-        assert tree.root.left.token == '!'
 
-        if right and left.to_s() == right.to_s():
-            subformula = tree.subtree(tree.root.right.right)
-            s = '('+right.to_s()+':'+subformula.to_s()+')'
-            return s
+        if tree.root.left.token == '!':
+            # accessing child of '!'
+            left = tree.subtree(tree.root.left.right)
+            right = tree.subtree(tree.root.right.left)
+            # if both sides are the same, construct simplified formula as string.
+            if right and left.to_s() == right.to_s():
+                subformula = tree.subtree(tree.root.right.right)
+                s = '('+right.to_s()+':'+subformula.to_s()+')'
+                return s
+            else:
+                return ''
         else:
-            return ''
+            # formula has no '!' operation on top.
+            return formula
 
     @staticmethod
     def has_bad_bang(formula):

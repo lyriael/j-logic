@@ -25,21 +25,21 @@ class Tests(unittest.TestCase):
 
     def test_match1(self):
         self.assertListEqual(['A', 'A', '', '', 'B', ''],
-                             merge_config(['A', 'A', '', '', '', ''], ['', 'A', '', '', 'B', '', '']))
+                             simple_merge(['A', 'A', '', '', '', ''], ['', 'A', '', '', 'B', '', '']))
 
     def test_match2(self):
-        self.assertIsNone(merge_config(['B', '(b:B)', '', '', '', ''], ['', '(B->F)', '', '', 'B', '']))
+        self.assertIsNone(simple_merge(['B', '(b:B)', '', '', '', ''], ['', '(B->F)', '', '', 'B', '']))
 
     def test_match3(self):
-        self.assertListEqual(['', 'S'], merge_config(['', 'S'], ['', '']))
+        self.assertListEqual(['', 'S'], simple_merge(['', 'S'], ['', '']))
 
     def test_merge_(self):
         t1 = ['A', 'B', '']
         t2 = ['A', '', 'C']
-        self.assertListEqual(['A', 'B', 'C'], merge_config(t1, t2))
+        self.assertListEqual(['A', 'B', 'C'], simple_merge(t1, t2))
 
     def test_merge2(self):
-        self.assertEqual(['(A->B)', '', 'B'], merge_config(['(A->B)', '', 'B'], ['(A->B)', '', 'B']))
+        self.assertEqual(['(A->B)', '', 'B'], simple_merge(['(A->B)', '', 'B'], ['(A->B)', '', 'B']))
 
     def test_config_to_table(self):
         configs = [({'X1': 'A', 'X2': 'B'}, []), ({'X1': '(A->B)', 'X4': 'C'}, [])]

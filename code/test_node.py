@@ -14,7 +14,7 @@ class Tests(unittest.TestCase):
         self.assertIsNone(node.sibling)
         self.assertFalse(node.is_root())
 
-    def init_sibling(self):
+    def test_sibling(self):
         right = Node()
         left = Node()
         right.sibling = left
@@ -64,18 +64,13 @@ class Tests(unittest.TestCase):
         self.assertEqual(left.sibling, right)
 
     def test_parse_tree_manual(self):
-        # term: ((!a):F)
         root = Node()
         current = root
         current.set_root()
         self.assertEqual(root, current)
-        # '('
         current = root.new_left()
         bang = current
-        # '('
         current = bang.new_left()
-        waste = current
-        # '!'
         current = current.parent
         self.assertEqual(bang, current)
         current.token = '!'
@@ -84,25 +79,20 @@ class Tests(unittest.TestCase):
         self.assertIsNone(bang.left)
         current = current.new_right()
         a = current
-        # 'a'
         current.token = 'a'
         self.assertEqual('a', a.token)
         current = current.parent
         self.assertEqual(bang, current)
-        # ')'
         current = current.parent
         self.assertEqual(current, root)
-        # ':'
         current.token = ':'
         self.assertEqual(':', root.token)
         current = current.new_right()
         F = current
-        # 'F'
         current.token = 'F'
         self.assertEqual('F', F.token)
         current = current.parent
         self.assertEqual(root, current)
-        # ')'
         current = current.parent
         self.assertEqual(root, current)
 

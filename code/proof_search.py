@@ -59,18 +59,15 @@ class ProofSearch:
             containing atomic formulas as Strings.
             Example: '((!d)+((a*b)+c))' => ['(a*b)', 'c']
         '''
-        #todo private, so that it is only used with 'set_formula'
         # first step: make sum-splits
         splits = Tree.sum_split(self.formula)
 
         # second step: simplify formula if top operation is bang
         for formula in splits[:]:
-            if Tree.has_outer_bang(formula):
-                splits.remove(formula)
-                new_formula = Tree.simplify_bang(formula)
-
-                if new_formula:
-                    splits.append(new_formula)
+            splits.remove(formula)
+            new_formula = Tree.simplify_bang(formula)
+            if new_formula:
+                splits.append(new_formula)
 
         # third step: remove formulas where '!' is left child of '*'
         for formula in splits[:]:
@@ -151,7 +148,7 @@ class ProofSearch:
             proof_constant = entry[0]   # 'a'
             term = entry[1]             # '(A->B)'
 
-            configs_for_one_must = self.find_all_for(proof_constant, term)
+            configs_for_one_must = self.look_up_in_cs(proof_constant, term)
 
             # if there is no entry in CS that fits the term, this must is not satisfiable.
             if configs_for_one_must is None:
@@ -164,7 +161,7 @@ class ProofSearch:
 
         return finale_table
 
-    def find_all_for(self, proof_constant, orig_term):
+    def look_up_in_cs(self, proof_constant, orig_term):
         '''
         Finds all possible configuration for a given term pair by looking up the proof_constant in CS.
 
@@ -207,79 +204,6 @@ class ProofSearch:
         # There are no entries for the given proof constant.
         else:
             return None
-
-
-def apply_all_conditions(config, conditions):
-    todo_conditions = list(conditions)
-    updated_config = config
-    remaining_conditions = []
-
-    while todo_conditions:
-        current_condition = todo_conditions.pop()
-        updated_config, mod_conditions, y_wilds = apply_condition(config, current_condition)
-
-        if updated_config:
-            # If mod_condition is not None, then there is no contradiction with the current
-            # config, but it must be kept for later.
-            if mod_conditions:
-                remaining_conditions.append(mod_conditions)
-            # If there are y_wilds, then condition_term has been match to a constant, meaning
-            # either the match worked and thus the current condition is not needed anymore, or
-            # else the match would not have worked and we wouldn't be here :)
-            if y_wilds:
-                # update all relevant conditions
-                updated_conditions = get_all_with_y(todo_conditions, y_wilds.keys()) \
-                                     + get_all_with_y(remaining_conditions, y_wilds.keys())
-                for key in y_wilds:
-                    updated_conditions = update_y(updated_conditions, key, y_wilds[key])
-                # Add updated conditions to the todo_conditions.
-                todo_conditions = todo_conditions + updated_conditions
-        else:
-            break
-    return updated_config, remaining_conditions
-
-
-def full_merge_of_two_configs(first, second):
-    merge = merge_config(first[0], second[0])
-    if merge:
-        merge_first, conditions_first = apply_all_conditions(merge, first[1])
-        merge_second, conditions_second = apply_all_conditions(merge, second[1])
-        if merge_first and merge_second:
-            full_merge = merge_config(merge_first, merge_second)
-            if full_merge:
-                final_merge, final_conditions = apply_all_conditions(full_merge, conditions_first + conditions_second)
-                if final_merge:
-                    return final_merge, final_conditions
-    return None, None
-
-
-def merge_two_tables(first, second):
-    '''
-    For two given configuration tables (with conditions!) merge them into one configuration table, if possible.
-    First step of the merge is to see, if the wilds of the two table are in no contradiction.
-    Second step is to check, if there is a contradiction with the given conditions (see #_apply_conditions).
-
-    Example (without conditions, for more simple demonstration)
-
-        t1 = [(['D', 'C', '', 'B', ''], []),
-              (['C', 'C', '', 'C', ''], [])]
-        t2 = [(['D', '', '', '', 'A'], []),
-              (['A', '', '', '', 'D'], [])]
-
-        => [(['D', 'C', '', 'B', 'A'], [])]
-
-    :param first: List
-    :param second: List
-    :return merged_table: List
-    '''
-    merged_table = []
-    for first_tpl in first:
-        for second_tpl in second:
-            table, conditions = full_merge_of_two_configs(first_tpl, second_tpl)
-            if table:
-                t = (table, conditions)
-                merged_table.append(t)
-    return uniq(merged_table)
 
 
 def apply_condition(config, condition):
@@ -329,4 +253,79 @@ def apply_condition(config, condition):
                 return config, None, None
             else:
                 return config, (condition[0], condition_term), None
+
+
+def apply_all_conditions(config, conditions):
+    todo_conditions = list(conditions)
+    updated_config = config
+    remaining_conditions = []
+
+    while todo_conditions:
+        current_condition = todo_conditions.pop()
+        updated_config, mod_conditions, y_wilds = apply_condition(config, current_condition)
+
+        if updated_config:
+            # If mod_condition is not None, then there is no contradiction with the current
+            # config, but it must be kept for later.
+            if mod_conditions:
+                remaining_conditions.append(mod_conditions)
+            # If there are y_wilds, then condition_term has been match to a constant, meaning
+            # either the match worked and thus the current condition is not needed anymore, or
+            # else the match would not have worked and we wouldn't be here :)
+            if y_wilds:
+                # update all relevant conditions
+                updated_conditions = get_all_with_y(todo_conditions, y_wilds.keys()) \
+                                     + get_all_with_y(remaining_conditions, y_wilds.keys())
+                for key in y_wilds:
+                    updated_conditions = update_y(updated_conditions, key, y_wilds[key])
+                # Add updated conditions to the todo_conditions.
+                todo_conditions = todo_conditions + updated_conditions
+        else:
+            break
+    return updated_config, remaining_conditions
+
+
+def full_merge_of_two_configs(first, second):
+    merge = simple_merge(first[0], second[0])
+    if merge:
+        merge_first, conditions_first = apply_all_conditions(merge, first[1])
+        merge_second, conditions_second = apply_all_conditions(merge, second[1])
+        if merge_first and merge_second:
+            full_merge = simple_merge(merge_first, merge_second)
+            if full_merge:
+                final_merge, final_conditions = apply_all_conditions(full_merge, conditions_first + conditions_second)
+                if final_merge:
+                    return final_merge, final_conditions
+    return None, None
+
+
+def merge_two_tables(first, second):
+    '''
+    For two given configuration tables (with conditions!) merge them into one configuration table, if possible.
+    First step of the merge is to see, if the wilds of the two table are in no contradiction.
+    Second step is to check, if there is a contradiction with the given conditions (see #_apply_conditions).
+
+    Example (without conditions, for more simple demonstration)
+
+        t1 = [(['D', 'C', '', 'B', ''], []),
+              (['C', 'C', '', 'C', ''], [])]
+        t2 = [(['D', '', '', '', 'A'], []),
+              (['A', '', '', '', 'D'], [])]
+
+        => [(['D', 'C', '', 'B', 'A'], [])]
+
+    :param first: List
+    :param second: List
+    :return merged_table: List
+    '''
+    merged_table = []
+    for first_tpl in first:
+        for second_tpl in second:
+            table, conditions = full_merge_of_two_configs(first_tpl, second_tpl)
+            if table:
+                t = (table, conditions)
+                merged_table.append(t)
+    return uniq(merged_table)
+
+
 
