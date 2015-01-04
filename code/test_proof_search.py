@@ -364,6 +364,10 @@ class Tests(unittest.TestCase):
         result = cs.conquer()
         print(result)
 
+    def test_all(self):
+        ps = ProofSearch({}, '(((((a*b)*((a*c)+(!c)))+(!(a+b)))+((a+(!b))*(b*a))):(a:F))')
+
+
     #todo: what if two Y's with same name but different origin end up in a condition?
 
     # def test_presentation(self):

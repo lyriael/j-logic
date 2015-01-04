@@ -1,0 +1,53 @@
+%!TEX root = ../bachelors_thesis.tex
+\begin{figure}[H]
+\begin{tikzpicture}[level distance=1.2cm,
+  level 1/.style={sibling distance=8cm},
+  level 2/.style={sibling distance=6cm}, 
+  level 3/.style={sibling distance=3.5cm},
+  level 4/.style={sibling distance=2cm},
+  level 5/.style={sibling distance=1.2cm},
+  level 6/.style={sibling distance=0.8cm}, thick,scale=0.7, every node/.style={scale=0.7}]
+	\node [arn_n]{$:$}
+	  child {node [arn_r]{\(+ \)}
+	    child {node [arn_r] {$+$}
+	    	child {node [arn_w] {$*$}
+	    		child {node [arn_w] {$*$}
+	    			child {node [arn_w] {$a$}}
+	    			child {node [arn_w] {$b$}}
+	    			}
+	    		child {node [arn_r] {$+$}
+	    			child {node [arn_w] {$*$}
+	    				child {node [arn_w] {$a$}}
+	    				child {node [arn_w] {$c$}}
+	    				}
+	    			child {node [arn_w] {$!$}
+	    				child[right] {node [arn_w] {$c$}}
+	    				}
+	    			}
+	    		}
+	    	child {node [arn_w] {$!$}
+	    		child[right] {node [arn_r] {$+$}
+	    			child {node [arn_w] {$a$}}
+	    			child {node [arn_w] {$b$}}
+	    			}
+	    		}
+	    	}
+	    child {node [arn_w] {$*$}
+	    	child {node [arn_r] {$+$}
+	    		child {node [arn_w] {$a$}}
+	    		child {node [arn_w] {$!$}
+	    			child[right] {node [arn_w] {$b$}}}
+	    		}
+	    	child {node [arn_w] {$*$}
+	    		child {node [arn_w] {$b$}}
+	    		child {node [arn_w] {$a$}}
+	    		}
+	    	}
+	    }
+	  child {node [arn_w]{$:$}
+	  	child {node [arn_w] {$a$}}
+	  	child {node [arn_w] {$F$}}
+	  };
+\end{tikzpicture}
+\caption{Syntax tree of given formula $f$ before it is atomized.}
+\end{figure}

@@ -1,6 +1,129 @@
 %!TEX root = ../bachelors_thesis.tex
-\begin{example}
-\[
-	((((a*b)*(!b))+((!b)+c))+((!b)*d)):(b:F)
-\]
-\end{example}
+\section{Initialization}
+In this chapter I would like to walk through one example and covering as many special cases as possible. As such, the justification term we will look at is rather complicated. But this example will also show how nicely this will be broken down in more simpler formulas.
+%defining the box
+\newsavebox\f
+
+\savebox\f{\vbox{\begin{equation}
+f = (((((a*b)*((a*c)+(!c)))+(!(a+b)))+((a+(!b))*(b*a))):(a:F))	
+\end{equation}}}
+%using the box
+\usebox\f
+
+The cs-list used for this example will only be relevant later on but still be presented here as reference:
+
+
+\begin{equation}
+\begin{split}
+	cs = \{\\
+	& a: [(G \rightarrow (a:F)), (Y_1 \rightarrow (Y_2 \rightarrow Y_1))],\\
+	& b: [(((E \rightarrow F) \rightarrow E) \rightarrow (a:F)), (a:F)],\\
+	& c: [] \\
+	\}
+\end{split}
+\end{equation}
+
+The data presented here is in the same form as it would be entered into the program. Therefore the cs-list is rather a \emph{python} dictionary than a simple tuple-list and there are more brackets explicitly written then required by convention.
+
+
+\section{Walking in Trees: Atomize}
+
+The given formula $f$ will be transformed into a syntax tree using \emph{parse\_formula} of \emph{Tree}. If the formula is provided when the \emph{ProofSearch} object is initialized the formula will automatically be atomized without having to call this method separately.
+
+\begin{equation*}
+	(((((a*b)*((a*c)
+    \tikz[baseline]{\node[fill=red!20,anchor=base] (t1){$+$};} (!c)))
+    \tikz[baseline]{\node[fill=red!20,anchor=base] (t2){$+$};} (!(a
+    \tikz[baseline]{\node[fill=red!20,anchor=base] (t3){$+$};} b)))
+    \tikz[baseline]{\node[fill=red!20,anchor=base] (t3){$+$};}((a
+    \tikz[baseline]{\node[fill=red!20,anchor=base] (t3){$+$};}(!b))*(b*a))):(a:F))
+\end{equation*}
+
+\input{/home/lyriael/BA/j-logic/thesis/Figures/example/tree_example.tex}
+
+The \emph{sum\_split} from \emph{Tree} will give us the following terms in a list.
+\begin{equation}\label{eq:sp_i}	
+	(((a * b)*(a * c)):(a:F))											
+\end{equation}
+\begin{equation}\label{eq:sp_ii}	
+	(((a * b)*(! c)):(a:F))												
+\end{equation}
+\begin{equation}\label{eq:sp_iii}	
+	((\tikz[baseline]{\node[fill=red!20,anchor=base](t1){$!$};}a):(a:F))
+\end{equation}
+\begin{equation}\label{eq:sp_iv}	
+	((\tikz[baseline]{\node[fill=red!20,anchor=base](t1){$!$};}b):(a:F))
+\end{equation}	
+\begin{equation}\label{eq:sp_v}	
+	(((a*(b * a)):(a:F))												
+\end{equation}
+\begin{equation}\label{eq:sp_vi}	
+	((\tikz[baseline]{\node[fill=red!20,anchor=base](t1){$!$};}b)*(b * a)):(a:F)))
+\end{equation}
+
+Further the Bang-Operation is important is the following cases, either because it can be simplified or removed.
+
+\input{/home/lyriael/BA/j-logic/thesis/Figures/example/tree_example_sumsplit_iii.tex}
+
+The term of \ref{eq:sp_iii} is an example of a Bang operation that can be directly resolved and therefore simplified. Using the rules given in \ref{chap: Background} we see that instead of $((!a):(a:F))$ we may simply write $(a:F)$.
+
+\input{/home/lyriael/BA/j-logic/thesis/Figures/example/tree_example_sumsplit_iv.tex}
+
+The term of \ref{eq:sp_iv} is very similar to the one of \ref{eq:sp_iii} but where the second my be resolved the first is unresolvable, thus it can never be provable and we will discard it from here on.
+
+\input{/home/lyriael/BA/j-logic/thesis/Figures/example/tree_example_sumsplit_vi.tex}
+
+The last term highlighted \ref{eq:sp_vi} is another example of a term that is discarded but for other reasons that the one in \ref{eq:sp_iv}. In this term we find the Bang operator as a left child of a multiplication operator and as explained in \ref{chap: Algorithm A Divide and Conquer Approach} is also not provable.
+
+\bigskip
+
+With these steps of simplifying and removing bad bangs the \emph{atomization} of the original formula $f$ is concluded. The other formulas \ref{eq:sp_i}, \ref{eq:sp_ii} and \ref{eq:sp_v} remain as they are. Although \ref{eq:sp_v} has a bang, it is perfectly valid since it is the right child of a multiplication.
+
+
+\section{Extracting the Proof Constants: musts}
+
+Although a lot of work has been done up to now, we are not really further in the process of looking up proof constants in the cs-list to find out if the given formula $f$ is provable or not. What we've done up to now is simplified the formula into many small ones so that the step we are on to now is easier.
+
+\begin{equation}\label{example_atoms}
+\begin{split}
+	f_{atoms} = \quad &[(((a * b)*(a * c)):(a:F)),(((a * b)*(! c)):(a:F)),\\
+	&  (((a*(b * a)):(a:F)), (a:F)]
+\end{split}
+\end{equation}
+
+To extract the proof constants we will look at each \emph{atom} individually. The last \emph{atom} $(a:F)$ will be ignored, as it consists already of once proof constant only.
+
+\subsection[First atom]{$a_1 = (((a * b)*(a * c)):(a:F))$}
+%\input{/home/lyriael/BA/j-logic/thesis/Figures/example/tree_example_atom1.tex}
+For this whole term we only need the multiplication rule. Simply put: The first operant will produce a new \emph{X-wild} that implies to the subformula and the second operant will simple be the proof for the new \emph{X-wild}.
+\begin{equation}\label{example_atom1_must}
+\begin{split}
+	(((a * b)*(a * c)):(a:F)) & \Rightarrow \\
+	& (a * b) : X_1 \rightarrow (a:F) \\
+	& (a * c) : X_1
+\end{split}
+\end{equation}
+Now the same wille be applied to the mid-results of the previous step.
+\begin{equation}\label{example_atom1_must2}
+\begin{split}
+	(a * b) : X_1 \rightarrow (a:F) & \Rightarrow \\
+	& a: X_2 \rightarrow (X_1 \rightarrow (a:F)) \\
+	& b: X_2
+\end{split}
+\end{equation}
+\begin{equation}\label{example_atom1_must3}
+\begin{split}
+	(a * c) : X_1 & \Rightarrow \\
+	& a: X_3 \rightarrow X_1 \\
+	& c: X_3
+\end{split}
+\end{equation}
+Thus we get the \emph{musts} for the first atom. Each \emph{must} of this atom will be saved in a tuple where the first position is the proof constant and the second the term which will be matched with the terms found in the cs-list.
+\begin{equation}
+	a_1_{musts} = [(a, X_2 \rightarrow (X_1 \rightarrow (a:F))), (b, X_2), (a, X_3 \rightarrow X_1), (c, X_3)]
+\end{equation}
+
+%\subsection[Second atom]{$a_2 = (((a * b)*(! c)):(a:F))$}
+%\input{/home/lyriael/BA/j-logic/thesis/Figures/example/tree_example_atom2.tex}
+%\subsection[Third atom]{$a_3 = (((a*(b * a)):(a:F))$}
+%\input{/home/lyriael/BA/j-logic/thesis/Figures/example/tree_example_atom3.tex}

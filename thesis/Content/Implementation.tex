@@ -16,38 +16,40 @@ Last there is the typical \emph{Helper} class. The methods here are usually rath
 \section{Important Methods}
 In this section I want to show and explain some of the more complicated and important methods that make up the hear of the algorithm.
 
-\subsection{Tree}
-\subsubsection{musts}
+\subsection{Tree.musts}
 Actually the main achievement of this method is the atomizing step, as only this simplifications made this method possible.
 The algorithm takes the formula apart from top to bottom. The main cases which are differenciated are if the current operation is either a *-Operation, a !-Operation or if the term is simply a constant.
 
 \begin{figure}[H]
     \vspace{-10pt}
-	\lstinputlisting[firstline=1, lastline=5]{/home/lyriael/BA/j-logic/thesis/code_snipplets.py}
+	\lstinputlisting[firstline=2, lastline=22]{/home/lyriael/BA/j-logic/thesis/code_snipplets.py}
 	\vspace{-10pt}
-	\caption{Taking a formula apart which has a * as top operation. }
+	\caption{Tree\#musts Taking a formula apart which has a * as top operation. }
 	\vspace{-10pt}
 \end{figure}
-If for example the current justification term would be $((a*(!b)):F)$, it would be taken apart to the two subformulas $(a:(X_i\rightarrow F))$ and $((!b):(X_i))$.
 
-Because of the \emph{atomization} in the steps before it is guaranteed that every Bang is a (right) child of a Multiplication and since every Multiplication creates a new $X_i$, a term here that starts with a Bang is always on a $X_i$.
+If for example the current justification term would be $((a*(!b)):F)$, it would be taken apart to the two subformulas $(a:(X_i\rightarrow F))$ and $((!b):(X_i))$. Because of the \emph{atomization} in the steps before it is guaranteed that every Bang is a (right) child of a Multiplication and since every Multiplication creates a new $X_i$, a term here that starts with a Bang is always on a $X_i$. Since from $!b:X_i$ follows $\exists X_j \quad s.t. \quad !b:(b:X_j)$ all $X_i$ that occurred up to now must be replaced by $(b:X_j)$. In the end we will have only proof constants remaining.
+
+\subsection{Tree.compare}
+This method is not only very tedious but gives to foundation to the method \emph{apply\_condition} which we will look at later. It basically compares each node of a tree with the corresponding of another tree. As long as the token (value) of the nodes are the same it will just process, but in case the two nodes are not identical several cases will be distinct.
+
 
 \begin{figure}[H]
 	\vspace{-10pt}
-	\lstinputlisting[firstline=8, lastline=13]{/home/lyriael/BA/j-logic/thesis/code_snipplets.py}
+	\lstinputlisting[firstline=24, lastline=38]{/home/lyriael/BA/j-logic/thesis/code_snipplets.py}
 	\vspace{-10pt}
-	\caption{Taking a formula apart which has a ! as top operation. }
+\end{figure}
+\begin{figure}[H]
+	\vspace{-10pt}
+	\lstinputlisting[firstline=41, lastline=46]{/home/lyriael/BA/j-logic/thesis/code_snipplets.py}
+	\vspace{-10pt}
+	\caption{Tree\#compare Here is some very verys useful text}
 	\vspace{-10pt}
 \end{figure}
 
-Since from $!b:X_i$ follows $\exists X_j \quad s.t. \quad !b:(b:X_j)$ all $X_i$ that occured up to now must be replaced by $(b:X_j)$.
+If the current node of the term from the cs-list has a \emph{Y-wild} all other occurrences of this \emph{Y-wild} within this term will be replaces with whatever node or subtree is found in the term of the \emph{musts}. As a consequence it is possible to find a \emph{X-wild} within the term from the cs-list. Whenever that is the case, the value found in the node/subtree of the term of the \emph{musts} is a condition to this $X_i$. If the condition is merely a constant value, it will be set directly.
 
-\subsubsection{compare}
-\subsubsection{compare}
-
-
-\subsection{ProofSearch}
-\subsubsection{apply\_condition and apply\_all\_conditions}
-\subsubsection{full\_merge\_of\_two\_configs}
+\subsection{ProofSearch.apply\_condition and ProofSearch.apply\_all\_conditions}
+\subsection{ProofSearch.full\_merge\_of\_two\_configs}
 
 \section{Tests}

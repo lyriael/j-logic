@@ -1,0 +1,21 @@
+%!TEX root = ../../bachelors_thesis.tex
+\begin{figure}[H]
+\begin{center}
+	% ((!a):(a:F))
+	\begin{tikzpicture}[level distance=1.2cm,
+	  level 1/.style={sibling distance=2cm},
+	  level 2/.style={sibling distance=1cm}, 
+	  thick,scale=0.8, every node/.style={scale=0.8}]
+		\node [arn_n]{$:$}
+		  child {node [arn_r]{\(! \)}
+		  	child[right] {node [arn_w]{$a$}}
+			}
+		  child {node [arn_w]{$:$}
+		  	child {node [arn_w] {$a$}}
+		  	child {node [arn_w] {$F$}}
+		  };
+	\end{tikzpicture}
+	\captionof{figure}{sample picture}
+	\label{figure_iii}
+\end{center}
+\end{figure}

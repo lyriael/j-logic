@@ -194,24 +194,25 @@ class Tree(object):
         # if current node is Xn, then this is the consequence of a Yn being replaced. What
         # ever is in orig is a condition to Xn.
         elif cs_node.token[0] == 'X':
-            # condition
+            # condition containing Xs and constants.
             if 'X' in orig_node.to_s():
                 t = (cs_node.token, orig_node.to_s())
                 conditions.append(t)
             # wild
             else:
                 wilds[cs_node.token] = orig_node.to_s()
-        # unresolved 'Y' in cs-subtree to corresponding 'X' in orig => condition
+        # unresolved 'Y' in cs-subtree to corresponding 'X' in orig
         elif orig_node.token[0] == 'X' and ('Y' in cs_node.to_s() or 'X' in cs_node.to_s()):
+            # condition containing Xs, Ys and/or constants.
             t = (orig_node.token, cs_node.to_s())
             conditions.append(t)
-        # normal wild config
+        # normal wild config.
+        # the option for 'Y' is for the special case that a Y-wild formula
+        # is compared with a formula containing only constants.
         elif orig_node.token[0] == 'X' or orig_node.token[0] == 'Y':
             wilds[orig_node.to_s()] = cs_node.to_s()
-
         else:
             # no match possible
-            # no idea how to make that nicer
             conditions, wilds = None, None
         return conditions, wilds
 
