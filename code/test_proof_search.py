@@ -265,6 +265,12 @@ class Tests(unittest.TestCase):
         match = cs.look_up_in_cs('a', orig_term)
         self.assertIsNone(match)
 
+    def test_find_all9(self):
+        orig_term = '(G->(H->G))'
+        ps = ProofSearch({'a': ['((c:X3)->X1)']}, '')
+        match = ps.look_up_in_cs('a', orig_term)
+        self.assertIsNone(match)
+
     def test_atomize(self):
         f = ProofSearch({}, '(((!b)+a):(b:X))')
         parts = f.atomize()
@@ -331,7 +337,6 @@ class Tests(unittest.TestCase):
         self.assertEqual(['(A->B)', '', 'B'], config_b)
         self.assertEqual([('X2', '(B->Y1)')], cond_b)
 
-
     def test_mix_y_and_x_wilds(self):
         # matching Y1->(Y2->Y1) to the must of b: X2->X1 results in a condition with mixed x-y-wilds.
         # this was not expected to happen!
@@ -362,10 +367,23 @@ class Tests(unittest.TestCase):
         self.assertEqual(merge_b_c, merge_c_b)
 
         result = cs.conquer()
-        print(result)
 
     def test_all(self):
-        ps = ProofSearch({}, '(((((a*b)*((a*c)+(!c)))+(!(a+b)))+((a+(!b))*(b*a))):(a:F))')
+        ps = ProofSearch({}, '(((!(a+c))+((a+(!a))*(b*(!c)))):(c:F))')
+        self.assertEqual(['(c:F)', '((a*(b*(!c))):(c:F))'], ps.atoms)
+        self.assertEqual({'(c:F)': [('c', 'F')],
+                          '((a*(b*(!c))):(c:F))': [('a', '(X1->(c:F))'), ('b', '((c:X3)->X1)'), ('c', 'X3')]},
+                         ps.musts)
+        cs = {'a': ['(H->(c:F))', '(H->(G->(c:F)))', '(E->(c:D))', '((c:D)->(c:F))'],
+              'b': ['((c:F)->G)', '((c:D)->(a:F))', '(H->(G->H))', '(Y1->(Y2->Y1))'],
+              'c': ['(c:F)', 'G', 'D', '(G->F)']}
+        ps.set_cs(cs)
+        self.assertEqual([({'X1': 'H'}, []), ({'X1': '(c:D)'}, [])], ps.look_up_in_cs('a', '(X1->(c:F))'))
+        self.assertEqual([({'X3': 'F', 'X1': 'G'}, []), ({'X3': 'D', 'X1': '(a:F)'}, []),
+                          ({}, [('X1', '(Y2->(c:X3))')])],
+                         ps.look_up_in_cs('b', '((c:X3)->X1)'))
+        self.assertEqual([({'X3': '(c:F)'}, []), ({'X3': 'G'}, []), ({'X3': 'D'}, []), ({'X3': '(G->F)'}, [])],
+                         ps.look_up_in_cs('c', 'X3'))
 
 
     #todo: what if two Y's with same name but different origin end up in a condition?

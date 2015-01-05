@@ -176,6 +176,9 @@ class Tree(object):
         Initially this is empty.
         :return: conditions and wilds.
         '''
+        # stop recursion if a mismatch was found
+        if wilds is None:
+            return None, None
 
         # if both are same
         if orig_node.token == cs_node.token:

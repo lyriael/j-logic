@@ -53,6 +53,8 @@ class Tests(unittest.TestCase):
                          Tree('((((((!A)*B)+(C+D))*((!E)+(F+G)))*(H*I)):F)').to_s())
         self.assertEqual('(((((a*b)*((a*c)+(!c)))+(!(a+b)))+((a+(!b))*(b*a))):(a:F))',
                          Tree('(((((a*b)*((a*c)+(!c)))+(!(a+b)))+((a+(!b))*(b*a))):(a:F))').to_s())
+        self.assertEqual('(((!(a+c))+((a+(!a))*(b*(!c)))):(c:F))',
+                         Tree('(((!(a+c))+((a+(!a))*(b*(!c)))):(c:F))').to_s())
 
     def test_subtree(self):
         tree = Tree('((a*(!(b+c))):F)')
