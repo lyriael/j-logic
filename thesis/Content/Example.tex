@@ -16,7 +16,7 @@ The cs-list used for this example will only be relevant later on but still be pr
 \begin{equation}
 \begin{split}
 	cs = \{\\
-	& a: [(G \rightarrow (a:F)), (Y_1 \rightarrow (Y_2 \rightarrow Y_1))],\\
+	& a: [(G \rightarrow (a:F)), (Y_1 \rightarrow (Y_2 \rightarrow Y_1)), (E \rightarrow ((c:D) \rightarrow (a:F)))],\\
 	& b: [(((E \rightarrow F) \rightarrow E) \rightarrow (a:F)), (a:F)],\\
 	& c: [] \\
 	\}
@@ -93,7 +93,7 @@ Although a lot of work has been done up to now, we are not really further in the
 
 To extract the proof constants we will look at each \emph{atom} individually. The last \emph{atom} $(a:F)$ will be ignored, as it consists already of once proof constant only.
 
-\subsection[First atom]{$a_1 = (((a * b)*(a * c)):(a:F))$}
+\subsection[First atom]{$a_1$}
 %\input{/home/lyriael/BA/j-logic/thesis/Figures/example/tree_example_atom1.tex}
 For this whole term we only need the multiplication rule. Simply put: The first operant will produce a new \emph{X-wild} that implies to the subformula and the second operant will simple be the proof for the new \emph{X-wild}.
 \begin{equation}\label{example_atom1_must}
@@ -120,10 +120,75 @@ Now the same wille be applied to the mid-results of the previous step.
 \end{equation}
 Thus we get the \emph{musts} for the first atom. Each \emph{must} of this atom will be saved in a tuple where the first position is the proof constant and the second the term which will be matched with the terms found in the cs-list.
 \begin{equation}
-	a_1_{musts} = [(a, X_2 \rightarrow (X_1 \rightarrow (a:F))), (b, X_2), (a, X_3 \rightarrow X_1), (c, X_3)]
+	a_{1 musts} = [(a, X_2 \rightarrow (X_1 \rightarrow (a:F))), (b, X_2), (a, X_3 \rightarrow X_1), (c, X_3)]
 \end{equation}
 
-%\subsection[Second atom]{$a_2 = (((a * b)*(! c)):(a:F))$}
+\subsection[Second atom]{$a_2$}
 %\input{/home/lyriael/BA/j-logic/thesis/Figures/example/tree_example_atom2.tex}
-%\subsection[Third atom]{$a_3 = (((a*(b * a)):(a:F))$}
+The second atom contains a Bang operator which causes a different step in addition to what we have seen in the previous atom. But the first step is practically the same as we have seen above.
+\begin{equation}\label{example_atom2_must}
+\begin{split}
+	(((a * b)*(! c)):(a:F)) & \Rightarrow \\
+	& (a * b) : X_1 \rightarrow (a:F) \\
+	& (! c) : X_1
+\end{split}
+\end{equation}
+\begin{equation}\label{example_atom2_must2}
+\begin{split}
+	(a * b) : X_1 \rightarrow (a:F) & \Rightarrow \\
+	& a: X_2 \rightarrow (X_1 \rightarrow (a:F)) \\
+	& b: X_2
+\end{split}
+\end{equation}
+For the term with the bang, the $X_i$ that belong to the bang-term is replace with a new $X_j$ such that the term can be valid. 
+\begin{equation}\label{example_atom2_must3}
+\begin{split}
+	(! c) : X_1 & \Rightarrow \\
+	& X_1 = (c:X_3) 
+\end{split}
+\end{equation}
+A list collects all $X_i$ which must be replaced and after the all terms of this atoms are resolved, the $X_i$ will be replaced by the new term. So we get for the second atom the following \emph{musts}
+
+\begin{equation}
+	a_{2 musts} = [(a, (X_2 \rightarrow ((c:X_3) \rightarrow (a:F))), (b, X_2), (c, X_3)]
+\end{equation}
+
+\subsection[Third atom]{$a_3$}
+The third atom is very similar to the first so the equations will be put here without further comment.
+\begin{equation}\label{example_atom3_must}
+\begin{split}
+	((a*(b * a)):(a:F)) & \Rightarrow \\
+	& a : X_1 \rightarrow (a:F) \\
+	& (b * a) : X_1
+\end{split}
+\end{equation}
+\begin{equation}\label{example_atom3_must2}
+\begin{split}
+	(b * a) : X_1  & \Rightarrow \\
+	& b: X_2 \rightarrow X_1  \\
+	& a: X_2
+\end{split}
+\end{equation}
+
+\begin{equation}
+	a_{3 musts} = [(a, (X_1 \rightarrow (a:F))), (a, X_2), (b, X_2 \rightarrow X_1)]
+\end{equation}
+
+As we have seen in all three examples above it is possible to have the same proof constant with different term for one \emph{atomized} formula.
+
+\bigskip
+The algorithm calculates the \emph{musts} for all atoms, to the result which is also an attribute of the \emph{ProofSearch} class is a dictionary where the \emph{musts} can be accessed as a list by the \emph{atomized} term as key.
+
+\begin{equation}\label{f_musts}
+\begin{split}
+	f_{atoms \quad with \quad musts} = \{\\
+	(((a * b)*(a * c)):(a:F)): & [(a, X_2 \rightarrow (X_1 \rightarrow (a:F))), (b, X_2), (a, X_3 \rightarrow X_1), (c, X_3)], \\
+	 (((a * b)*(! c)):(a:F)): & [(a, (X_2 \rightarrow ((c:X_3) \rightarrow (a:F))), (b, X_2), (c, X_3)], \\
+	 ((a*(b * a)):(a:F)): & [(a, (X_1 \rightarrow (a:F))), (a, X_2), (b, X_2 \rightarrow X_1 )], \\
+	 (a:F): & [(a, F)]\\
+	\}
+\end{split}
+\end{equation}
 %\input{/home/lyriael/BA/j-logic/thesis/Figures/example/tree_example_atom3.tex}
+
+\section{Looking up and matching: Config and Conditions}
