@@ -1,14 +1,11 @@
 %!TEX root = ../bachelors_thesis.tex
 \section{Initialization}
 In this chapter I would like to walk through one example and covering as many special cases as possible. As such, the justification term we will look at is rather complicated. But this example will also show how nicely this will be broken down in more simpler formulas.
-%defining the box
-\newsavebox\f
 
-\savebox\f{\vbox{\begin{equation}
-f = (((((a*b)*((a*c)+(!c)))+(!(a+b)))+((a+(!b))*(b*a))):(a:F))	
-\end{equation}}}
-%using the box
-\usebox\f
+\begin{equation}\label{eq:f}
+f = (((!(a+c))+((a+(!a))*(b*(!c)))):(c:F))
+\end{equation}
+
 
 The cs-list used for this example will only be relevant later on but still be presented here as reference:
 
@@ -16,9 +13,9 @@ The cs-list used for this example will only be relevant later on but still be pr
 \begin{equation}
 \begin{split}
 	cs = \{\\
-	& a: [(G \rightarrow (a:F)), (Y_1 \rightarrow (Y_2 \rightarrow Y_1)), (E \rightarrow ((c:D) \rightarrow (a:F)))],\\
-	& b: [(((E \rightarrow F) \rightarrow E) \rightarrow (a:F)), (a:F)],\\
-	& c: [] \\
+	& a: [(H \rightarrow (c:F)), ((c:D) \rightarrow (G \rightarrow (c:F))), (E \rightarrow (c:D))],\\
+	& b: [((c:F) \rightarrow G), ((c:D) \rightarrow (a:F)), (H \rightarrow (G \rightarrow H)), (Y_1 \rightarrow (Y_2 \rightarrow Y_1))],\\
+	& c: [(c:F), G, D, (G \rightarrow F)] \\
 	\}
 \end{split}
 \end{equation}
@@ -31,164 +28,149 @@ The data presented here is in the same form as it would be entered into the prog
 The given formula $f$ will be transformed into a syntax tree using \emph{parse\_formula} of \emph{Tree}. If the formula is provided when the \emph{ProofSearch} object is initialized the formula will automatically be atomized without having to call this method separately.
 
 \begin{equation*}
-	(((((a*b)*((a*c)
-    \tikz[baseline]{\node[fill=red!20,anchor=base] (t1){$+$};} (!c)))
-    \tikz[baseline]{\node[fill=red!20,anchor=base] (t2){$+$};} (!(a
-    \tikz[baseline]{\node[fill=red!20,anchor=base] (t3){$+$};} b)))
-    \tikz[baseline]{\node[fill=red!20,anchor=base] (t3){$+$};}((a
-    \tikz[baseline]{\node[fill=red!20,anchor=base] (t3){$+$};}(!b))*(b*a))):(a:F))
+	(((!(a
+    \tikz[baseline]{\node[fill=red!20,anchor=base] (t1){$+$};} c))
+    \tikz[baseline]{\node[fill=red!20,anchor=base] (t2){$+$};} ((a
+    \tikz[baseline]{\node[fill=red!20,anchor=base] (t3){$+$};} (!a))*(b*(!c)))):(c:F))
 \end{equation*}
 
 \input{/home/lyriael/BA/j-logic/thesis/Figures/example/tree_example.tex}
 
-The \emph{sum\_split} from \emph{Tree} will give us the following terms in a list.
+The \emph{sum\_split} from \emph{Tree} will give us the following terms in form of a list. 
+
 \begin{equation}\label{eq:sp_i}	
-	(((a * b)*(a * c)):(a:F))											
+	((!a):(c:F))
 \end{equation}
 \begin{equation}\label{eq:sp_ii}	
-	(((a * b)*(! c)):(a:F))												
-\end{equation}
+	((!c):(c:F))
+\end{equation}	
 \begin{equation}\label{eq:sp_iii}	
-	((\tikz[baseline]{\node[fill=red!20,anchor=base](t1){$!$};}a):(a:F))
+	((a *(b* (! c))):(c:F))											
 \end{equation}
 \begin{equation}\label{eq:sp_iv}	
-	((\tikz[baseline]{\node[fill=red!20,anchor=base](t1){$!$};}b):(a:F))
-\end{equation}	
-\begin{equation}\label{eq:sp_v}	
-	(((a*(b * a)):(a:F))												
-\end{equation}
-\begin{equation}\label{eq:sp_vi}	
-	((\tikz[baseline]{\node[fill=red!20,anchor=base](t1){$!$};}b)*(b * a)):(a:F)))
+	(((! a)*(b* (! c))):(c:F))												
 \end{equation}
 
-Further the Bang-Operation is important is the following cases, either because it can be simplified or removed.
+\subsection{Bangs}
+Looking at each of the terms individually we will now further look at them to discard any that have a \emph{bad bang}, meaning a bang that is the left child of a multiplication or if there are terms with bang which can be simplified.
 
-\input{/home/lyriael/BA/j-logic/thesis/Figures/example/tree_example_sumsplit_iii.tex}
+\subsubsection[First term]{Term \ref{eq:sp_i}}
+In this term we find a bang which is valid, since it is not a left child of a multiplication, but trying to simplify the term shows us that it cannot be resolved thus letting us discard is term.
 
-The term of \ref{eq:sp_iii} is an example of a Bang operation that can be directly resolved and therefore simplified. Using the rules given in \ref{chap: Background} we see that instead of $((!a):(a:F))$ we may simply write $(a:F)$.
+\begin{equation*}
+	((\tikz[baseline]{\node[fill=red!20,anchor=base] (t1){$!$};}a):(c:F)) 
+\end{equation*}
 
-\input{/home/lyriael/BA/j-logic/thesis/Figures/example/tree_example_sumsplit_iv.tex}
+\subsubsection[Second term]{Term \ref{eq:sp_ii}}
+As before the bang within the term is valid but in contrast to the previous example the term here can be simplified, giving us our first \emph{atom} for formula $f.$
 
-The term of \ref{eq:sp_iv} is very similar to the one of \ref{eq:sp_iii} but where the second my be resolved the first is unresolvable, thus it can never be provable and we will discard it from here on.
+\begin{equation}\label{eq:a_1}
+	\begin{split}
+	((\tikz[baseline]{\node[fill=red!20,anchor=base] (t1){$!$};} c):(c:F)) & \Rightarrow \\
+	& a_1 := (c:F)
+	\end{split}
+\end{equation}
 
-\input{/home/lyriael/BA/j-logic/thesis/Figures/example/tree_example_sumsplit_vi.tex}
+\subsubsection[third term]{Term \ref{eq:sp_iii}}
+In this term we find the bang operation neither a left child of a multiplication nor as top operation of the proof term and thus there is nothing to do.
 
-The last term highlighted \ref{eq:sp_vi} is another example of a term that is discarded but for other reasons that the one in \ref{eq:sp_iv}. In this term we find the Bang operator as a left child of a multiplication operator and as explained in \ref{chap: Algorithm A Divide and Conquer Approach} is also not provable.
+\begin{equation}\label{eq:a_2}
+	\begin{split}
+	((a *(b* (\tikz[baseline]{\node[fill=red!20,anchor=base] (t1){$!$};} c))):(c:F))	 & \Rightarrow \\
+	& a_2 := ((a *(b* (! c))):(c:F))
+	\end{split}
+\end{equation}
+
+\subsubsection[Fourths term]{Term \ref{eq:sp_iv}}
+Finally this term has two bangs of which the first is the left child of a multiplication and thus makes the term invalid. The second bang would be valid, but the first term causes the whole term to be discarded.
+
+\begin{equation*}
+	(((
+	\tikz[baseline]{\node[fill=red!20,anchor=base] (t1){$!$};} a)*(b* (
+	\tikz[baseline]{\node[fill=red!20,anchor=base] (t1){$!$};} c))):(c:F))
+\end{equation*}
 
 \bigskip
+This completes the \emph{atomize} step for the formula $f$ giving us two \emph{atoms}. Showing that at least one of those is provable is enough to show that $f$ is provable. 
 
-With these steps of simplifying and removing bad bangs the \emph{atomization} of the original formula $f$ is concluded. The other formulas \ref{eq:sp_i}, \ref{eq:sp_ii} and \ref{eq:sp_v} remain as they are. Although \ref{eq:sp_v} has a bang, it is perfectly valid since it is the right child of a multiplication.
+\section{Looking up and merging}
+
+\begin{equation*}
+		f = (((!(a+c))+((a+(!a))*(b*(!c)))):(c:F)) 
+		\tag{\ref{eq:f}}  
+\end{equation*}
+For our formula $f$ we have found the two atoms \ref{eq:a_1} and \ref{eq:a_2}. The next steps will be determining the \emph{musts} if needed, matching them against the cs-list and finally merge the possible configurations together to determine if one of the musts is provable.
 
 
-\section{Extracting the Proof Constants: musts}
+\begin{equation*}
+		a_1 = (c:F) 
+		\tag{\ref{eq:a_1}}
+\end{equation*}
+\begin{equation*}		
+		a_2 = ((a *(b* (! c))):(c:F)) 
+		\tag{\ref{eq:a_2}}
+\end{equation*}
 
-Although a lot of work has been done up to now, we are not really further in the process of looking up proof constants in the cs-list to find out if the given formula $f$ is provable or not. What we've done up to now is simplified the formula into many small ones so that the step we are on to now is easier.
-
-\begin{equation}\label{example_atoms}
-\begin{split}
-	f_{atoms} = \quad &[(((a * b)*(a * c)):(a:F)),(((a * b)*(! c)):(a:F)),\\
-	&  (((a*(b * a)):(a:F)), (a:F)]
-\end{split}
-\end{equation}
-
-To extract the proof constants we will look at each \emph{atom} individually. The last \emph{atom} $(a:F)$ will be ignored, as it consists already of once proof constant only.
-
-\subsection[First atom]{$a_1$}
-%\input{/home/lyriael/BA/j-logic/thesis/Figures/example/tree_example_atom1.tex}
-For this whole term we only need the multiplication rule. Simply put: The first operant will produce a new \emph{X-wild} that implies to the subformula and the second operant will simple be the proof for the new \emph{X-wild}.
-\begin{equation}\label{example_atom1_must}
-\begin{split}
-	(((a * b)*(a * c)):(a:F)) & \Rightarrow \\
-	& (a * b) : X_1 \rightarrow (a:F) \\
-	& (a * c) : X_1
-\end{split}
-\end{equation}
-Now the same wille be applied to the mid-results of the previous step.
-\begin{equation}\label{example_atom1_must2}
-\begin{split}
-	(a * b) : X_1 \rightarrow (a:F) & \Rightarrow \\
-	& a: X_2 \rightarrow (X_1 \rightarrow (a:F)) \\
-	& b: X_2
-\end{split}
-\end{equation}
-\begin{equation}\label{example_atom1_must3}
-\begin{split}
-	(a * c) : X_1 & \Rightarrow \\
-	& a: X_3 \rightarrow X_1 \\
-	& c: X_3
-\end{split}
-\end{equation}
-Thus we get the \emph{musts} for the first atom. Each \emph{must} of this atom will be saved in a tuple where the first position is the proof constant and the second the term which will be matched with the terms found in the cs-list.
+\subsection{Musts}
+\subsubsection[First atom]{Atom \ref{eq:a_1}}
+Since $a_1$ consists already only of one proof constant with the correspond term to it there is nothing further to to here.
 \begin{equation}
-	a_{1 musts} = [(a, X_2 \rightarrow (X_1 \rightarrow (a:F))), (b, X_2), (a, X_3 \rightarrow X_1), (c, X_3)]
+	a_1: \quad musts = [(c, F)]
 \end{equation}
 
-\subsection[Second atom]{$a_2$}
-%\input{/home/lyriael/BA/j-logic/thesis/Figures/example/tree_example_atom2.tex}
-The second atom contains a Bang operator which causes a different step in addition to what we have seen in the previous atom. But the first step is practically the same as we have seen above.
-\begin{equation}\label{example_atom2_must}
-\begin{split}
-	(((a * b)*(! c)):(a:F)) & \Rightarrow \\
-	& (a * b) : X_1 \rightarrow (a:F) \\
-	& (! c) : X_1
-\end{split}
-\end{equation}
-\begin{equation}\label{example_atom2_must2}
-\begin{split}
-	(a * b) : X_1 \rightarrow (a:F) & \Rightarrow \\
-	& a: X_2 \rightarrow (X_1 \rightarrow (a:F)) \\
-	& b: X_2
-\end{split}
-\end{equation}
-For the term with the bang, the $X_i$ that belong to the bang-term is replace with a new $X_j$ such that the term can be valid. 
-\begin{equation}\label{example_atom2_must3}
-\begin{split}
-	(! c) : X_1 & \Rightarrow \\
-	& X_1 = (c:X_3) 
-\end{split}
-\end{equation}
-A list collects all $X_i$ which must be replaced and after the all terms of this atoms are resolved, the $X_i$ will be replaced by the new term. So we get for the second atom the following \emph{musts}
+\subsubsection[First atom]{Atom \ref{eq:a_2}}
+For $a_2$ we need to take the proof term apart bit by bit. The first operation we will take apart is a multiplication. Extracting proof constants from a multiplication proof term will always us give a \emph{X-wild}. Whenever a new \emph{X-wilds} appears the $i$ of $X_i$ will simply be increased by 1.
 
+\begin{equation*}\label{eq:musts1_a_2}
+	\begin{split}
+		((a *(b* (! c))):(c:F)) & \Rightarrow \\
+		& a : (X_1 \rightarrow (c:F)) \\
+		& (b*(! c)): X_1
+	\end{split}	
+\end{equation*}
+
+The proof constant $a$ has been isolated but $(b*(! c))$ still needs further taking apart. We repeat the step from above and introduce yet another \emph{X-wild}.
+
+\begin{equation*}
+	\begin{split}
+	(b*(! c)): X_1 & \Rightarrow \\
+	& b : (X_2 \rightarrow X_1) \\
+	& (! c) : X_2
+	\end{split}	
+\end{equation*}
+
+Now $b$ has been isolated as well, leaving only $(! c)$. Having a bang in a situation like this results in a new \emph{X-wild} in combination with the proof term which will replace a previous \emph{X-wild}.
+
+\begin{equation*}
+	\begin{split}
+		(! c) : X_2 & \Rightarrow \\
+		& X_2 = (c:X_3)
+	\end{split}	
+\end{equation*}
+
+This finally gives us all the \emph{musts} for $a_2$. As can be seen belove the \emph{X-wild} $X_2$ has been replaced by $(c:X_3)$.
 \begin{equation}
-	a_{2 musts} = [(a, (X_2 \rightarrow ((c:X_3) \rightarrow (a:F))), (b, X_2), (c, X_3)]
+	a_2: \quad musts = [(a, (X_1 \rightarrow (c:F))), (b, ((c:X_3) \rightarrow X_1)), (c, X_3)]
 \end{equation}
 
-\subsection[Third atom]{$a_3$}
-The third atom is very similar to the first so the equations will be put here without further comment.
-\begin{equation}\label{example_atom3_must}
+It should be noted here that a proof constant may be in more than one of the \emph{musts} for one \emph{atom}. 
+
+\subsection{Configurations and Conditions}
+Now that we have all proof constants for each \emph{atom} isolated we can try to match them with the entries found in the cs-list.
+
+\begin{equation*}
 \begin{split}
-	((a*(b * a)):(a:F)) & \Rightarrow \\
-	& a : X_1 \rightarrow (a:F) \\
-	& (b * a) : X_1
-\end{split}
-\end{equation}
-\begin{equation}\label{example_atom3_must2}
-\begin{split}
-	(b * a) : X_1  & \Rightarrow \\
-	& b: X_2 \rightarrow X_1  \\
-	& a: X_2
-\end{split}
-\end{equation}
-
-\begin{equation}
-	a_{3 musts} = [(a, (X_1 \rightarrow (a:F))), (a, X_2), (b, X_2 \rightarrow X_1)]
-\end{equation}
-
-As we have seen in all three examples above it is possible to have the same proof constant with different term for one \emph{atomized} formula.
-
-\bigskip
-The algorithm calculates the \emph{musts} for all atoms, to the result which is also an attribute of the \emph{ProofSearch} class is a dictionary where the \emph{musts} can be accessed as a list by the \emph{atomized} term as key.
-
-\begin{equation}\label{f_musts}
-\begin{split}
-	f_{atoms \quad with \quad musts} = \{\\
-	(((a * b)*(a * c)):(a:F)): & [(a, X_2 \rightarrow (X_1 \rightarrow (a:F))), (b, X_2), (a, X_3 \rightarrow X_1), (c, X_3)], \\
-	 (((a * b)*(! c)):(a:F)): & [(a, (X_2 \rightarrow ((c:X_3) \rightarrow (a:F))), (b, X_2), (c, X_3)], \\
-	 ((a*(b * a)):(a:F)): & [(a, (X_1 \rightarrow (a:F))), (a, X_2), (b, X_2 \rightarrow X_1 )], \\
-	 (a:F): & [(a, F)]\\
+	cs = \{\\
+	& a: [(H \rightarrow (c:F)), ((c:D) \rightarrow (G \rightarrow (c:F))), (E \rightarrow (c:D))],\\
+	& b: [((c:F) \rightarrow G), ((c:D) \rightarrow (a:F)), (H \rightarrow (G \rightarrow H)), (Y_1 \rightarrow (Y_2 \rightarrow Y_1))],\\
+	& c: [(c:F), G, D, (G \rightarrow F)] \\
 	\}
 \end{split}
-\end{equation}
-%\input{/home/lyriael/BA/j-logic/thesis/Figures/example/tree_example_atom3.tex}
+\end{equation*}
 
-\section{Looking up and matching: Config and Conditions}
+\subsubsection[Config for a1]{Configs for musts of atom $a_1$}
+The \emph{atom} $a_1$ actually has only one rather simple \emph{must}: $(c,F)$. As it can easily be seen there is no such match with the cs-list for the proof constant $c$.
+
+If we in fact would have found a valid match we would have also shown that the formula $f$ is provable. Also the algorithm would usualy stop as soon as one must is provable unless explicitly told so.
+
+\subsubsection[Config for a2]{Configs for musts of atom $a_1$}
