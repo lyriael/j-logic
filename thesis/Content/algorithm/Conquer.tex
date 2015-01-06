@@ -10,7 +10,7 @@ Then in the third and most important step those configurations and conditions wi
 
 
 \subsection{Get Must}
-The operator rules which were presented in Chapter XX \todoFormat{Find (and write!!) Chapter} gives us the instruction how we can take a formula apart to look the individual proof term up in the cs-list. The rule for the Sum-Operation was already used in the divide-step for the sumsplit in \ref{sumsplit}.
+The operator rules which were presented in Chapter XX gives us the instruction how we can take a formula apart to look the individual proof term up in the cs-list. The rule for the Sum-Operation was already used in the divide-step for the sumsplit in \ref{sumsplit}.
 
 It can be summarized that each Multiplication-Operation in a term adds one variable, which will here be called \emph{wilds} or \emph{x-wilds} where as a Bang-Operation will replace an existing \emph{wild} with a new wild combined with the proof constant of that case. 
 
@@ -46,7 +46,7 @@ musts_{(a*(!b))*c):F} = \{a: [(b:X_3) \rightarrow (X_1 \rightarrow F)], b: [X_1,
 
 As can be seen in this example a proof constant my have more than one term that needs to be looked up in the cs-list.
 
-\subsection{Configuration Table}
+\subsection{X-Wilds in the Configuration Table}
 Now the \emph{must}-list from the previous step will be compared with the given cs-list. The terms of a proof constant in \emph{must} will be matched against those the same proof constant in the cs-list. This will give us what I call a \emph{configuration table}. The conditions which are only important in special situations will be postponed for a later example.
 
 For convenience it will be asserted that the cs-list is given in the same structure as the must-list. The function used in the code to do this operates on a proof constant level, that means it iterates through the must-list and for each of the proof constants terms it compares it to the terms of the same proof constant of the cs-list. Therefore we will look only at one proof constant in this example as well.
@@ -74,10 +74,10 @@ Cs-list\footnote{contains only entries for the proof constant $a$} : $\{a: [A \r
 \end{table}
 
 
-\subsubsection{Y-Wilds and Conditions}\todoFormat{Would be nice to have a X-Wild title somewhere as well}
+\subsubsection{Y-Wilds and Conditions}
 Later the the definition of the cs-list was changed such that it may also include more general formulas using variables. The purpose behind it was to have a way to include concepts such as tautologies. As a convention those special variables in the cs-list will be called \emph{y-wilds} and be denoted as $Y_i$. An example of such a special entry in the cs-list would be the proof term $t:Y_1 \rightarrow (Y_2 \rightarrow Y_1)$ where $Y_1$ and $Y_2$ may represent any term\footnote{For this implementation only terms that use only the operations for justification logic as introduced in Chapter XX may be used.}
 
-As mentioned before\todoFormat{where?} this additional feature made the current process of comparing the \emph{musts} with the corresponding entries in cs-list as well as the following \emph{merge} step a lot more complicated. Suddenly it comparing is not only a match or no match, but the result may be relation/dependency between different variables. The problems lies in the fact that when comparing $X_i$ with $Y_j$ either could be anything. Before there were only different possibilities of what one certain $X_i$ could be, but now the choice of a $X_i$ depends on the choice of the $Y_i$ and vice a verse. The table as it is used most only contain constants but the found information about the relations could not be ignored. To handle this situation I had to find a way of passing those \emph{conditions} on. 
+As mentioned before this additional feature made the current process of comparing the \emph{musts} with the corresponding entries in cs-list as well as the following \emph{merge} step a lot more complicated. Suddenly it comparing is not only a match or no match, but the result may be relation/dependency between different variables. The problems lies in the fact that when comparing $X_i$ with $Y_j$ either could be anything. Before there were only different possibilities of what one certain $X_i$ could be, but now the choice of a $X_i$ depends on the choice of the $Y_i$ and vice a verse. The table as it is used most only contain constants but the found information about the relations could not be ignored. To handle this situation I had to find a way of passing those \emph{conditions} on. 
 
 \begin{definition}
 For one match between a configuration term from the cs-list and a \emph{must}-term (one line in the configuration table) there may be zero or more \emph{conditions} that apply to this certain match. \\
@@ -103,8 +103,8 @@ Each $X_i$ occurs at most once within one \emph{must}-term.\footnote{This basica
 $t:X_3 \rightarrow (X_3 \rightarrow F)$ is not possible.
 \end{example}
 
-An other assumption I previously assumed has proven to be wrong only now when I tried to present it here. The assertion stated that a condition never contains a \emph{X-wild} and a \emph{Y-wild} in the same term as you find it in the last example for the conditions. This assertion would have simplified the merging of configurations with conditions quiet a bit. Unfortunately the assertion doesn't hold. The example that disproves it will be included in the example later \todoFormat{Link and Write Chapter}. Solving this was easier that I feared but it was still a nasty bit of work.
-\todoWriteMore{Table/Example?}
+An other assumption I previously assumed has proven to be wrong only now when I tried to present it here. The assertion stated that a condition never contains a \emph{X-wild} and a \emph{Y-wild} in the same term as you find it in the last example for the conditions. This assertion would have simplified the merging of configurations with conditions quiet a bit. Unfortunately the assertion doesn't hold. The example that disproves it will be presented below. Solving this was easier that I feared but it was still a nasty bit of work.
+\todoWriteMore{Example for Y \emph{and} X in condition}
 
 \par
 To summarize we have now per one \emph{must} of a atomized formula a configuration table which includes the possible matches of the needed proof terms from the cs-list. The next step will try to merge this different configurations together to find one or more configuration for the $X-wilds$ that works for all proof constants.
@@ -157,6 +157,8 @@ Performing a merge without having any conditions is a straight forward implement
 \caption{Merge table. The last section is the final configuration. Since there is a possible configuration the must term from which these configurations are is provable.}
 \end{table}
 
-As for the conditions which where introduced in the previous chapter, those will be evaluated only if there is a merge of the constants as shown in the table is possible. After the merge is successful each condition will be applied one after another. A condition can break the merge of two lines and thus make it not usable, it may also add further constants to the line or it might be, that the condition is not relevant yet and thus is simply passed on for the next line merge. Again this is best show in a example. It will be covered in the next section.
+As for the conditions which where introduced in the previous chapter, those will be evaluated only if there is a merge of the constants as shown in the table is possible. After the merge is successful each condition will be applied one after another. A condition can break the merge of two lines and thus make it not usable, it may also add further constants to the line or it might be, that the condition is not relevant yet and thus is simply passed on for the next line merge. Again this is best show in a example. It will be covered in the next Chapter.
 
-\par This concludes not only the merge step but the whole divide and conquer chapter. I personally have found it rather easy to understand the individual steps but difficult to not get lost in the overall view. For that reason the next chapter will cover one single example designed to show all aspects of the algorithm and run it through to understand it better.
+\todoWriteMore{Examle with a condition that sets some but not all \emph{X-wilds}}
+
+\par This concludes not only the merge step but the whole divide and conquer chapter. I personally have found it rather easy to understand the individual steps but difficult to not get lost in the overall view. For that reason chapter \ref{chap: Example} will cover one single example designed to show all aspects of the algorithm and run it through to understand it better.
