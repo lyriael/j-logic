@@ -1,0 +1,32 @@
+%!TEX root = ../../bachelors_thesis.tex
+\begin{figure}[H]
+	\centering
+	% (Y_1 -> (Y_2 -> Y_1))
+	\begin{tikzpicture}[level distance=1.2cm,
+	  level 1/.style={sibling distance=2.5cm},
+	  level 2/.style={sibling distance=1.5cm},
+	  level 3/.style={sibling distance=0.8cm}, 
+	  thick,scale=0.9, every node/.style={scale=0.9}]
+		\node [arn_w]{$\rightarrow$}
+		  child {node [arn_r]{$Y_1$}}
+		  child {node [arn_w]{$\rightarrow$}
+		  	child {node [arn_w] {$Y_2$}}
+		  	child {node [arn_w] {$Y_1$}}
+		  };
+	\end{tikzpicture}
+	% (X_1 -> (c:F))
+	\begin{tikzpicture}[level distance=1.2cm,
+	  level 1/.style={sibling distance=2.5cm},
+	  level 2/.style={sibling distance=1.5cm},
+	  level 3/.style={sibling distance=0.8cm}, 
+	  thick,scale=0.9, every node/.style={scale=0.9}]
+		\node [arn_w]{$\rightarrow$}
+		  child {node [arn_r]{$:$}
+		  	child {node [arn_r] {$c$}}
+		  	child {node [arn_r] {$X_3$}}
+		  }
+		  child {node [arn_w]{$X_1$}};
+	\end{tikzpicture}
+\captionof{figure}{Comparing a term from cs-list with Y-wilds with a must term.}
+\label{figure_compare1}
+\end{figure}

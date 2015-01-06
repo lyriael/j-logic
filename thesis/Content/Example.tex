@@ -10,11 +10,11 @@ f = (((!(a+c))+((a+(!a))*(b*(!c)))):(c:F))
 The cs-list used for this example will only be relevant later on but still be presented here as reference:
 
 
-\begin{equation}
+\begin{equation}\label{cs}
 \begin{split}
 	cs = \{\\
-	& a: [(H \rightarrow (c:F)), ((c:D) \rightarrow (G \rightarrow (c:F))), (E \rightarrow (c:D))],\\
-	& b: [((c:F) \rightarrow G), ((c:D) \rightarrow (a:F)), (H \rightarrow (G \rightarrow H)), (Y_1 \rightarrow (Y_2 \rightarrow Y_1))],\\
+	& a: [(H \rightarrow (c:F)), ((E \rightarrow (c:D)) \rightarrow (c:F)), (E \rightarrow (c:D))],\\
+	& b: [((c:F) \rightarrow H), ((c:D) \rightarrow (a:F)), ((H \rightarrow G) \rightarrow H), (Y_1 \rightarrow (Y_2 \rightarrow Y_1))],\\
 	& c: [(c:F), G, D, (G \rightarrow F)] \\
 	\}
 \end{split}
@@ -149,7 +149,7 @@ Now $b$ has been isolated as well, leaving only $(! c)$. Having a bang in a situ
 \end{equation*}
 
 This finally gives us all the \emph{musts} for $a_2$. As can be seen belove the \emph{X-wild} $X_2$ has been replaced by $(c:X_3)$.
-\begin{equation}
+\begin{equation}\label{eq:a2_musts}
 	a_2: \quad musts = [(a, (X_1 \rightarrow (c:F))), (b, ((c:X_3) \rightarrow X_1)), (c, X_3)]
 \end{equation}
 
@@ -159,10 +159,11 @@ It should be noted here that a proof constant may be in more than one of the \em
 Now that we have all proof constants for each \emph{atom} isolated we can try to match them with the entries found in the cs-list.
 
 \begin{equation*}
+\tag{\ref{cs}}
 \begin{split}
 	cs = \{\\
-	& a: [(H \rightarrow (c:F)), ((c:D) \rightarrow (G \rightarrow (c:F))), (E \rightarrow (c:D))],\\
-	& b: [((c:F) \rightarrow G), ((c:D) \rightarrow (a:F)), (H \rightarrow (G \rightarrow H)), (Y_1 \rightarrow (Y_2 \rightarrow Y_1))],\\
+	& a: [(H \rightarrow (c:F)), ((E \rightarrow (c:D)) \rightarrow (c:F)), (E \rightarrow (c:D))],\\
+	& b: [((c:F) \rightarrow H), ((c:D) \rightarrow (a:F)), ((H \rightarrow G) \rightarrow H), (Y_1 \rightarrow (Y_2 \rightarrow Y_1))],\\
 	& c: [(c:F), G, D, (G \rightarrow F)] \\
 	\}
 \end{split}
@@ -171,6 +172,101 @@ Now that we have all proof constants for each \emph{atom} isolated we can try to
 \subsubsection[Config for a1]{Configs for musts of atom $a_1$}
 The \emph{atom} $a_1$ actually has only one rather simple \emph{must}: $(c,F)$. As it can easily be seen there is no such match with the cs-list for the proof constant $c$.
 
-If we in fact would have found a valid match we would have also shown that the formula $f$ is provable. Also the algorithm would usualy stop as soon as one must is provable unless explicitly told so.
+If we in fact would have found a valid match we would have also shown that the formula $f$ is provable. Also the algorithm would usually stop as soon as one must is provable unless explicitly told so.
 
 \subsubsection[Config for a2]{Configs for musts of atom $a_1$}
+
+\begin{equation*}
+	a_2: \quad musts = [(a, (X_1 \rightarrow (c:F))), (b, ((c:X_3) \rightarrow X_1)), (c, X_3)]
+	\tag{\ref{eq:a2_musts}}
+\end{equation*}
+
+Matching the \emph{musts} with the entries in cs gives us the following table. Since the \emph{X-wild} $X_2$ in never used it will be omitted here. In the implementation it would just be an additional empty column.
+
+\begin{table}[H]
+\centering
+\begin{tabular}{l c c r}
+		& $X_1$ & $X_3$ & condition \\
+	\hline 
+	$a$	& $H$ & - &  \\
+		& $(E \rightarrow (c:D))$ & - & \\
+	\hline
+	$b$ & $H$ & $F$ & \\
+		& $(a:F)$ & $D$ & \\
+		& $H$ & $(H \rightarrow G)$ & \\
+		& - & - & $(X_1, (Y_2 \rightarrow (c:X_3)))$\\
+	\hline
+	$c$	& - & $(c:F)$ & \\
+		& - & $G$ & \\
+		& - & $D$ & \\
+		& - & $(G \rightarrow F)$ &\\
+	\hline
+\end{tabular}
+\caption{Config table for $a_2$}\label{config}
+\end{table}
+
+All match except the match with the \emph{Y-wilds} are straight forward and need no further explanations, and the \emph{Y-wilds} match shall be explained in more detail here. 
+
+\input{/home/lyriael/BA/j-logic/thesis/Figures/example/tree_example_compare1.tex}
+
+When the \emph{compare} method from \emph{Tree} encounters a node containing a \emph{Y-wild} it will replace it and all other occurrences with the same \emph{Y-wild} in its tree with whatever it finds in the node of the comparing tree. In this case it will replace all $Y_1$ with $(c:X_3)$. 
+
+\input{/home/lyriael/BA/j-logic/thesis/Figures/example/tree_example_compare2.tex}
+
+When the methods now compares the right child of the root if finds a \emph{X-wild} in the \emph{must} term, it now checks if there are \emph{X-wilds} or \emph{Y-wilds} present in the subtree of the Node from the cs term. If that is the case, as it is here, the subtree be be a condition to the $X_i$. If the term would have consisted of operators and constants only the subtree would have been written directly into the configuration table. But as that is not the case here, we end up with a empty row in the config table and the condition $(X_1, (Y_2 \rightarrow (c:X_3)))$.
+
+\subsection{Merging of the Config Table}
+
+As we have only one atom left that might still be provable we have to merge the different sections from the config table \ref{config} to find at least one configuration for all \emph{X-wilds} that is contradiction free for all proof constants. The \emph{merge}-step in the algorithm merges two sections and adds to the result the next table, so in this example we will first merge $a$ and $b$ and to the result of that merge $c$.
+
+\begin{table}[H]
+\centering
+\begin{tabular}{l c c r}
+		& $X_1$ & $X_3$ & condition \\
+	\hline 
+	$a$	& $H$ & - &  \\
+		& $(E \rightarrow (c:D))$ & - & \\
+	\hline
+	$b$ & $H$ & $F$ & \\
+		& $(a:F)$ & $D$ & \\
+		& $H$ & $(H \rightarrow G)$ & \\
+		& - & - & $(X_1, (Y_2 \rightarrow (c:X_3)))$\\
+	\hline
+	\hline
+	$a \cap b$	& $H$ & $F$ & \\
+		& $H$ & $(H \rightarrow G)$ & \\
+		& $(E \rightarrow (c:D))$ & $D$ & \\
+	\hline
+\end{tabular}
+\caption{Merge of section $a$ and $b$}\label{merge_a_b}
+\end{table}
+
+The first two merges are obvious, there are however some comments on the last one. As $E \rightarrow (c:D)$ for fits perfect the condition $Y_2 \rightarrow (c:X_3)$ for $X_1$ giving us $X_3 := D$, the second line from $a$ can be merged with the third from $b$. In this case the condition can be dropped because it has fully been satisfied, but in other cases, especially if there are more \emph{X-wilds} it is possible that a condition still persists after a merge. Also we found that $Y_2$ must be $E$ which would matter, if there were other conditions on the same configuration line that also contained a $Y_2$ (rather unlikely but very possible).
+
+Now we will merge the section from $c$ to our current result of table \ref{merge_a_b}.
+
+\begin{table}[H]
+\centering
+\begin{tabular}{l c c r}
+		& $X_1$ & $X_3$ & condition \\
+	\hline
+	$a \cap b$	& $H$ & $F$ & \\
+		& $H$ & $(H \rightarrow G)$ & \\
+		& $(E \rightarrow (c:D))$ & $D$ & \\
+	\hline
+	$c$	& - & $(c:F)$ & \\
+		& - & $G$ & \\
+		& - & $D$ & \\
+		& - & $(G \rightarrow F)$ &\\
+	\hline
+	\hline
+	$(a \cap b) \cap c$ & $(E \rightarrow (c:D))$ & $D$ \\
+	\hline
+
+\end{tabular}
+\caption{Merge of section $c$ with the previously merged $a$ and $b$.}\label{merge_a_b_c}
+\end{table}
+
+\section{The Final Result}
+As we have seen in table \ref{merge_a_b_c} we did find a configuration that fits the \emph{X-wilds} and thus the original formula $f$ is provable. I want to show here what this configuration actually means and what it has to do with the provability of $f$. To do this we will actually go through the algorithm backwards but having already the solution at hand.
+

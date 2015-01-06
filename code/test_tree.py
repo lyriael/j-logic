@@ -184,6 +184,11 @@ class Tests(unittest.TestCase):
         self.assertListEqual(con, [('X3', '(Y1->Y2)'), ('X2', '(X1->F)')])
         self.assertDictEqual(wil, {})
 
+    def test_compare15(self):
+        con, wil = Tree.compare(Tree('(X1->(c:F))').root, Tree('(Y1->(Y2->Y3))').root, [], {})
+        self.assertIsNone(con)
+        self.assertIsNone(wil)
+
     def test_compare_x_and_y_mix1(self):
         con, wil = Tree.compare(Tree('(X2->X1)').root, Tree('(Y1->(Y2->Y1)').root, [], {})
         self.assertListEqual([('X1', '(Y2->X2)')], con)

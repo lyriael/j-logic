@@ -1,0 +1,38 @@
+%!TEX root = ../../bachelors_thesis.tex
+\begin{figure}[H]
+	\centering
+	% (X_1 -> (Y_2 -> X_1))
+	\begin{tikzpicture}[level distance=1.2cm,
+	  level 1/.style={sibling distance=2.5cm},
+	  level 2/.style={sibling distance=1.5cm},
+	  level 3/.style={sibling distance=1.2cm}, 
+	  thick,scale=0.9, every node/.style={scale=0.9}]
+		\node [arn_w]{$\rightarrow$}
+		  child {node [arn_w]{$:$}
+		  	child {node [arn_w] {$c$}}
+		  	child {node [arn_w] {$X_3$}}
+		  	}
+		  child {node [arn_r]{$\rightarrow$}
+		  	child {node [arn_r] {$Y_2$}}
+		  	child {node [arn_r]{$:$}
+		  		child {node [arn_r] {$c$}}
+		  		child {node [arn_r] {$X_3$}}
+		  	}
+		  };
+	\end{tikzpicture}
+	% (X_1 -> (c:X_3))
+	\begin{tikzpicture}[level distance=1.2cm,
+	  level 1/.style={sibling distance=2.5cm},
+	  level 2/.style={sibling distance=1.5cm},
+	  level 3/.style={sibling distance=1.2cm}, 
+	  thick,scale=0.9, every node/.style={scale=0.9}]
+		\node [arn_w]{$\rightarrow$}
+		  child {node [arn_w]{$:$}
+		  	child {node [arn_w] {$c$}}
+		  	child {node [arn_w] {$X_3$}}
+		  }
+		  child {node [arn_r]{$X_1$}};
+	\end{tikzpicture}
+\captionof{figure}{Updated cs-term (copy) with resulting condition.}
+\label{figure_compare2}
+\end{figure}
