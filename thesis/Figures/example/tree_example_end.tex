@@ -10,31 +10,31 @@
 	\node [arn_n]{$:$}
 	  child {node [arn_r]{\(+ \)}
 	    child {node [arn_w] {$!$}
-	    	child[right] {node [arn_r] {$+$}
+	    	child[right] {node [arn_w] {$+$}
 	    		child {node [arn_w] {$a$}}
 	    		child {node [arn_w] {$c$}}
 	    		}
 	    	}
-	    child {node [arn_w] {$*$}
+	    child {node [arn_r] {$*$}
 	    	child {node [arn_r] {$+$}
-	    		child {node [arn_w] {$a$}}
+	    		child {node [arn_r] {$a$}}
 	    		child {node [arn_w] {$!$}
 	    			child[right] {node [arn_w] {$a$}}
 	    			}
 	    		}
-	    	child {node [arn_w] {$*$}
-	    		child {node [arn_w] {$b$}}
-	    		child {node [arn_w] {$!$}
-	    			child[right] {node [arn_w] {$c$}}
+	    	child {node [arn_r] {$*$}
+	    		child {node [arn_r] {$b$}}
+	    		child {node [arn_r] {$!$}
+	    			child[right] {node [arn_r] {$c$}}
 	    			}
 	    		}
 	    	}
 	    }
-	  child {node [arn_w]{$:$}
-	  	child {node [arn_w] {$c$}}
-	  	child {node [arn_w] {$F$}}
+	  child {node [arn_r]{$:$}
+	  	child {node [arn_r] {$c$}}
+	  	child {node [arn_r] {$F$}}
 	  };
 \end{tikzpicture}
-\caption{Syntax tree of given formula $f$ before it is atomized.}
+\caption{Syntax tree of formula $f$ with atom $a_2$ hightlighted.}
 \end{center}
 \end{figure}

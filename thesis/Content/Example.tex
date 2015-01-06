@@ -270,3 +270,56 @@ Now we will merge the section from $c$ to our current result of table \ref{merge
 \section{The Final Result}
 As we have seen in table \ref{merge_a_b_c} we did find a configuration that fits the \emph{X-wilds} and thus the original formula $f$ is provable. I want to show here what this configuration actually means and what it has to do with the provability of $f$. To do this we will actually go through the algorithm backwards but having already the solution at hand.
 
+What we gained from the last step is a configuration for the \emph{X-wilds}.
+\begin{equation}
+	\begin{split}
+	X_1 & = (E \rightarrow (c:D))\\
+	X_2 & = (c:X_3) = (c:D) \\
+	X_3 & = D 
+	\end{split}	
+\end{equation}
+
+Knowing these we can use them and replace them in the musts of the atom $a_2$. That way we get what we where looking for in the cs-list.
+
+\begin{equation*}
+\begin{split}
+	musts \medspace a_2: \quad  [&(a, ((E \rightarrow (c:D)) \rightarrow (c:F))), \\
+			& (b, ((c:D) \rightarrow (E \rightarrow (c:D)))), \\
+			& (c, D)]
+\end{split}
+\tag{\ref{eq:a2_musts}}
+\end{equation*}
+
+\begin{equation*}
+\tag{\ref{cs}}
+\begin{split}
+	cs = \{& a: [(H \rightarrow (c:F)), ((E \rightarrow (c:D)) \rightarrow (c:F)), (E \rightarrow (c:D))],\\
+	& b: [((c:F) \rightarrow H), ((c:D) \rightarrow (a:F)), ((H \rightarrow G) \rightarrow H), (Y_1 \rightarrow (Y_2 \rightarrow Y_1))],\\
+	& c: [(c:F), G, D, (G \rightarrow F)] \}
+\end{split}
+\end{equation*}
+
+As expected we find all the terms from \emph{must} precisely like that in the cs-list. Also we can reconstruct $a_2$ with the \emph{musts} given above:
+
+\begin{align*}
+	c:D & \Rightarrow (!c):(c:D)\\
+	b:((c:D) \rightarrow (E \rightarrow (c:D)))), (!c):(c:D) & \Rightarrow ((b*(!c)):(E \rightarrow (c:D)))\\
+	a:((E \rightarrow (c:D)) \rightarrow (c:F))), (b*(!c)):(E \rightarrow (c:D)) & \Rightarrow (a *(b* (! c)):(c:F)) 
+\end{align*}
+
+\begin{equation*}		
+	a_2 = ((a *(b* (! c))):(c:F)) 
+	\tag{\ref{eq:a_2}}
+\end{equation*}
+
+Reconstructing the whole formula $f$ instead of just the atom follows the same approach as shown above but it will become very verbose and it is very little gained if one is not in doubt about the \emph{atomization}.
+
+\begin{equation*}
+	f = (((!(a+c))+((a+(!a))*(b*(!c)))):(c:F))
+	\tag{\ref{eq:f}}
+\end{equation*}
+
+\input{/home/lyriael/BA/j-logic/thesis/Figures/example/tree_example_end.tex}
+
+
+This concludes this chapter where I tried to show as much as possible with an example that is as short and simple as possible and still fits the purpose. 
