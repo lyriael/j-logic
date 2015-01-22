@@ -337,6 +337,13 @@ class Tests(unittest.TestCase):
         self.assertEqual(['(A->B)', '', 'B'], config_b)
         self.assertEqual([('X2', '(B->Y1)')], cond_b)
 
+    def test_full_merge_of_two_configs2(self):
+        config1, cond1 = ['A', ''], [('X2', '(Y3->B)')]
+        config2, cond2 = ['A', ''], [('X2', '(A->Y1)')]
+        config, cond = full_merge_of_two_configs((config1, cond1), (config2, cond2))
+        print(cond)
+        print(config)
+
     def test_mix_y_and_x_wilds(self):
         # matching Y1->(Y2->Y1) to the must of b: X2->X1 results in a condition with mixed x-y-wilds.
         # this was not expected to happen!

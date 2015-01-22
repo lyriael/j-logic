@@ -286,10 +286,14 @@ def apply_all_conditions(config, conditions):
 
 
 def full_merge_of_two_configs(first, second):
+    # print('-----------------')
     merge = simple_merge(first[0], second[0])
     if merge:
         merge_first, conditions_first = apply_all_conditions(merge, first[1])
         merge_second, conditions_second = apply_all_conditions(merge, second[1])
+        # print(conditions_first)
+        # print(conditions_second)
+        # print('')
         if merge_first and merge_second:
             full_merge = simple_merge(merge_first, merge_second)
             if full_merge:

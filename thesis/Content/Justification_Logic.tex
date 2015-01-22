@@ -1,0 +1,50 @@
+%!TEX root = ../bachelors_thesis.tex
+The theory of Justification Logic as it is used here requires little knowledge of the wide fields of Modal Logic apart from some very basic knowledage about logic theory. For the purpose of this proof search a few basic rules and definitions are sufficient to provide the needed knowledge. 
+\par
+
+ The theory presented here is oriented mainly on the work of \cite{goet} as well as the older reference \cite{art} and also from the homepage \cite{stan}. This definitions and rules given here are not complete to the justification logic. Priority was given to those informations which are vital for the implementation. So however briefly and incomplete the theory is presented here full reference can be found in the named sources. 
+
+\section{Background}
+Justification Logic has its origins from the field of modal logic. 
+In model logic $\square A$ means that $A$ is \emph{know} or that we have \emph{proof} of $A$. In justification logic the equivalent would be $t:A$ where $t$ is a \emph{proof term} of $A$. This provides us the notion that \emph{knowledge} or \emph{proofs} may come from different sources. Justification logic lets us connect different \emph{proofs} with a few simple operators and thus give us a better desciption of the proof. It may be said that where in model logic the knowledge is implicit it is explicit in Justification Logic\footnote{\cite{goet}}.
+
+\section{Rules and Definitions}
+
+The language of justification logics is given here in a more traditional format with falsum and implication as primary propositional connectives. Although for the work done with this implementation only the implication has been used and the falsum has been ignored. \footnote{cite here! S. 17} Also not all available syntactic objectes are introduces here but only those implemented.
+
+\begin{definition}\label{justification_terms} Apart from formulas, the language of justification logics have another type of syntactic objects called \emph{justification terms}, or simply \emph{terms} given by the following grammar:
+\[
+	t::= c_{i}^{j} | x_i | \bot | (t \cdot t) | (t+t) | !t
+\]
+where $i$ and $j$ range over positive natural numbers, $c_{i}^{j}$ denotes a (justification) \emph{constant} of level $j$, and $x_i$ denotes a (justification) \emph{variable}.
+
+The binary operations $\cdot$ and $+$ are called \emph{application} and \emph{sum}. The unary operation $!$ is called \emph{positive introspection}.
+\end{definition}
+
+\begin{rules}\label{rules} 
+
+\begin{itemize} Application, sum and positive introspection respectively.
+
+	\item[C1] $t:(F \rightarrow G, s:F \vdash t \cdot s: G$
+	\item[C2] $t:F \vdash (t +s):F, \:\: s:F \vdash (t+s):F$
+	\item[C3] $t:F \vdash !t:t:F$
+\end{itemize}
+
+\end{rules}
+
+Formulas are constructed from propositional letters and boolean constants in the usual way with an additional clause: if $F$ is a formula dn $t$ a term, then $t:F$ is also a formula.
+
+\begin{definition}\label{justification_formulas} \emph{Justification formulas} are given by the grammar:
+\[
+A ::= P_i|(A \rightarrow A) | (t:A)
+\]
+where $P_i$ denotes a proposition, as in the modal language, and $t$ is a justification term in the justification language.
+\end{definition}
+
+This is almost all we need for the proof search of a (justification) formula. The last definition gives us something like a reference for the proof constants.
+
+\begin{definition}\label{cs-def} A constant specification, \emph{CS}, is a finite set of formulas of the form $c:A$ where $c$ is a proof constant and $A$ is a axiom of Justification language.
+\end{definition}
+
+The axioms mention in this definition are \emph{C1-C3} in addition to $t:F \rightarrow F$ and the Axioms of the classical propositional logic in the language of LP.
+

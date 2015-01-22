@@ -49,7 +49,7 @@
 
 % math definitions, propositions and such
 \usepackage{amsthm}
-\newtheorem*{definition}{Definition}
+\newtheorem{definition}{Definition}
 \newtheorem*{rules}{Rules}
 \newtheorem*{example}{Example}
 \newtheorem{assertion}{Assertion}
@@ -105,13 +105,15 @@ subtree/.style  = {regular polygon, regular polygon sides=3, draw=black, align=c
 
 
 \input{Content/Introduction}
-\input{Content/Background}
-\label{chap: Background}
+
+\chapter{Justification Logic}
+\label{chap: Justification Logic}
+\input{Content/Justification_Logic}
 
 \newpage{\pagestyle{empty} \cleardoublepage}
+
 \chapter{A Divide and Conquer Algorithm}
 \label{chap: Algorithm A Divide and Conquer Approach}
-
 \input{Content/algorithm/Core_Idea}
 \input{Content/algorithm/Divide}
 \input{Content/algorithm/Conquer}
@@ -130,8 +132,7 @@ subtree/.style  = {regular polygon, regular polygon sides=3, draw=black, align=c
         showstringspaces=false,
         identifierstyle=\color{green},
         procnamekeys={def,class},
-        linewidth=8cm}
- 
+        linewidth=8cm} 
 \input{Content/Implementation}
 
 \chapter{Example}
