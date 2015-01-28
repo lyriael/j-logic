@@ -121,8 +121,11 @@ The \texttt{break} in the code indicates the situation that one of the condition
 \subsection[ProofSearch.merge]{ProofSearch.full\_merge\_of\_two\_configs \\and merge\_two\_tables}
 Similar as in the previous section the process that uses the methods above and actually merges all configurations together to get a solution is split in two parts where the first part handles a merge of only two configurations and the other handles the full merge.
 
+\subsubsection{Simple Merge}
+The actual merge is a very simple method found in the \texttt{Helper} class. It simply checks if the two given lists contain the same \texttt{String} or if at least one of the items in the list is an empty \texttt{String}.
 
-\todoWriteMore{Todo}
+\subsubsection{Full Merge of Two Configs}
+
 
 \section{Tests}
 \todoWriteMore{Todo}

@@ -1,7 +1,8 @@
 from node import Node
 from helper import parse
 from helper import replace
-
+from helper import has_no_wilds
+from helper import has_wilds
 
 class Tree(object):
     '''
@@ -78,6 +79,7 @@ class Tree(object):
                 return node
         return None
 
+    #todo: make static
     def subtree(self, node):
         '''
         Returns a deep copy from the subtree of the given node.
@@ -158,6 +160,35 @@ class Tree(object):
                     swaps.append((subformula, s))
                     v_count += 1
         return sorted(replace(consts, swaps))
+
+    @staticmethod
+    def compare_new(f1, f2):
+        stack = [(Tree(f1), Tree(f2))]
+        result = []
+        while len(stack) > 0:
+            current = stack.pop()
+            # If the root node is the same (either operation or constant)
+            if current[0].root.token == current[1].root.token:
+                if current[0].root.token in ['->', ':']:
+                    stack.append((current[0].subtree(current[0].root.left), current[1].subtree(current[1].root.left)))
+                    stack.append((current[0].subtree(current[0].root.right), current[1].subtree(current[1].root.right)))
+                else:
+                    pass
+            # If the root is not the same, either it is a mismatch, or there are wilds.
+            # Stuff that is put in 'result' has on one side only a wild-constant.
+            else:
+                # (X1, A->B), (Y1, G), ...
+                if (has_no_wilds(current[0].to_s()) and has_wilds(current[1].root.token)) or \
+                    (has_no_wilds(current[1].to_s()) and has_wilds(current[0].root.token)):
+                    result.append((current[0].to_s(), current[1].to_s()))
+                # (X1, Y2->F), (Y1, X1), (X1, Y1->Y1), ...
+                elif has_wilds(current[0].to_s()) and has_wilds(current[1].to_s()):
+                    assert has_wilds(current[0].root.token) or has_wilds(current[1].root.token)
+                    result.append((current[0].to_s(), current[1].to_s()))
+                # (Y1->F, b:B), (F, Y1->Y2), ...
+                else:
+                    return None
+        return result
 
     @staticmethod
     def compare(orig_node: Node, cs_node: Node, conditions, wilds):

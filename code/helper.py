@@ -1,5 +1,5 @@
 from re import findall
-
+from collections import defaultdict
 
 def parse(string):
     '''
@@ -56,6 +56,14 @@ def simple_merge(a, b):
     return new
 
 
+def conditions_to_dict(a, b):
+    sorted_conds = defaultdict(list)
+    temp = a + b
+    for k, v in temp:
+        sorted_conds[k].append(v)
+    return sorted_conds
+
+
 def update_condition_with_x(term, list):
     for i in range(len(list)):
         if list[i] != '':
@@ -66,6 +74,10 @@ def update_condition_with_x(term, list):
 
 def has_no_wilds(term):
     return not ('X' in term or 'Y' in term)
+
+
+def has_wilds(term):
+    return 'X' in term or 'Y' in term
 
 
 def replace(consts, swaps):

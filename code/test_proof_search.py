@@ -325,6 +325,13 @@ class Tests(unittest.TestCase):
         self.assertEqual(['(A->B)', '', 'B'], config)
         self.assertEqual([('X2', '(B->Y1)')], conditions)
 
+    def test_apply_all_conditions4(self):
+        wild = ['']
+        con = [('X1', '(A->Y1)'), ('X1', '(Y2->B)')]
+        config, conditions = apply_all_conditions(wild, con)
+        self.assertEqual(['(A->B)'], config)
+        self.assertEqual([], con)
+
     def test_full_merge_of_two_configs(self):
         config1 = ['(A->B)', '', '']
         cond1 = [('X1', '(Y2->X3)'), ('X3', 'B')]
@@ -337,12 +344,14 @@ class Tests(unittest.TestCase):
         self.assertEqual(['(A->B)', '', 'B'], config_b)
         self.assertEqual([('X2', '(B->Y1)')], cond_b)
 
-    def test_full_merge_of_two_configs2(self):
-        config1, cond1 = ['A', ''], [('X2', '(Y3->B)')]
-        config2, cond2 = ['A', ''], [('X2', '(A->Y1)')]
-        config, cond = full_merge_of_two_configs((config1, cond1), (config2, cond2))
-        print(cond)
-        print(config)
+    # def test_full_merge_of_two_configs2(self):
+    #     config1, cond1 = ['A', ''], [('X2', '(Y3->B)')]
+    #     config2, cond2 = ['A', ''], [('X2', '(A->Y1)')]
+    #     config, cond = full_merge_of_two_configs((config1, cond1), (config2, cond2))
+    #     print(cond)
+    #     print(config)
+    #     self.assertEqual(['A', '(A->B)'], config)
+    #     self.assertEqual([], cond)
 
     def test_mix_y_and_x_wilds(self):
         # matching Y1->(Y2->Y1) to the must of b: X2->X1 results in a condition with mixed x-y-wilds.
@@ -391,6 +400,8 @@ class Tests(unittest.TestCase):
                          ps.look_up_in_cs('b', '((c:X3)->X1)'))
         self.assertEqual([({'X3': '(c:F)'}, []), ({'X3': 'G'}, []), ({'X3': 'D'}, []), ({'X3': '(G->F)'}, [])],
                          ps.look_up_in_cs('c', 'X3'))
+
+
 
 
     #todo: what if two Y's with same name but different origin end up in a condition?

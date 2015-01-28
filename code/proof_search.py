@@ -256,6 +256,11 @@ def apply_condition(config, condition):
 
 
 def apply_all_conditions(config, conditions):
+    '''
+    :param config:
+    :param conditions: should be checked before they are given here. #todo
+    :return:
+    '''
     todo_conditions = list(conditions)
     updated_config = config
     remaining_conditions = []
@@ -288,6 +293,8 @@ def apply_all_conditions(config, conditions):
 def full_merge_of_two_configs(first, second):
     # print('-----------------')
     merge = simple_merge(first[0], second[0])
+    condition = conditions_to_dict(first[1], second[1])
+    # todo: merge the two available conditions together, they should not be seperated.
     if merge:
         merge_first, conditions_first = apply_all_conditions(merge, first[1])
         merge_second, conditions_second = apply_all_conditions(merge, second[1])
@@ -331,5 +338,17 @@ def merge_two_tables(first, second):
                 merged_table.append(t)
     return uniq(merged_table)
 
+
+def combine_conditions(a, b):
+    '''
+    This is in the case that conditions contain Y_i which could be resolved.
+    :param a: (A->Y1)
+    :param b: (Y2->B)
+    :return: con, y_wilds
+    '''
+
+    # eine von beiden ist '' -> nix zu tun, die welche nicht '' ist zurückgeben
+
+    # Nur relevant, wenn
 
 

@@ -199,6 +199,11 @@ class Tests(unittest.TestCase):
         self.assertIsNone(con)
         self.assertIsNone(wil)
 
+    # def test_compare_x_and_y_mix3(self):
+    #     con, wil = Tree.compare(Tree('(Y2->B)').root, Tree('(A->Y1)').root, [], {})
+    #     self.assertIsNone(con)
+    #     self.assertIsNone(wil)
+
     def test_sum_split1(self):
         self.assertEqual(2, len(Tree.sum_split('((a+b):F)')))
 
@@ -228,3 +233,13 @@ class Tests(unittest.TestCase):
         self.assertEqual('(((a+b)*c):F)', Tree.simplify_bang('((!((a+b)*c)):(((a+b)*c):F))'))
         self.assertEqual('', Tree.simplify_bang('((!((a+b)*c)):((b*c):F))'))
         self.assertEqual('(a:A)', Tree.simplify_bang('(a:A)'))
+
+    def test_compare_new(self):
+        cons = Tree.compare_new('(X3->((a:X2)->(X1->F)))', '(Y1->(Y2->Y1))')
+        self.assertListEqual([('(X1->F)', 'Y1'), ('(a:X2)', 'Y2'), ('X3', 'Y1')],
+                             cons)
+
+    def test_compare_new2(self):
+        cons = Tree.compare_new('(Y1->Y2)', 'X1')
+        self.assertListEqual([('(Y1->Y2)', 'X1')],
+                             cons)

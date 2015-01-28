@@ -41,6 +41,11 @@ class Tests(unittest.TestCase):
     def test_merge2(self):
         self.assertEqual(['(A->B)', '', 'B'], simple_merge(['(A->B)', '', 'B'], ['(A->B)', '', 'B']))
 
+    def test_conditions_to_dict(self):
+        a, b = [('X1', 'A'), ('X2', 'D'), ('X1', 'C')], [('X2', 'D'), ('X1', 'B'), ('X2', 'C')]
+        merged = conditions_to_dict(a, b)
+        self.assertDictEqual({'X1': ['A', 'C', 'B'], 'X2': ['D', 'D', 'C']}, merged)
+
     def test_config_to_table(self):
         configs = [({'X1': 'A', 'X2': 'B'}, []), ({'X1': '(A->B)', 'X4': 'C'}, [])]
         self.assertListEqual([(['A', 'B', '', ''], []), (['(A->B)', '', '', 'C'], [])],
