@@ -1,6 +1,7 @@
 from re import findall
 from collections import defaultdict
 
+
 def parse(string):
     '''
     separate operators, parentheses and variables and returns them as a list.
