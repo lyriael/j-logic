@@ -236,10 +236,51 @@ class Tests(unittest.TestCase):
 
     def test_unify1(self):
         cons = unify('(X3->((a:X2)->(X1->F)))', '(Y1->(Y2->Y1))')
-        self.assertListEqual([('(X1->F)', 'Y1'), ('(a:X2)', 'Y2'), ('X3', 'Y1')],
+        self.assertDictEqual({'X1': [], 'X2': [], 'X3': ['Y1'], 'Y1': ['(X1->F)', 'X3'], 'Y2': ['(a:X2)']},
                              cons)
 
     def test_unify2(self):
         cons = unify('(Y1->Y2)', 'X1')
-        self.assertListEqual([('(Y1->Y2)', 'X1')],
+        self.assertDictEqual({'X1': ['(Y1->Y2)'], 'Y2': [], 'Y1': []},
                              cons)
+
+    def test_get_all_wilds(self):
+        l = [('X1', '(A->Y2)'), ('Y2', 'X12'), ('A', 'X3')]
+        v = get_all_wilds(l)
+        self.assertListEqual(['X1', 'X12', 'X3', 'Y2'], v)
+
+    def test_condition_list_to_dict(self):
+        l = [('X1', '(A->Y2)'), ('Y2', 'X12'), ('A', 'X3')]
+        d = condition_list_to_dict(l)
+        self.assertDictEqual({'X3': ['A'], 'X12': ['Y2'], 'X1': ['(A->Y2)'], 'Y2': ['X12']}, d)
+
+    def test_condition_list_to_dict2(self):
+        l = [('X1', '(A->B)'), ('X1', '(X3->Y1)'), ('X1', '(X2->B)'), ('X2', '(X1->(B->C))'), ('X3', 'X1'), ('X1', '(X2->F)')]
+        d = condition_list_to_dict(l)
+        #print(d)
+
+    def test_condition_list_to_dict3(self):
+        l = [('X1', '(X2->A)')]
+        d = condition_list_to_dict(l)
+        self.assertDictEqual({'X2': [], 'X1': ['(X2->A)']}, d)
+
+    def test_condition_dict_to_list1(self):
+        d = {'X1': [], 'X3': ['(X1->F)']}
+        l = condition_dict_to_list(d)
+        self.assertListEqual([('X3', '(X1->F)')], l)
+
+    def test_condition_dict_to_list2(self):
+        d = {'X1': []}
+        l = condition_dict_to_list(d)
+        self.assertListEqual([], l)
+
+    def test_simplify(self):
+        var = 'X1'
+        conditions = {'X1': ['(A->F)', '(X3->Y1)', '(X2->F)'], 'X2': ['(X1->(B->C))'], 'X3': [], 'Y1': []}
+        simplify(var, conditions)
+        self.assertDictEqual({'X2': ['A', 'X3', '((X2->F)->(B->C))'], 'X3': ['A', 'X2'], 'X1': ['(X2->F)'], 'Y1': ['F']},
+                             conditions)
+
+    def test_resolve_conditions(self):
+        conditions = {'X1': ['(A->F)', '(X3->Y1)', '(X2->F)'], 'X2': ['(X1->(B->C))'], 'X3': [], 'Y1': []}
+        print(resolve_conditions(conditions))

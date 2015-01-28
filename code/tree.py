@@ -3,6 +3,10 @@ from helper import parse
 from helper import replace
 from helper import has_no_wilds
 from helper import has_wilds
+from collections import defaultdict
+from re import findall
+import itertools
+
 
 class Tree(object):
     '''
@@ -338,6 +342,12 @@ class Tree(object):
 
 
 def unify(f1, f2):
+    '''
+
+    :param f1: string
+    :param f2: string
+    :return: dict
+    '''
     stack = [(Tree(f1), Tree(f2))]
     result = []
     while len(stack) > 0:
@@ -363,4 +373,117 @@ def unify(f1, f2):
             # (Y1->F, b:B), (F, Y1->Y2), ...
             else:
                 return None
-    return result
+
+    return condition_list_to_dict(result)
+
+
+def condition_list_to_dict(conditions):
+    '''
+
+    :param conditions: list of tuples
+    :return: dict
+    '''
+    dct = defaultdict(list)
+    vars = get_all_wilds(conditions)
+
+    # breaking tuples up and sort the values into a dict.
+    for con in conditions:
+        if con[0][0] in ['Y', 'X']:
+            dct[con[0]].append(con[1])
+        if con[1][0] in ['Y', 'X']:
+            dct[con[1]].append(con[0])
+
+    # adding all variables to the dic, even if they are not isolated and
+    for x in vars:
+        dct[x] = list(set(dct[x]))
+
+    return dct
+
+
+def condition_dict_to_list(conditions):
+    '''
+
+    :param conditions: dict
+    :return: list of tuples
+    '''
+    lst = []
+    for key in conditions:
+        for item in conditions[key]:
+            lst.append((key, item))
+    return list(set(lst))
+
+
+def get_all_wilds(conditions):
+    '''
+
+    :param conditions: List of conditions in form of tuples.
+    :return: A list containg all variables (X-wilds and Y-wilds).
+    '''
+    vars = []
+    for condition_tuple in conditions:
+        vars += findall(r'X\d+|Y\d+', condition_tuple[0])
+        vars += findall(r'X\d+|Y\d+', condition_tuple[1])
+
+    return sorted(list(set(vars)))
+
+
+def simplify(var, conditions):
+    '''
+
+    :param var: string
+    :param conditions: dict
+    :return: dict
+    '''
+
+    # get all (X1, F)
+    fs = conditions.pop(var, None)
+
+    # preprocess those
+    fs[:] = [x for x in fs if not var in x]
+
+    # if there are no conditions for var, we're done.
+    if not fs:
+        conditions[var] = []
+        return conditions
+
+    # unify, gives new conditions
+    a_lst = []
+    for f1, f2 in itertools.combinations(fs, 2):
+        a_lst += condition_dict_to_list(unify(f1, f2))
+    a_dct = condition_list_to_dict(a_lst)
+
+    # keep one of the (X1, Fi)
+    chosen = fs.pop()
+
+    # replace all X1 in rest
+    for key in conditions:
+        tmp = []
+        for item in conditions[key]:
+            tmp.append(item.replace(var, chosen))
+        conditions[key] = tmp
+
+    # add new conditions to old conditions
+    for key in a_dct:
+        conditions[key] += a_dct[key]
+        conditions[key] = list(set(conditions[key]))
+    # add the chosen one
+    conditions[var] = [chosen]
+
+    return conditions
+
+
+def resolve_conditions(conditions):
+    '''
+    :param conditions: dict
+    :return: dict
+    '''
+
+    all_variables = list(conditions.keys())
+
+    for var in all_variables:
+        print(var)
+        simplify(var, conditions)
+        print(conditions)
+
+    return conditions
+
