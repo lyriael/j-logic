@@ -1,10 +1,5 @@
 from node import Node
-from helper import parse
-from helper import replace
-from helper import has_no_wilds
-from helper import has_wilds
 from collections import defaultdict
-from re import findall
 import itertools
 
 
@@ -164,66 +159,6 @@ class Tree(object):
                     swaps.append((subformula, s))
                     v_count += 1
         return sorted(replace(consts, swaps))
-
-    @staticmethod
-    def compare(orig_node: Node, cs_node: Node, conditions, wilds):
-        '''
-        Compares to trees recursively. Used to get 'musts' and also to merge configurations. The first and the second
-        argument are not freely interchangeable!
-
-        :param orig_node: Containing X's and constants. In exceptional cases it may also contain a mix of X's and Y's as
-        it is uesd in #apply_condition. If this method is used to match a tree with only Y's to a tree with only
-        constants rename the Y's to X's.
-        :param cs_node: This should only hold Y's and constants. Since the method makes changes within this tree, there
-        might  also be X's. But they should not be here from the start.
-        :param conditions: List of tuples. The conditions are always on a Xi.
-        The condition term may contain constants, other X's or also Y's. Initially this is empty.
-        :param wilds: Dictionary where a X is assigned to a constant. If there is no constant, it will be assigned to ''.
-        Initially this is empty.
-        :return: conditions and wilds.
-        '''
-        # stop recursion if a mismatch was found
-        if wilds is None:
-            return None, None
-
-        # if both are same
-        if orig_node.token == cs_node.token:
-            if orig_node.token in ['->', ':']:
-                conditions, wilds = Tree.compare(orig_node.left, cs_node.left, conditions, wilds)
-                conditions, wilds = Tree.compare(orig_node.right, cs_node.right, conditions, wilds)
-            else:
-                # same constant
-                pass
-
-        # if current node is Yn, then replace all occurring Yn's with whatever is in orig.
-        # Remember consequently cs_term may have Y's and X's!
-        elif cs_node.token[0] == 'Y':
-            Tree._replace_in_tree(cs_node.get_root(), cs_node.token, Tree(orig_node.to_s()).root)
-
-        # if current node is Xn, then this is the consequence of a Yn being replaced. What
-        # ever is in orig is a condition to Xn.
-        elif cs_node.token[0] == 'X':
-            # condition containing Xs and constants.
-            if 'X' in orig_node.to_s():
-                t = (cs_node.token, orig_node.to_s())
-                conditions.append(t)
-            # wild
-            else:
-                wilds[cs_node.token] = orig_node.to_s()
-        # unresolved 'Y' in cs-subtree to corresponding 'X' in orig
-        elif orig_node.token[0] == 'X' and ('Y' in cs_node.to_s() or 'X' in cs_node.to_s()):
-            # condition containing Xs, Ys and/or constants.
-            t = (orig_node.token, cs_node.to_s())
-            conditions.append(t)
-        # normal wild config.
-        # the option for 'Y' is for the special case that a Y-wild formula
-        # is compared with a formula containing only constants.
-        elif orig_node.token[0] == 'X' or orig_node.token[0] == 'Y':
-            wilds[orig_node.to_s()] = cs_node.to_s()
-        else:
-            # no match possible
-            conditions, wilds = None, None
-        return conditions, wilds
 
     @staticmethod
     def _replace_in_tree(current_node: Node, old: str, replacement: Node):
@@ -416,21 +351,6 @@ def condition_dict_to_list(conditions):
             lst.append((key, item))
     return list(set(lst))
 
-
-def get_all_wilds(conditions):
-    '''
-
-    :param conditions: List of conditions in form of tuples.
-    :return: A list containg all variables (X-wilds and Y-wilds).
-    '''
-    vars = []
-    for condition_tuple in conditions:
-        vars += findall(r'X\d+|Y\d+', condition_tuple[0])
-        vars += findall(r'X\d+|Y\d+', condition_tuple[1])
-
-    return sorted(list(set(vars)))
-
-
 def simplify(var, conditions):
     '''
 
@@ -501,3 +421,48 @@ def resolve_conditions(conditions):
         vars_todo += new_vars
     return conditions
 
+def parse(string):
+    '''
+    separate operators, parentheses and variables and returns them as a list.
+    '''
+    l = list(string)
+    for index in range(len(l)):
+        if l[index].isdigit():
+            l[index] = l[index-1] + l[index]
+            l[index-1] = ''
+
+        if l[index] == '>':
+            assert l[index-1] == '-'
+            l[index] = l[index-1] + l[index]
+            l[index-1] = ''
+    while '' in l:
+        l.remove('')
+    return l
+
+
+def has_no_wilds(term):
+    return not ('X' in term or 'Y' in term)
+
+
+def has_wilds(term):
+    return 'X' in term or 'Y' in term
+
+
+def replace(consts, swaps):
+    '''
+    :param:
+    swaps: [('X2', '(b:X3)'), ...]
+    Wilds that must be replaces because of '!'
+
+    consts: [('a', ['(X2->(X1->F))]), ...]
+
+    :return:
+    adjusted const => [('a', ['((b:X3)->(X1->F))]), ...]
+    '''
+    new_consts = []
+    for term in consts:
+        tmp = term[1]
+        for replacement in swaps:
+           tmp = tmp.replace(replacement[0], replacement[1])
+        new_consts.append((term[0], tmp))
+    return new_consts

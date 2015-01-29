@@ -114,117 +114,47 @@ class Tests(unittest.TestCase):
         Tree._replace_in_tree(y.root, 'Y1', Tree('X1').root)
         self.assertEqual('(X1->(Y2->X1))', y.to_s())
 
-    def test_compare01(self):
-        con, wil = Tree.compare(Tree('(X1->X2)').root, Tree('((A->B)->C)').root, [], {})
-        self.assertListEqual(con, [])
-        self.assertDictEqual(wil, {'X2': 'C', 'X1': '(A->B)'})
-
-    def test_unify01(self):
-        dct = unify('(X1->X2)', '((A->B)->C)')
-        self.assertDictEqual({'X1': ['(A->B)'], 'X2': ['C']}, dct)
-
-    def test_compare02(self):
-        con, wil = Tree.compare(Tree('((A->B)->C)').root, Tree('(Y1->Y2)').root, [], {})
-        self.assertListEqual(con, [])
-        self.assertDictEqual(wil, {})
-
-    def test_compare03(self):
-        con, wil = Tree.compare(Tree('((X1->X2)->X3)').root, Tree('(Y1->Y2)').root, [], {})
-        self.assertListEqual(con, [])
-        self.assertDictEqual(wil, {})
-
-    def test_compare04(self):
-        con, wil = Tree.compare(Tree('(X1->(X2->X3))').root, Tree('(A->B)').root, [], {})
-        self.assertIsNone(con)
-        self.assertIsNone(wil)
-
-    def test_compare05(self):
-        con, wil = Tree.compare(Tree('(X3->(X2->(X1->F)))').root, Tree('(Y1->(Y2->Y1))').root, [], {})
-        self.assertListEqual(con, [('X3', '(X1->F)')])
-        self.assertDictEqual(wil, {})
-
-    def test_compare06(self):
-        con, wil = Tree.compare(Tree('(X3->(X2->(X1->F)))').root, Tree('(Y1->(Y1->Y1))').root, [], {})
-        self.assertListEqual(con, [('X3', 'X2'), ('X3', '(X1->F)')])
-        self.assertDictEqual(wil, {})
-
-    def test_compare07(self):
-        con, wil = Tree.compare(Tree('((A->B)->A)').root, Tree('(Y1->Y1)').root, [], {})
-        self.assertIsNone(con)
-        self.assertIsNone(wil)
-
-    def test_compare08(self):
-        con, wil = Tree.compare(Tree('((X1->F)->(B->(X2->G)))').root, Tree('(Y1->(Y2->Y1))').root, [], {})
-        self.assertIsNone(con)
-        self.assertIsNone(wil)
-
-    def test_compare09(self):
-        con, wil = Tree.compare(Tree('(X1->(B->X2))').root, Tree('(Y1->(Y1->Y1))').root, [], {})
-        self.assertListEqual(con, [('X1', 'X2')])
-        self.assertDictEqual(wil, {'X1': 'B'})
-
-    def test_compare10(self):
-        con, wil = Tree.compare(Tree('(X1->X2)').root, Tree('(Y1->(Y1->F))').root, [], {})
-        self.assertListEqual(con, [('X2', '(X1->F)')])
-        self.assertDictEqual(wil, {})
-
-    def test_compare11(self):
-        con, wil = Tree.compare(Tree('(X1->X2)').root, Tree('(Y1->(Y2->F))').root, [], {})
-        self.assertListEqual(con, [('X2', '(Y2->F)')])
-        self.assertDictEqual(wil, {})
-
-    def test_compare12(self):
-        con, wil = Tree.compare(Tree('((X1->X2)->X3)').root, Tree('((Y1->(Y2->F))->(Y1->G))').root, [], {})
-        self.assertListEqual(con, [('X2', '(Y2->F)'), ('X3', '(X1->G)')])
-        self.assertDictEqual(wil, {})
-
-    def test_compare13(self):
-        con, wil = Tree.compare(Tree('((X1->X2)->X3)').root, Tree('((Y1->(Y2->F))->(Y2->G))').root, [], {})
-        self.assertListEqual(con, [('X2', '(Y2->F)'), ('X3', '(Y2->G)')])
-        self.assertDictEqual(wil, {})
-
-    def test_compare14(self):
-        con, wil = Tree.compare(Tree('(X3->(X2->(X1->F)))').root, Tree('((Y1->Y2)->(Y1->Y1))').root, [], {})
-        self.assertListEqual(con, [('X3', '(Y1->Y2)'), ('X2', '(X1->F)')])
-        self.assertDictEqual(wil, {})
-
-    def test_compare15(self):
-        con, wil = Tree.compare(Tree('(X1->(c:F))').root, Tree('(Y1->(Y2->Y3))').root, [], {})
-        self.assertIsNone(con)
-        self.assertIsNone(wil)
-
-    def test_compare_x_and_y_mix1(self):
-        con, wil = Tree.compare(Tree('(X2->X1)').root, Tree('(Y1->(Y2->Y1)').root, [], {})
-        self.assertListEqual([('X1', '(Y2->X2)')], con)
-        self.assertDictEqual({}, wil)
-
-    def test_compare_x_and_y_mix2(self):
-        con, wil = Tree.compare(Tree('((X1->F)->(B->(X2->G)))').root, Tree('(Y1->(Y2->Y1)').root, [], {})
-        self.assertIsNone(con)
-        self.assertIsNone(wil)
-
-    # def test_compare_x_and_y_mix3(self):
-    #     con, wil = Tree.compare(Tree('(Y2->B)').root, Tree('(A->Y1)').root, [], {})
-    #     self.assertIsNone(con)
-    #     self.assertIsNone(wil)
+    def test_unify(self):
+        self.assertIsNone(unify('(X1->(c:F))', '(Y1->(Y2->Y3))'))
+        self.assertIsNone(unify('(A->B)', '((X1->X2)->X3)'))
+        self.assertDictEqual({'X1': ['(A->B)'], 'X2': ['C']}, unify('(X1->X2)', '((A->B)->C)'))
+        self.assertDictEqual({'Y1': ['(X1->X2)'], 'Y2': ['X3'], 'X3': ['Y2']}, unify('(Y1->Y2)', '((X1->X2)->X3)'))
+        self.assertDictEqual({'Y1': ['(X1->F)', 'X3'], 'X2': ['Y2'], 'Y2': ['X2'], 'X3': ['Y1']},
+                             unify('(X3->(X2->(X1->F)))', '(Y1->(Y2->Y1))'))
+        self.assertDictEqual({'Y1': ['(X1->F)', 'X2', 'X3'], 'X2': ['Y1'], 'X3': ['Y1']},
+                             unify('(X3->(X2->(X1->F)))', '(Y1->(Y1->Y1))'))
+        self.assertDictEqual({'X2': ['Y1'], 'Y1': ['X2', 'X1', 'B'], 'X1': ['Y1']},
+                             unify('(X1->(B->X2))', '(Y1->(Y1->Y1))'))
+        self.assertDictEqual({'X2': ['(Y1->F)'], 'Y1': ['X1'], 'X1': ['Y1']}, unify('(X1->X2)', '(Y1->(Y1->F))'))
+        self.assertDictEqual({'X2': ['(Y2->F)'], 'Y1': ['X1'], 'X1': ['Y1']}, unify('(X1->X2)', '(Y1->(Y2->F))'))
+        self.assertDictEqual({'X2': ['(Y2->F)'], 'X3': ['(Y1->G)'], 'X1': ['Y1'], 'Y1': ['X1']},
+                             unify('((X1->X2)->X3)', '((Y1->(Y2->F))->(Y1->G))'))
+        self.assertDictEqual({'X2': ['(Y2->F)'], 'X3': ['(Y2->G)'], 'X1': ['Y1'], 'Y1': ['X1']},
+                             unify('((X1->X2)->X3)', '((Y1->(Y2->F))->(Y2->G))'))
+        self.assertDictEqual({'Y1': ['(X1->F)', 'X2'], 'X2': ['Y1'], 'X3': ['(Y1->Y2)']},
+                             unify('(X3->(X2->(X1->F)))', '((Y1->Y2)->(Y1->Y1))'))
+        self.assertDictEqual({'X2': ['Y1'], 'Y1': ['X2'], 'X1': ['(Y2->Y1)']}, unify('(X2->X1)', '(Y1->(Y2->Y1)'))
+        self.assertDictEqual({'Y1': ['(X2->G)', '(X1->F)'], 'Y2': ['B']},
+                             unify('((X1->F)->(B->(X2->G)))', '(Y1->(Y2->Y1)'))
+        self.assertDictEqual({'X3': ['Y1'], 'Y1': ['(X1->F)', 'X3'], 'Y2': ['(a:X2)']},
+                             unify('(X3->((a:X2)->(X1->F)))', '(Y1->(Y2->Y1))'))
+        self.assertDictEqual({'X1': ['(Y1->Y2)']}, unify('(Y1->Y2)', 'X1'))
+        self.assertDictEqual({'Y1': ['X3', 'F'], 'X2': ['Y2'], 'Y2': ['X2'], 'X3': ['Y1']},
+                             unify('(Y1->(Y2->Y1))', '(X3->(X2->F))'))
 
     def test_sum_split1(self):
         self.assertEqual(2, len(Tree.sum_split('((a+b):F)')))
+        self.assertEqual(4, len(Tree.sum_split('((((f+e)*d)+((!b)+a)):F)')))
+        self.assertEqual(1, len(Tree.sum_split('(((a*b)+(a*b)):F)')))
+        self.assertEqual(2, len(Tree.sum_split('((e*(f+g)):F)')))
 
     def test_sum_split2(self):
-        self.assertEqual(4, len(Tree.sum_split('((((f+e)*d)+((!b)+a)):F)')))
-
-    def test_sum_split3(self):
-        self.assertEqual(1, len(Tree.sum_split('(((a*b)+(a*b)):F)')))
-
-    def test_sum_split4(self):
-        self.assertEqual(2, len(Tree.sum_split('((e*(f+g)):F)')))
         s = []
         for term in Tree.sum_split('((e*(f+g)):F)'):
             s.append(term)
         self.assertListEqual(['((e*f):F)', '((e*g):F)'], sorted(s))
 
-    def test_sum_split5(self):
+    def test_sum_split3(self):
         many_formulas = Tree.sum_split('(((!(((!a)+b)*(c*(!d))))+(e*(f+g))):F)')
         a = []
         for f in many_formulas:
@@ -238,24 +168,7 @@ class Tests(unittest.TestCase):
         self.assertEqual('', Tree.simplify_bang('((!((a+b)*c)):((b*c):F))'))
         self.assertEqual('(a:A)', Tree.simplify_bang('(a:A)'))
 
-    def test_unify1(self):
-        cons = unify('(X3->((a:X2)->(X1->F)))', '(Y1->(Y2->Y1))')
-        # self.assertDictEqual({'X1': [], 'X2': [], 'X3': ['Y1'], 'Y1': ['(X1->F)', 'X3'], 'Y2': ['(a:X2)']}, cons)
-        self.assertDictEqual({'X3': ['Y1'], 'Y1': ['(X1->F)', 'X3'], 'Y2': ['(a:X2)']}, cons)
 
-    def test_unify2(self):
-        cons = unify('(Y1->Y2)', 'X1')
-        #self.assertDictEqual({'X1': ['(Y1->Y2)'], 'Y2': [], 'Y1': []}, cons)
-        self.assertDictEqual({'X1': ['(Y1->Y2)']}, cons)
-
-    def test_unify3(self):
-        cons = unify('(Y1->(Y2->Y1))', '(X3->(X2->F))')
-        print(cons)
-
-    def test_get_all_wilds(self):
-        l = [('X1', '(A->Y2)'), ('Y2', 'X12'), ('A', 'X3')]
-        v = get_all_wilds(l)
-        self.assertListEqual(['X1', 'X12', 'X3', 'Y2'], v)
 
     def test_condition_list_to_dict(self):
         l = [('X1', '(A->Y2)'), ('Y2', 'X12'), ('A', 'X3')]
@@ -303,19 +216,4 @@ class Tests(unittest.TestCase):
     def test_simplify2(self):
         var = 'Y1'
         conditions = defaultdict(list, {'Y1': ['X3', 'F'], 'X2': ['Y2'], 'Y2': ['X2'], 'X3': ['Y1']})
-        new_vars = simplify(var, conditions)
-        print('----------')
-        print(conditions)
-        print(new_vars)
-        new_vars = simplify('X2', conditions)
-        print('----------')
-        print(conditions)
-        print(new_vars)
-        new_vars = simplify('X3', conditions)
-        print('----------')
-        print(conditions)
-        print(new_vars)
-        new_vars = simplify('Y2', conditions)
-        print('----------')
-        print(conditions)
-        print(new_vars)
+
