@@ -19,7 +19,7 @@ class Tree(object):
         :param formula: String
         :return: None
         """
-        term = parse(formula)
+        term = _parse(formula)
         current = self.root
         current.set_root()
 
@@ -47,6 +47,13 @@ class Tree(object):
         return self._inorder_string(self.root)
 
     def _inorder_string(self, node):
+        '''
+
+        :param node: Node
+            Node from where on the inorder should start.
+        :return term: string
+            Nodes as a String in inorder.
+        '''
         term = ''
         if not node.is_leaf():
             term += '('
@@ -58,6 +65,14 @@ class Tree(object):
         return term
 
     def _preorder_nodes(self, node):
+        '''
+        Used by different methods to walk the tree.
+
+        :param node: Node
+            Node from where the preoder should start.
+        :return nodes: list
+            All nodes in preoder.
+        '''
         nodes = [node]
         if node.has_left():
             nodes += self._preorder_nodes(node.left)
@@ -78,7 +93,6 @@ class Tree(object):
                 return node
         return None
 
-    #todo: make static
     def subtree(self, node):
         '''
         Returns a deep copy from the subtree of the given node.
@@ -122,166 +136,178 @@ class Tree(object):
             elif plus_node.position == 'right':
                 plus_node.parent.set_right(plus_node.right)
 
-    @staticmethod
-    def musts(formula: str):
-        '''
-        This method expects the formula to be splited and simplified already,
-        such that only '*', '!' and const are nodes.
 
-        It returns a List with tuples, where the first entry is the proof constant
-        and the second the other part (thingy after ':'...).
+def sum_split(formula):
+    '''
+    Transforms formula to a disjunctive form.
+    algorithm:
 
-        THE MAGIC HAPPENS RIGHT HERE
-        '''
-        tree = Tree(formula)
-        consts = []         # returning container.
-        swaps = []          # contains replacements for Wilds from '!'. => ('X2', '(b:X3)')
-        v_count = 1         # needed for Wilds (X1, X2, ...)
-        temp = [tree]  # contains Trees
-        while len(temp) > 0:
-            f = temp.pop()
-            proof_term = f.subtree(f.root.left)
-            subformula = f.subtree(f.root.right).to_s()
+    search for first '+'
+        if there is none you're done.
+        if there is one, split the formula and repeat the step above for both parts.
 
-            if len(proof_term.to_s()) == 1: # constant
-                consts.append((proof_term.to_s(), subformula))
-            else:
-                if proof_term.root.token == '*':
-                    left = proof_term.subtree(proof_term.root.left).to_s()
-                    right = proof_term.subtree(proof_term.root.right).to_s()
-                    temp.append(Tree('('+left+':(X'+str(v_count)+'->'+subformula+'))'))
-                    temp.append(Tree('('+right+':X'+str(v_count)+')'))
-                    v_count += 1
-                elif proof_term.root.token == '!':
-                    left = proof_term.subtree(f.root.left.right).to_s()
-                    s = '('+left+':X'+str(v_count)+')'
-                    temp.append(Tree(s))
-                    swaps.append((subformula, s))
-                    v_count += 1
-        return sorted(replace(consts, swaps))
+    :return: list
+        formulas as Strings.
 
-    @staticmethod
-    def _replace_in_tree(current_node: Node, old: str, replacement: Node):
-        '''
-        used in compare_second_try
-        :param old_node:
-        :param replacement:
-        :return:
-        '''
-        if current_node.token == old:
-            current_node.swap_with(replacement)
+    Example:
+    ((a+b):F) => ['(a:F)', '(b:F')]
+
+    Remark:
+    If no sum exists in the formula, the returned list will simply contain the original formula.
+    A empty List should never be returned.
+    '''
+    tree = Tree(formula)
+    proof_term = tree.subtree(tree.root.left)   # Tree, e.g.: ((a*b)+c)
+    subformula = tree.root.right.to_s()         # String, e.g.: F
+
+    done = []
+    todo = [proof_term]
+    while len(todo) > 0:
+        f = todo.pop()
+        if f.first('+') is None:
+            done.append(f)
         else:
-            if current_node.has_left():
-                Tree._replace_in_tree(current_node.left, old, replacement)
-            if current_node.has_right():
-                Tree._replace_in_tree(current_node.right, old, replacement)
+            left = f.deep_copy()
+            node = left.first('+')
+            left._left_split(node)
+            todo.append(left)
 
-    @staticmethod
-    def sum_split(formula):
-        '''
-        Transforms formula to a disjunctive form.
-        algorithm:
+            right = f.deep_copy()
+            node = right.first('+')
+            right._right_split(node)
+            todo.append(right)
 
-        search for first '+'
-            if there is none you're done.
-            if there is one, split the formula and repeat the step above for both parts.
+    # make to string and remove duplicates
+    result = []
+    for tree in done:
+        result.append('('+tree.to_s()+':'+subformula+')')
+    return list(set(result))
 
-        :return: list
-            formulas as Strings.
 
-        Example:
-        ((a+b):F) => ['(a:F)', '(b:F')]
+def simplify_bang(formula):
+    '''
+    Called from ProofSearch in step 'atomize'. Simplifies a formula for top '!' operations.
 
-        Remark:
-        If no sum exists in the formula, the returned list will simply contain the original formula.
-        A empty List should never be returned.
-        '''
-        tree = Tree(formula)
-        proof_term = tree.subtree(tree.root.left)   # Tree, e.g.: ((a*b)+c)
-        subformula = tree.root.right.to_s()         # String, e.g.: F
+    Example:
+    (a:F)         => (a:F)
+    ((!a):(a:F))  => (a:F)
+    ((!b):F)      => None
 
-        done = []
-        todo = [proof_term]
-        while len(todo) > 0:
-            f = todo.pop()
-            if f.first('+') is None:
-                done.append(f)
-            else:
-                left = f.deep_copy()
-                node = left.first('+')
-                left._left_split(node)
-                todo.append(left)
+    :return str:
+        old Formula,    if '!' is not top operation
+        new Formula,    if resolvable
+        empty,          if not resolvable
+    '''
+    tree = Tree(formula)
+    assert tree.root.token == ':'
 
-                right = f.deep_copy()
-                node = right.first('+')
-                right._right_split(node)
-                todo.append(right)
-
-        # make to string and remove duplicates
-        result = []
-        for tree in done:
-            result.append('('+tree.to_s()+':'+subformula+')')
-        return list(set(result))
-
-    @staticmethod
-    def simplify_bang(formula):
-        '''
-        Called from ProofSearch in step 'atomize'. Simplifies a formula for top '!' operations.
-
-        Example:
-        (a:F)         => (a:F)
-        ((!a):(a:F))  => (a:F)
-        ((!b):F)      => None
-
-        :return str:
-            old Formula,    if '!' is not top operation
-            new Formula,    if resolvable
-            empty,          if not resolvable
-        '''
-        tree = Tree(formula)
-        assert tree.root.token == ':'
-
-        if tree.root.left.token == '!':
-            # accessing child of '!'
-            left = tree.subtree(tree.root.left.right)
-            right = tree.subtree(tree.root.right.left)
-            # if both sides are the same, construct simplified formula as string.
-            if right and left.to_s() == right.to_s():
-                subformula = tree.subtree(tree.root.right.right)
-                s = '('+right.to_s()+':'+subformula.to_s()+')'
-                return s
-            else:
-                return ''
+    if tree.root.left.token == '!':
+        # accessing child of '!'
+        left = tree.subtree(tree.root.left.right)
+        right = tree.subtree(tree.root.right.left)
+        # if both sides are the same, construct simplified formula as string.
+        if right and left.to_s() == right.to_s():
+            subformula = tree.subtree(tree.root.right.right)
+            s = '('+right.to_s()+':'+subformula.to_s()+')'
+            return s
         else:
-            # formula has no '!' operation on top.
-            return formula
+            return ''
+    else:
+        # formula has no '!' operation on top.
+        return formula
 
-    @staticmethod
-    def has_bad_bang(formula):
-        '''
-        Checks if there is a left '!' of '*' somewhere in the Formula.
 
-        restriction: Must only be called on a Formula where top operation is ':'.
+def has_bad_bang(formula):
+    '''
+    Checks if there is a left '!' of '*' somewhere in the Formula.
 
-        :return boolean:
-            True, if a left '!' of '*' is found somewhere in the tree.
-            False, else.
-        '''
-        tree = Tree(formula)
-        proof_term_tree = Tree(tree.root.left.to_s())
-        assert tree.root.token == ':'
-        for node in proof_term_tree._preorder_nodes(tree.root):
-            if node.token == '!' and node.position == 'left':
-                return True
-        return False
+    restriction: Must only be called on a Formula where top operation is ':'.
+
+    :return boolean:
+        True, if a left '!' of '*' is found somewhere in the tree.
+        False, else.
+    '''
+    tree = Tree(formula)
+    proof_term_tree = Tree(tree.root.left.to_s())
+    assert tree.root.token == ':'
+    for node in proof_term_tree._preorder_nodes(tree.root):
+        if node.token == '!' and node.position == 'left':
+            return True
+    return False
+
+
+def musts(proof_term: str):
+    '''
+    This method will retrieve all proof constants with their corresponding formulas derived from the proof term.
+
+    :param proof_term: string
+        The formula is expected to be already atomized such that only *, ! and proof constants are nodes.
+    :return musts: list
+        List of tuples, where the first entry is the proof constant and the second part is a term, usually containing
+        variables (X-wilds).
+    '''
+    tree = Tree(proof_term)
+    consts = []         # returning container.
+    swaps = []          # contains replacements for Wilds from '!'. => ('X2', '(b:X3)')
+    v_count = 1         # needed for Wilds (X1, X2, ...)
+    temp = [tree]  # contains Trees
+    while len(temp) > 0:
+        f = temp.pop()
+        proof_term = f.subtree(f.root.left)
+        subformula = f.subtree(f.root.right).to_s()
+
+        if len(proof_term.to_s()) == 1: # constant
+            consts.append((proof_term.to_s(), subformula))
+        else:
+            if proof_term.root.token == '*':
+                left = proof_term.subtree(proof_term.root.left).to_s()
+                right = proof_term.subtree(proof_term.root.right).to_s()
+                temp.append(Tree('('+left+':(X'+str(v_count)+'->'+subformula+'))'))
+                temp.append(Tree('('+right+':X'+str(v_count)+')'))
+                v_count += 1
+            elif proof_term.root.token == '!':
+                left = proof_term.subtree(f.root.left.right).to_s()
+                s = '('+left+':X'+str(v_count)+')'
+                temp.append(Tree(s))
+                swaps.append((subformula, s))
+                v_count += 1
+    return sorted(_replace(consts, swaps))
+
+
+def _replace(consts, swaps):
+    '''
+    :param:
+    swaps: [('X2', '(b:X3)'), ...]
+    Wilds that must be replaces because of '!'
+
+    consts: [('a', ['(X2->(X1->F))]), ...]
+
+    :return:
+    adjusted const => [('a', ['((b:X3)->(X1->F))]), ...]
+    '''
+    new_consts = []
+    for term in consts:
+        tmp = term[1]
+        for replacement in swaps:
+           tmp = tmp.replace(replacement[0], replacement[1])
+        new_consts.append((term[0], tmp))
+    return new_consts
 
 
 def unify(f1, f2):
     '''
+    This method compares two formulas by matching them against each other. If a match is not possible, None will be
+    returned.
+    This method makes no further analysis of the matches. Duplicated entries as well as contradiction for one variable
+    is possible.
 
     :param f1: string
+        First formula.
     :param f2: string
-    :return: dict
+        Second formula.
+    :return conditions: dict
+        The conditions are sorted by variables (X-wilds and Y-wilds). It may be possible that not every variable is
+        available as key,  example: {'X2': ['Y1']}.
     '''
     stack = [(Tree(f1), Tree(f2))]
     result = []
@@ -298,25 +324,98 @@ def unify(f1, f2):
         # Stuff that is put in 'result' has on one side only a wild-constant.
         else:
             # (X1, A->B), (Y1, G), ...
-            if (has_no_wilds(current[0].to_s()) and has_wilds(current[1].root.token)) or \
-                (has_no_wilds(current[1].to_s()) and has_wilds(current[0].root.token)):
+            if (_has_no_wilds(current[0].to_s()) and _has_wilds(current[1].root.token)) or \
+                (_has_no_wilds(current[1].to_s()) and _has_wilds(current[0].root.token)):
                 result.append((current[0].to_s(), current[1].to_s()))
             # (X1, Y2->F), (Y1, X1), (X1, Y1->Y1), ...
-            elif has_wilds(current[0].to_s()) and has_wilds(current[1].to_s()):
-                assert has_wilds(current[0].root.token) or has_wilds(current[1].root.token)
+            elif _has_wilds(current[0].to_s()) and _has_wilds(current[1].to_s()):
+                assert _has_wilds(current[0].root.token) or _has_wilds(current[1].root.token)
                 result.append((current[0].to_s(), current[1].to_s()))
             # (Y1->F, b:B), (F, Y1->Y2), ...
             else:
                 return None
-
     return condition_list_to_dict(result)
+
+
+def _has_no_wilds(term):
+    return not ('X' in term or 'Y' in term)
+
+
+def _has_wilds(term):
+    return 'X' in term or 'Y' in term
+
+
+def simplify(var, conditions):
+    '''
+    This methods resolves the conditions for one variable. By doing so it may happen that new variables are found as
+    keys because they were only within a condition before but not a key. For that reason and because this information
+    is used later on in the method 'resolve_conditions', those new found variables are returned and not the conditions.
+
+    The conditions will be changed inplace!
+
+    :param var: string
+        Variable (X-wild or Y-wild) used as key.
+    :param conditions: dict
+        All conditions, they will be changed inplace.
+    :return new_vars: dict
+        New variables that were not present as key before.
+    '''
+    # get all (X1, Fi)
+    fs = conditions.pop(var, [])
+
+    # If there are no conditions for var, we're done.
+    if not fs:
+        conditions[var] = []
+        return conditions
+
+    # Preprocess those: if there is any condition where X1 occurs in Fi, then we have a contradiction,
+    # except if X1 == Fi
+    for fi in fs:
+        if var in fi and var != fi:
+            return None
+
+    # Unify each with another: Gives new conditions. If any match returns None, we have a contradiction and stop.
+    a_lst = []
+    for f1, f2 in itertools.combinations(fs, 2):
+        new_conditions = unify(f1, f2)
+        if new_conditions is None:
+            return None
+        a_lst += condition_dict_to_list(new_conditions)
+    a_dct = condition_list_to_dict(a_lst)
+
+    # Keep one of the (X1, Fi), so we don't loose all reference.
+    chosen = fs.pop()
+
+    # Replace all X1 in the Fis of the other Variables. X1 will only occur as the chosen one.
+    for key in conditions:
+        tmp = []
+        for item in conditions[key]:
+            tmp.append(item.replace(var, chosen))
+        conditions[key] = tmp
+
+    # Add new conditions to old conditions. Collect new variables to return.
+    new_vars = []
+    for key in a_dct:
+        if not conditions[key]:
+            new_vars.append(key)
+        conditions[key] += a_dct[key]
+        conditions[key] = list(set(conditions[key]))
+
+    # Finally add the chosen one to the conditions.
+    conditions[var] = [chosen]
+    return new_vars
 
 
 def condition_list_to_dict(conditions):
     '''
+    Converts a condition list into a condition dictionary.
 
-    :param conditions: list of tuples
+    :param conditions: list
+        A list of tuples, where the first place within the tuple is a single variable (X-wild or Y-wild) and the other
+        term is a condition that applies to that variable.
     :return: dict
+        In the dictionary the conditions are sorted by variable (X-wilds and Y-wilds) which serve as keys. The
+        conditions are in form of a list.
     '''
     dct = defaultdict(list)
     if not conditions:
@@ -338,9 +437,14 @@ def condition_list_to_dict(conditions):
 
 def condition_dict_to_list(conditions):
     '''
+    Converts a condition dictionary into a condition list.
 
     :param conditions: dict
-    :return: list of tuples
+        In the dictionary the conditions are sorted by variable (X-wilds and Y-wilds) which serve as keys. The
+        conditions are in form of a list.
+    :return: list
+        A list of tuples, where the first place within the tuple is a single variable (X-wild or Y-wild) and the other
+        term is a condition that applies to that variable.
     '''
     lst = []
     if not conditions:
@@ -351,68 +455,20 @@ def condition_dict_to_list(conditions):
             lst.append((key, item))
     return list(set(lst))
 
-def simplify(var, conditions):
-    '''
-
-    :param var: string
-    :param conditions: dict
-    :return: dict
-    '''
-
-    # get all (X1, F)
-    fs = conditions.pop(var, [])
-
-    # if there are no conditions for var, we're done.
-    if not fs:
-        conditions[var] = []
-        return conditions
-
-    # preprocess those, if there is any condition where X1 occures in Fi, then we have a contradiction.
-    for fi in fs:
-        if var in fi and var != fi:
-            return None
-
-    # unify, gives new conditions. If any match returns None, we have a contradiction and stop.
-    a_lst = []
-    for f1, f2 in itertools.combinations(fs, 2):
-        new_conditions = unify(f1, f2)
-        if new_conditions is None:
-            return None
-        a_lst += condition_dict_to_list(new_conditions)
-    a_dct = condition_list_to_dict(a_lst)
-
-    # keep one of the (X1, Fi)
-    chosen = fs.pop()
-
-    # replace all X1 in rest
-    for key in conditions:
-        tmp = []
-        for item in conditions[key]:
-            tmp.append(item.replace(var, chosen))
-        conditions[key] = tmp
-
-    # add new conditions to old conditions and collect new variables
-    new_vars = []
-    for key in a_dct:
-        if not conditions[key]:
-            new_vars.append(key)
-        conditions[key] += a_dct[key]
-        conditions[key] = list(set(conditions[key]))
-
-    # add the chosen one
-    conditions[var] = [chosen]
-
-    return new_vars
-
 
 def resolve_conditions(conditions):
     '''
-    :param conditions: dict
-    :return: dict
-    '''
+    This method takes all conditions and valuates them. It tries to resolve missing variables (X-wilds and Y-wilds)
+    and checks if there are any contradictions.
 
+    This method makes inplace changes to the conditions!
+
+    :param conditions: dict
+        Variables are keys to their conditions.
+    :return conditions: dict
+        Resolved conditions, or None if a contradiction is found.
+    '''
     vars_todo = list(conditions.keys())
-    # so a simplify for all vars
     while len(vars_todo) > 0:
         var = vars_todo.pop()
         new_vars = simplify(var, conditions)
@@ -421,7 +477,8 @@ def resolve_conditions(conditions):
         vars_todo += new_vars
     return conditions
 
-def parse(string):
+
+def _parse(string):
     '''
     separate operators, parentheses and variables and returns them as a list.
     '''
@@ -440,29 +497,3 @@ def parse(string):
     return l
 
 
-def has_no_wilds(term):
-    return not ('X' in term or 'Y' in term)
-
-
-def has_wilds(term):
-    return 'X' in term or 'Y' in term
-
-
-def replace(consts, swaps):
-    '''
-    :param:
-    swaps: [('X2', '(b:X3)'), ...]
-    Wilds that must be replaces because of '!'
-
-    consts: [('a', ['(X2->(X1->F))]), ...]
-
-    :return:
-    adjusted const => [('a', ['((b:X3)->(X1->F))]), ...]
-    '''
-    new_consts = []
-    for term in consts:
-        tmp = term[1]
-        for replacement in swaps:
-           tmp = tmp.replace(replacement[0], replacement[1])
-        new_consts.append((term[0], tmp))
-    return new_consts

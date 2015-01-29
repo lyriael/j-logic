@@ -85,17 +85,17 @@ class Tests(unittest.TestCase):
         self.assertEqual(first_plus, tree.first('+'))
 
     def test_has_bad_bang(self):
-        self.assertTrue(Tree.has_bad_bang('(((!a)*b):F)'))
-        self.assertTrue(Tree.has_bad_bang('((((!a)*b)*(!c)):F)'))
-        self.assertFalse(Tree.has_bad_bang('(((a*(!b))*(!c)):F)'))
+        self.assertTrue(has_bad_bang('(((!a)*b):F)'))
+        self.assertTrue(has_bad_bang('((((!a)*b)*(!c)):F)'))
+        self.assertFalse(has_bad_bang('(((a*(!b))*(!c)):F)'))
 
     def test_musts(self):
-        self.assertListEqual([('a', '(X1->F)'), ('b', 'X1')], Tree.musts('((a*b):F)'))
-        self.assertListEqual([('a', '(X2->(X1->F))'), ('b', 'X2'), ('c', 'X1')], Tree.musts('(((a*b)*c):F)'))
-        self.assertListEqual([('a', '((b:X2)->F)'), ('b', 'X2')], Tree.musts('((a*(!b)):F)'))
+        self.assertListEqual([('a', '(X1->F)'), ('b', 'X1')], musts('((a*b):F)'))
+        self.assertListEqual([('a', '(X2->(X1->F))'), ('b', 'X2'), ('c', 'X1')], musts('(((a*b)*c):F)'))
+        self.assertListEqual([('a', '((b:X2)->F)'), ('b', 'X2')], musts('((a*(!b)):F)'))
         self.assertListEqual([('a', '(X5->(((d*(!e)):X2)->F))'), ('b', '(X6->X5)'),
                               ('c', 'X6'), ('d', '((e:X4)->X2)'), ('e', 'X4')],
-                             Tree.musts('(((a*(b*c))*(!(d*(!e)))):F)'))
+                             musts('(((a*(b*c))*(!(d*(!e)))):F)'))
 
     def test_left_split(self):
         t = Tree('(e*(f+g))')
@@ -108,11 +108,6 @@ class Tests(unittest.TestCase):
         n = t.first('+')
         t._right_split(n)
         self.assertEqual('(e*g)', t.to_s())
-
-    def test_replace_in_tree(self):
-        y = Tree('(Y1->(Y2->Y1))')
-        Tree._replace_in_tree(y.root, 'Y1', Tree('X1').root)
-        self.assertEqual('(X1->(Y2->X1))', y.to_s())
 
     def test_unify(self):
         self.assertIsNone(unify('(X1->(c:F))', '(Y1->(Y2->Y3))'))
@@ -143,19 +138,19 @@ class Tests(unittest.TestCase):
                              unify('(Y1->(Y2->Y1))', '(X3->(X2->F))'))
 
     def test_sum_split1(self):
-        self.assertEqual(2, len(Tree.sum_split('((a+b):F)')))
-        self.assertEqual(4, len(Tree.sum_split('((((f+e)*d)+((!b)+a)):F)')))
-        self.assertEqual(1, len(Tree.sum_split('(((a*b)+(a*b)):F)')))
-        self.assertEqual(2, len(Tree.sum_split('((e*(f+g)):F)')))
+        self.assertEqual(2, len(sum_split('((a+b):F)')))
+        self.assertEqual(4, len(sum_split('((((f+e)*d)+((!b)+a)):F)')))
+        self.assertEqual(1, len(sum_split('(((a*b)+(a*b)):F)')))
+        self.assertEqual(2, len(sum_split('((e*(f+g)):F)')))
 
     def test_sum_split2(self):
         s = []
-        for term in Tree.sum_split('((e*(f+g)):F)'):
+        for term in sum_split('((e*(f+g)):F)'):
             s.append(term)
         self.assertListEqual(['((e*f):F)', '((e*g):F)'], sorted(s))
 
     def test_sum_split3(self):
-        many_formulas = Tree.sum_split('(((!(((!a)+b)*(c*(!d))))+(e*(f+g))):F)')
+        many_formulas = sum_split('(((!(((!a)+b)*(c*(!d))))+(e*(f+g))):F)')
         a = []
         for f in many_formulas:
             a.append(f)
@@ -163,12 +158,10 @@ class Tests(unittest.TestCase):
                               '((e*f):F)', '((e*g):F)'], sorted(a))
 
     def test_simplify_bang(self):
-        self.assertEqual('(a:A)', Tree.simplify_bang('((!a):(a:A)))'))
-        self.assertEqual('(((a+b)*c):F)', Tree.simplify_bang('((!((a+b)*c)):(((a+b)*c):F))'))
-        self.assertEqual('', Tree.simplify_bang('((!((a+b)*c)):((b*c):F))'))
-        self.assertEqual('(a:A)', Tree.simplify_bang('(a:A)'))
-
-
+        self.assertEqual('(a:A)', simplify_bang('((!a):(a:A)))'))
+        self.assertEqual('(((a+b)*c):F)', simplify_bang('((!((a+b)*c)):(((a+b)*c):F))'))
+        self.assertEqual('', simplify_bang('((!((a+b)*c)):((b*c):F))'))
+        self.assertEqual('(a:A)', simplify_bang('(a:A)'))
 
     def test_condition_list_to_dict(self):
         l = [('X1', '(A->Y2)'), ('Y2', 'X12'), ('A', 'X3')]

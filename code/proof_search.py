@@ -29,13 +29,13 @@ class ProofSearch:
         if formula:
             self.atoms = self.atomize()
             for atom in self.atoms:
-                self.musts[atom] = Tree.musts(atom)
+                self.musts[atom] = musts(atom)
 
     def set_formula(self, formula):
         self.formula = formula
         self.atoms = self.atomize()
         for atom in self.atoms:
-            self.musts[atom] = Tree.musts(atom)
+            self.musts[atom] = musts(atom)
 
     def set_cs(self, cs):
         self.cs = defaultdict(list, cs)
@@ -59,18 +59,18 @@ class ProofSearch:
             Example: '((!d)+((a*b)+c))' => ['(a*b)', 'c']
         '''
         # first step: make sum-splits
-        splits = Tree.sum_split(self.formula)
+        splits = sum_split(self.formula)
 
         # second step: simplify formula if top operation is bang
         for formula in splits[:]:
             splits.remove(formula)
-            new_formula = Tree.simplify_bang(formula)
+            new_formula = simplify_bang(formula)
             if new_formula:
                 splits.append(new_formula)
 
         # third step: remove formulas where '!' is left child of '*'
         for formula in splits[:]:
-            if Tree.has_bad_bang(formula):
+            if has_bad_bang(formula):
                 splits.remove(formula)
         return splits
 
@@ -95,12 +95,11 @@ class ProofSearch:
                 all_conditions[must] = c
             else:
                 return None
-
         merged_conditions = []
         # We must now merge the possible configs together. We will add one set of configs of a must to the existing
         # merged before.
         for must in self.musts[atom]:
-            merged_conditions = self.combine(all_conditions[must], merged_conditions)
+            merged_conditions = combine(all_conditions[must], merged_conditions)
             if merged_conditions is None:
                 return None
         return merged_conditions
@@ -109,45 +108,47 @@ class ProofSearch:
         proof = {}
         result = False
         for atom in self.atoms:
-            proof[atom] = self.nice(self.conquer_one_atom(atom))
+            proof[atom] = nice(self.conquer_one_atom(atom))
             if proof[atom] != 'Not provable.':
                 result = True
         return result, proof
 
-    def nice(self, conqured_atom):
-        if conqured_atom is None:
-                return 'Not provable.'
-        all = []
-        for possible_solutions in conqured_atom:
-            table = []
-            for tpl in condition_dict_to_list(possible_solutions)[:]:
-                if 'X' in tpl[0] and tpl[0] == tpl[1]:
-                    table.append((tpl[0], ''))
-                elif 'X' in tpl[0]:
-                    table.append(tpl)
-            if table:
-                all.append(sorted(table))
-        return all
 
-    def combine(self, conditions_to_add, existing_conditions):
-        '''
-        :param conditions_to_add: list
-        :param existing_conditions: list
-        :return:
-        '''
-        if not existing_conditions:
-            return conditions_to_add
+def nice(conqured_atom):
+    if conqured_atom is None:
+            return 'Not provable.'
+    all = []
+    for possible_solutions in conqured_atom:
+        table = []
+        for tpl in condition_dict_to_list(possible_solutions)[:]:
+            if 'X' in tpl[0] and tpl[0] == tpl[1]:
+                table.append((tpl[0], ''))
+            elif 'X' in tpl[0]:
+                table.append(tpl)
+        if table:
+            all.append(sorted(table))
+    return all
 
-        combined_conditiones = []
-        for existing in existing_conditions:
-            for new in conditions_to_add:
-                match = resolve_conditions(merge_dicts(existing, new))
-                if match:
-                    combined_conditiones.append(match)
-        if combined_conditiones:
-            return combined_conditiones
-        else:
-            return None
+
+def combine(conditions_to_add, existing_conditions):
+    '''
+    :param conditions_to_add: list
+    :param existing_conditions: list
+    :return:
+    '''
+    if not existing_conditions:
+        return conditions_to_add
+
+    combined_conditiones = []
+    for existing in existing_conditions:
+        for new in conditions_to_add:
+            match = resolve_conditions(merge_dicts(existing, new))
+            if match:
+                combined_conditiones.append(match)
+    if combined_conditiones:
+        return combined_conditiones
+    else:
+        return None
 
 
 def merge_dicts(dct1, dct2):
@@ -164,6 +165,3 @@ def merge_dicts(dct1, dct2):
         merged[key] += dct2[key]
         merged[key] = sorted(list(set(merged[key])))
     return merged
-
-
-
