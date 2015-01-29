@@ -384,7 +384,6 @@ def condition_list_to_dict(conditions):
     :return: dict
     '''
     dct = defaultdict(list)
-    vars = get_all_wilds(conditions)
 
     # breaking tuples up and sort the values into a dict.
     for con in conditions:
@@ -394,8 +393,8 @@ def condition_list_to_dict(conditions):
             dct[con[1]].append(con[0])
 
     # adding all variables to the dic, even if they are not isolated and
-    for x in vars:
-        dct[x] = list(set(dct[x]))
+    for key in dct:
+        dct[key] = list(set(dct[key]))
 
     return dct
 
@@ -436,7 +435,7 @@ def simplify(var, conditions):
     '''
 
     # get all (X1, F)
-    fs = conditions.pop(var, None)
+    fs = conditions.pop(var, [])
 
     # preprocess those
     fs[:] = [x for x in fs if not var in x]
@@ -462,14 +461,18 @@ def simplify(var, conditions):
             tmp.append(item.replace(var, chosen))
         conditions[key] = tmp
 
-    # add new conditions to old conditions
+    # add new conditions to old conditions and collect new variables
+    new_vars = []
     for key in a_dct:
+        if not conditions[key]:
+            new_vars.append(key)
         conditions[key] += a_dct[key]
         conditions[key] = list(set(conditions[key]))
+
     # add the chosen one
     conditions[var] = [chosen]
 
-    return conditions
+    return new_vars
 
 
 def resolve_conditions(conditions):
@@ -478,12 +481,12 @@ def resolve_conditions(conditions):
     :return: dict
     '''
 
-    all_variables = list(conditions.keys())
+    vars_doto = list(conditions.keys())
 
-    for var in all_variables:
-        print(var)
-        simplify(var, conditions)
-        print(conditions)
+    while len(vars_doto) > 0:
+        var = vars_doto.pop()
+        new_vars = simplify(var, conditions)
+        vars_doto += new_vars
 
     return conditions
 
