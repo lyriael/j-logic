@@ -248,6 +248,10 @@ class Tests(unittest.TestCase):
         #self.assertDictEqual({'X1': ['(Y1->Y2)'], 'Y2': [], 'Y1': []}, cons)
         self.assertDictEqual({'X1': ['(Y1->Y2)']}, cons)
 
+    def test_unify3(self):
+        cons = unify('(Y1->(Y2->Y1))', '(X3->(X2->F))')
+        print(cons)
+
     def test_get_all_wilds(self):
         l = [('X1', '(A->Y2)'), ('Y2', 'X12'), ('A', 'X3')]
         v = get_all_wilds(l)
@@ -292,6 +296,26 @@ class Tests(unittest.TestCase):
         self.assertDictEqual({'X1': ['A'], 'X2': ['(A->B)'], 'X3': ['(C->A)'], 'X4': ['C'], 'X5': ['C'], 'X6': ['(A->(C->A))']},
                              resolve_conditions(conditions))
 
-    def test_resolve_conditions2(self):
-        conditions = {'X1': ['(X3->A)'], 'X2': ['(X4->A)']}
-        print(resolve_conditions(conditions))
+    def test_resolve_conditions3(self):
+        conditions = defaultdict(list, {'Y1': ['X3', 'F'], 'X2': ['Y2'], 'Y2': ['X2'], 'X3': ['Y1']})
+        self.assertDictEqual({'Y1': ['F'], 'X2': ['X2'], 'Y2': ['X2'], 'X3': ['F']}, resolve_conditions(conditions))
+
+    def test_simplify2(self):
+        var = 'Y1'
+        conditions = defaultdict(list, {'Y1': ['X3', 'F'], 'X2': ['Y2'], 'Y2': ['X2'], 'X3': ['Y1']})
+        new_vars = simplify(var, conditions)
+        print('----------')
+        print(conditions)
+        print(new_vars)
+        new_vars = simplify('X2', conditions)
+        print('----------')
+        print(conditions)
+        print(new_vars)
+        new_vars = simplify('X3', conditions)
+        print('----------')
+        print(conditions)
+        print(new_vars)
+        new_vars = simplify('Y2', conditions)
+        print('----------')
+        print(conditions)
+        print(new_vars)

@@ -15,11 +15,26 @@ class Tests(unittest.TestCase):
                               (['B', '(b:B)'], [])],
                              one)
 
+    def test_conquer_one_atom1(self):
+        ps = ProofSearch({'a': ['(A->(A->F))', '((b:B)->A)', 'B', '(C->(A->F))', '((b:B)->(B->F))'], 'b': ['B']}, '')
+        ps.atoms = ['test']
+        ps.musts['test'] = [('a', '(X2->(X1->F))'), ('b', 'B')]
+        self.assertListEqual([defaultdict(list, {'X2': ['A'], 'X1': ['A']}),
+                              defaultdict(list, {'X2': ['C'], 'X1': ['A']}),
+                              defaultdict(list, {'X2': ['(b:B)'], 'X1': ['B']})],
+                             ps.conquer_one_atom('test'))
+
     def test_conquer_one2(self):
         ps = ProofSearch({'a': ['(A->(A->F))', '((b:B)->A)', 'B', '(C->(A->F))', '((b:B)->(B->F))'], 'b': ['B']}, '')
         ps.atoms = ['test']
         ps.musts['test'] = [('a', '(X2->(X1->F))'), ('b', 'C')]
         one = ps.conquer_one('test')
+
+    def test_conquer_one_atom2(self):
+        ps = ProofSearch({'a': ['(A->(A->F))', '((b:B)->A)', 'B', '(C->(A->F))', '((b:B)->(B->F))'], 'b': ['B']}, '')
+        ps.atoms = ['test']
+        ps.musts['test'] = [('a', '(X2->(X1->F))'), ('b', 'C')]
+        one = ps.conquer_one_atom('test')
         self.assertIsNone(one)
 
     def test_conquer_one3(self):
@@ -29,6 +44,14 @@ class Tests(unittest.TestCase):
         self.assertListEqual([(['', 'C', '(b:B)'], []),
                               (['', '', 'F'], [])],
                              ps.conquer_one('test'))
+
+    def test_conquer_one_atom3(self):
+        ps = ProofSearch({'a': ['((b:B)->(C->F))', 'A', '(Y1->(Y2->Y1))']}, '')
+        ps.atoms = ['test']
+        ps.musts['test'] = [('a', '(X3->(X2->F))')]
+        self.assertListEqual([defaultdict(list, {'X2': ['C'], 'X3': ['(b:B)']}),
+                              defaultdict(list, {'Y1': ['F'], 'X2': ['X2'], 'Y2': ['X2'], 'X3': ['F']})],
+                             ps.conquer_one_atom('test'))
 
     def test_conquer(self):
         cs = {'s': ['(B->A)'],
@@ -408,40 +431,51 @@ class Tests(unittest.TestCase):
         conditions = ps.conquer_one_atom('test')
         self.assertIsNone(conditions)
 
-    def test_conquer_one_atom2(self):
+    def test_conquer_one_atomx(self):
         ps = ProofSearch({'a': ['(A->(A->F))', '((b:B)->A)', 'B', '(C->(A->F))', '((b:B)->(B->F))'], 'b': ['C']}, '')
         ps.atoms = ['test']
         ps.musts['test'] = [('a', '(X2->(X1->F))')]
         self.assertListEqual([defaultdict(list, {'X2': ['A'], 'X1': ['A']}), defaultdict(list, {'X2': ['C'], 'X1': ['A']}),
                               defaultdict(list, {'X2': ['(b:B)'], 'X1': ['B']})], ps.conquer_one_atom('test'))
 
-    def test_combinde(self):
+    def test_combine(self):
         existing = [{'X1':['A'], 'X2':['B']}, {'X1': ['(A->B)'], 'X3': ['C']}]
         new = [{'X1':['B'], 'X2': ['C']}, {'X1': ['A'], 'X2': ['B']}]
         ps = ProofSearch({}, '')
         self.assertListEqual([{'X2': ['B'], 'X1': ['A']}], ps.combine(new, existing))
 
-    def test_combinde2(self):
+    def test_combine2(self):
         existing = [{'X1':['A'], 'X2':['B']}, {'X2': ['(A->B)']}]
         new = [{'X1': ['A'], 'X3': ['C']}]
         ps = ProofSearch({}, '')
         self.assertListEqual([{'X3': ['C'], 'X2': ['B'], 'X1': ['A']}, {'X3': ['C'], 'X2': ['(A->B)'], 'X1': ['A']}],
                              ps.combine(new, existing))
 
+    def test_nice(self):
+        ps = ProofSearch({}, '')
+        self.assertListEqual([[('X2', ''), ('X3', 'F')]],
+                             ps.nice([{'Y1': ['F'], 'X2': ['X2'], 'Y2': ['X2'], 'X3': ['F']}]))
 
-    #todo: what if two Y's with same name but different origin end up in a condition?
+    def test_conquer_all_atoms(self):
+        cs = defaultdict(list, {'s': ['(B->A)'],
+              't': ['B'],
+              'v': ['(A->F)']})
+        formula = '((v*((s*t)+(!u))):F)'
+        ps = ProofSearch(cs, formula)
+        result = ps.conquer_all_atoms()
+        self.assertTrue(result[0])
+        self.assertDictEqual({'((v*(s*t)):F)': [[('X1', 'A'), ('X2', 'B')]],
+                              '((v*(!u)):F)': 'Not provable.'},
+                             result[1])
 
-    # def test_presentation(self):
-    #     formula = '(((((a*b)*(!b))+((!b)+c))+((!b)*d)):(b:F))'
-    #     cs = {'a': ['(G->((b:B)->(b:F)))', '(Y1->(Y2->Y1))'], 'b': ['(b:F)', 'G']}
-    #     ps = ProofSearch(cs, formula)
-    #     for a in ps.atoms:
-    #         print('--------')
-    #         print('DIVIDE')
-    #         print('atom: ' + a)
-    #         print('musts: ' + str(ps.musts[a]))
-    #         print('CONQUER')
-    #         print('config tables:')
-    #         for m in ps.musts[a]:
-    #             print(str(m) + ': ' + str(ps._find_all_for(m[0], m[1])))
-    #         print('merged:' + str(ps._conquer_one(a)))
+    def test_conquer_all_atoms2(self):
+        formula = '(((((a*b)*(!b))+((!b)+c))+((!b)*d)):(b:F))'
+        cs = {'a': ['(G->((b:B)->(b:F)))', '(Y1->(Y2->Y1))'], 'b': ['(b:F)', 'G']}
+        ps = ProofSearch(cs, formula)
+        result = ps.conquer_all_atoms()
+        self.assertTrue(result[0])
+        self.assertDictEqual({'(c:(b:F))': 'Not provable.',
+                              '(b:F)': 'Not provable.',
+                              '(((a*b)*(!b)):(b:F))': [[('X2', '(b:F)'), ('X3', '(b:F)')],
+                                                       [('X2', 'G'), ('X3', '(b:F)')]]},
+                             result[1])

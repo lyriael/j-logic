@@ -23,7 +23,7 @@ class ProofSearch:
         :param formula: String
         :return: None
         '''
-        self.cs = cs
+        self.cs = defaultdict(list, cs)
         self.formula = formula
         self.atoms = None
         self.musts = {}
@@ -114,7 +114,7 @@ class ProofSearch:
         '''
 
         :param atom: ((a*b)*(!c)):F, self.musts[atom] =
-        :return:
+        :return: list of dicts
         '''
         all_conditions = {}
 
@@ -123,9 +123,13 @@ class ProofSearch:
             c = []
             for term in self.cs[must[0]]:
                 match = unify(term, must[1])
-                if match:
-                    c.append(match)
-            all_conditions[must] = c
+                if match is not None:
+                    c.append(resolve_conditions(match))
+            # if at least one match was found
+            if c:
+                all_conditions[must] = c
+            else:
+                return None
 
         merged_conditions = []
         # We must now merge the possible configs together. We will add one set of configs of a must to the existing
@@ -136,7 +140,28 @@ class ProofSearch:
                 return None
         return merged_conditions
 
+    def conquer_all_atoms(self):
+        proof = {}
+        result = False
+        for atom in self.atoms:
+            proof[atom] = self.nice(self.conquer_one_atom(atom))
+            if proof[atom] is not 'Not provable':
+                result = True
+        return result, proof
 
+    def nice(self, conqured_atom):
+        if conqured_atom is None:
+                return 'Not provable.'
+        all = []
+        for possible_solutions in conqured_atom:
+            table = []
+            for tpl in condition_dict_to_list(possible_solutions)[:]:
+                if 'X' in tpl[0] and tpl[0] == tpl[1]:
+                    table.append((tpl[0], ''))
+                elif 'X' in tpl[0]:
+                    table.append(tpl)
+            all.append(sorted(table))
+        return all
 
     def combine(self, conditions_to_add, existing_conditions):
         '''
@@ -157,7 +182,6 @@ class ProofSearch:
             return combined_conditiones
         else:
             return None
-
 
     def conquer_all_solutions(self):
         '''

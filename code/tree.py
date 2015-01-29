@@ -449,7 +449,7 @@ def simplify(var, conditions):
 
     # preprocess those, if there is any condition where X1 occures in Fi, then we have a contradiction.
     for fi in fs:
-        if var in fi:
+        if var in fi and var != fi:
             return None
 
     # unify, gives new conditions. If any match returns None, we have a contradiction and stop.
@@ -492,7 +492,7 @@ def resolve_conditions(conditions):
     '''
 
     vars_todo = list(conditions.keys())
-
+    # so a simplify for all vars
     while len(vars_todo) > 0:
         var = vars_todo.pop()
         new_vars = simplify(var, conditions)
