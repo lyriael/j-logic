@@ -119,6 +119,10 @@ class Tests(unittest.TestCase):
         self.assertListEqual(con, [])
         self.assertDictEqual(wil, {'X2': 'C', 'X1': '(A->B)'})
 
+    def test_unify01(self):
+        dct = unify('(X1->X2)', '((A->B)->C)')
+        self.assertDictEqual({'X1': ['(A->B)'], 'X2': ['C']}, dct)
+
     def test_compare02(self):
         con, wil = Tree.compare(Tree('((A->B)->C)').root, Tree('(Y1->Y2)').root, [], {})
         self.assertListEqual(con, [])

@@ -384,6 +384,8 @@ def condition_list_to_dict(conditions):
     :return: dict
     '''
     dct = defaultdict(list)
+    if not conditions:
+        return {}
 
     # breaking tuples up and sort the values into a dict.
     for con in conditions:
@@ -406,6 +408,9 @@ def condition_dict_to_list(conditions):
     :return: list of tuples
     '''
     lst = []
+    if not conditions:
+        return []
+
     for key in conditions:
         for item in conditions[key]:
             lst.append((key, item))
@@ -437,18 +442,23 @@ def simplify(var, conditions):
     # get all (X1, F)
     fs = conditions.pop(var, [])
 
-    # preprocess those
-    fs[:] = [x for x in fs if not var in x]
-
     # if there are no conditions for var, we're done.
     if not fs:
         conditions[var] = []
         return conditions
 
-    # unify, gives new conditions
+    # preprocess those, if there is any condition where X1 occures in Fi, then we have a contradiction.
+    for fi in fs:
+        if var in fi:
+            return None
+
+    # unify, gives new conditions. If any match returns None, we have a contradiction and stop.
     a_lst = []
     for f1, f2 in itertools.combinations(fs, 2):
-        a_lst += condition_dict_to_list(unify(f1, f2))
+        new_conditions = unify(f1, f2)
+        if new_conditions is None:
+            return None
+        a_lst += condition_dict_to_list(new_conditions)
     a_dct = condition_list_to_dict(a_lst)
 
     # keep one of the (X1, Fi)
@@ -481,12 +491,13 @@ def resolve_conditions(conditions):
     :return: dict
     '''
 
-    vars_doto = list(conditions.keys())
+    vars_todo = list(conditions.keys())
 
-    while len(vars_doto) > 0:
-        var = vars_doto.pop()
+    while len(vars_todo) > 0:
+        var = vars_todo.pop()
         new_vars = simplify(var, conditions)
-        vars_doto += new_vars
-
+        if new_vars is None:
+            return None
+        vars_todo += new_vars
     return conditions
 

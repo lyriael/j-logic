@@ -1,4 +1,4 @@
-from tree import Tree
+from tree import *
 from helper import *
 
 
@@ -90,6 +90,74 @@ class ProofSearch:
             if table:
                 return atomic_formula, table
         return None
+
+    def conquer2(self):
+        '''
+        atom: a atom is derived from the original formula containing no sums e.g. ((a*b)*(!a)). If one atom is provable,
+        then the whole original formula is provable. For the atom to be provable, each of its musts has to be matched
+        with the entries of cs.
+        must: a proof constant with a corresponding proof formula derived from a atom usually containing several
+        X-variables (X-wilds). The proof formula has to be matched with those in cs that belong to the same proof
+        constant.
+        :return:
+        '''
+        assert self.atoms
+        results = []
+
+        # Check for satisfiablity for each 'must'. One 'must'
+        for atom in self.atoms:
+
+            for proof_constant in self.musts[atom]:
+                print('stuff')
+
+    def conquer_one_atom(self, atom):
+        '''
+
+        :param atom: ((a*b)*(!c)):F, self.musts[atom] =
+        :return:
+        '''
+        all_conditions = {}
+
+        # Collect all conditions for each must.
+        for must in self.musts[atom]:
+            c = []
+            for term in self.cs[must[0]]:
+                match = unify(term, must[1])
+                if match:
+                    c.append(match)
+            all_conditions[must] = c
+
+        merged_conditions = []
+        # We must now merge the possible configs together. We will add one set of configs of a must to the existing
+        # merged before.
+        for must in self.musts[atom]:
+            merged_conditions = self.combine(all_conditions[must], merged_conditions)
+            if merged_conditions is None:
+                return None
+        return merged_conditions
+
+
+
+    def combine(self, conditions_to_add, existing_conditions):
+        '''
+        :param conditions_to_add: list
+        :param existing_conditions: list
+        :return:
+        '''
+        if not existing_conditions:
+            return conditions_to_add
+
+        combined_conditiones = []
+        for existing in existing_conditions:
+            for new in conditions_to_add:
+                match = resolve_conditions(merge_dicts(existing, new))
+                if match:
+                    combined_conditiones.append(match)
+        if combined_conditiones:
+            return combined_conditiones
+        else:
+            return None
+
 
     def conquer_all_solutions(self):
         '''

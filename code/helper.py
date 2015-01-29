@@ -198,3 +198,19 @@ def uniq(some_list):
         if item not in uniq_list:
             uniq_list.append(item)
     return uniq_list
+
+
+def merge_dicts(dct1, dct2):
+    if not dct1:
+        return dct2
+    if not dct2:
+        return dct1
+    merged = defaultdict(list)
+    dct1 = defaultdict(list, dct1)
+    dct2 = defaultdict(list, dct2)
+    all_keys = list(set(list(dct1.keys()) + list(dct2.keys())))
+    for key in all_keys:
+        merged[key] += dct1[key]
+        merged[key] += dct2[key]
+        merged[key] = sorted(list(set(merged[key])))
+    return merged

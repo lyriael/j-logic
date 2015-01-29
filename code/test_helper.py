@@ -91,3 +91,8 @@ class Tests(unittest.TestCase):
 
     def test_rename_dict_from_x_to_y_wilds(self):
         self.assertDictEqual(rename_dict_from_x_to_y_wilds({'X1': 'bla', 'X2': 'blubb'}), {'Y1': 'bla', 'Y2': 'blubb'})
+
+    def test_merge_dicts(self):
+        d1 = {'X2': ['a', 'b'], 'X3': ['a']}
+        d2 = {'X1': ['a', 'b', 'c'], 'X2':['b'], 'X3': ['b', 'c']}
+        self.assertDictEqual({'X1': ['a', 'b', 'c'], 'X2': ['a', 'b'], 'X3': ['a', 'b', 'c']}, merge_dicts(d1, d2))

@@ -325,12 +325,12 @@ class Tests(unittest.TestCase):
         self.assertEqual(['(A->B)', '', 'B'], config)
         self.assertEqual([('X2', '(B->Y1)')], conditions)
 
-    def test_apply_all_conditions4(self):
-        wild = ['']
-        con = [('X1', '(A->Y1)'), ('X1', '(Y2->B)')]
-        config, conditions = apply_all_conditions(wild, con)
-        self.assertEqual(['(A->B)'], config)
-        self.assertEqual([], con)
+    # def test_apply_all_conditions4(self):
+    #     wild = ['']
+    #     con = [('X1', '(A->Y1)'), ('X1', '(Y2->B)')]
+    #     config, conditions = apply_all_conditions(wild, con)
+    #     self.assertEqual(['(A->B)'], config)
+    #     self.assertEqual([], con)
 
     def test_full_merge_of_two_configs(self):
         config1 = ['(A->B)', '', '']
@@ -401,7 +401,32 @@ class Tests(unittest.TestCase):
         self.assertEqual([({'X3': '(c:F)'}, []), ({'X3': 'G'}, []), ({'X3': 'D'}, []), ({'X3': '(G->F)'}, [])],
                          ps.look_up_in_cs('c', 'X3'))
 
+    def test_conquer_one_atom(self):
+        ps = ProofSearch({'a': ['(A->(A->F))', '((b:B)->A)', 'B', '(C->(A->F))', '((b:B)->(B->F))'], 'b': ['B']}, '')
+        ps.atoms = ['test']
+        ps.musts['test'] = [('a', '(X2->(X1->F))'), ('b', 'C')]
+        conditions = ps.conquer_one_atom('test')
+        self.assertIsNone(conditions)
 
+    def test_conquer_one_atom2(self):
+        ps = ProofSearch({'a': ['(A->(A->F))', '((b:B)->A)', 'B', '(C->(A->F))', '((b:B)->(B->F))'], 'b': ['C']}, '')
+        ps.atoms = ['test']
+        ps.musts['test'] = [('a', '(X2->(X1->F))')]
+        self.assertListEqual([defaultdict(list, {'X2': ['A'], 'X1': ['A']}), defaultdict(list, {'X2': ['C'], 'X1': ['A']}),
+                              defaultdict(list, {'X2': ['(b:B)'], 'X1': ['B']})], ps.conquer_one_atom('test'))
+
+    def test_combinde(self):
+        existing = [{'X1':['A'], 'X2':['B']}, {'X1': ['(A->B)'], 'X3': ['C']}]
+        new = [{'X1':['B'], 'X2': ['C']}, {'X1': ['A'], 'X2': ['B']}]
+        ps = ProofSearch({}, '')
+        self.assertListEqual([{'X2': ['B'], 'X1': ['A']}], ps.combine(new, existing))
+
+    def test_combinde2(self):
+        existing = [{'X1':['A'], 'X2':['B']}, {'X2': ['(A->B)']}]
+        new = [{'X1': ['A'], 'X3': ['C']}]
+        ps = ProofSearch({}, '')
+        self.assertListEqual([{'X3': ['C'], 'X2': ['B'], 'X1': ['A']}, {'X3': ['C'], 'X2': ['(A->B)'], 'X1': ['A']}],
+                             ps.combine(new, existing))
 
 
     #todo: what if two Y's with same name but different origin end up in a condition?
