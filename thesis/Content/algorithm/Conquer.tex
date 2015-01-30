@@ -1,13 +1,10 @@
 %!TEX root = ../../bachelors_thesis.tex
 \section{Conquer}
-The conquer-step consists mainly in the analyzing of the formula and only as a very last step the typical recursion is used when the result of all atoms of a formula evaluates to the overall result of the original formula. This is actually very simple compared to the analyzing part that comes before. 
-
 First we have to know what to look up in the cs-list for which proof constant. Those proof constants and the corresponding terms will be called \emph{musts} since even now I lack a more suitable word for it and in the source code it is always referred as such.
 
-Once that the \emph{musts} have been obtained we can search the cs-list of terms that match. Since a \emph{must} usually consists of variables that are not determined we will usually get more then one possible match per proof term. Also since cs-list allows terms that contain variables as well this will impose further conditions on the possible choice of the term of a proof term. In the second step all those possibilities and conditions are collected.
+Once that the \emph{musts} have been obtained we can search the cs-list for terms that match it. Since a \emph{must} usually consists of variables (\emph{X-wilds})that are not determined it is possible that we get more then one match per proof term. Also since the cs-list allows terms that contain variables (\emph{Y-wilds})as well this will impose further conditions on the possible choice of the term of a proof term. In the second step all those possibilities and conditions are collected.
 
-Then in the third and most important step those configurations and conditions will be merged. It will be checked if there is a possible combination from the given options such as the atomized formula is provable. It is then only a small step to collect the results of all other atoms of the original formula to determine the provability of the original formula.
-
+Then in the third and most important step those configurations and conditions will be merged. It will be checked if there is a possible combination from the given options such as the atomized formula is provable. It is then only a small step to collect the results of all other atoms of the original formula to determine the provability of the original formula. 
 
 \subsection{Get Must}
 The operator rules which were presented in Chapter XX gives us the instruction how we can take a formula apart to look the individual proof term up in the cs-list. The rule for the Sum-Operation was already used in the divide-step for the sumsplit in \ref{sumsplit}.
@@ -46,119 +43,10 @@ musts_{(a*(!b))*c):F} = \{a: [(b:X_3) \rightarrow (X_1 \rightarrow F)], b: [X_1,
 
 As can be seen in this example a proof constant my have more than one term that needs to be looked up in the cs-list.
 
-\subsection{X-Wilds in the Configuration Table}
-Now the \emph{must}-list from the previous step will be compared with the given cs-list. The terms of a proof constant in \emph{must} will be matched against those the same proof constant in the cs-list. This will give us what I call a \emph{configuration table}. The conditions which are only important in special situations will be postponed for a later example.
-
-For convenience it will be asserted that the cs-list is given in the same structure as the must-list. The function used in the code to do this operates on a proof constant level, that means it iterates through the must-list and for each of the proof constants terms it compares it to the terms of the same proof constant of the cs-list. Therefore we will look only at one proof constant in this example as well.
-
-\vspace{0.2cm}
-
-Term from must-list: $a:(X_2\rightarrow (X_1 \rightarrow F))$
-
-Cs-list\footnote{contains only entries for the proof constant $a$} : $\{a: [A \rightarrow (A \rightarrow F), (b:B) \rightarrow A, B, C \rightarrow (A \rightarrow F), (b:B) \rightarrow (B \rightarrow F)]\}$
-
-\vspace{0.2cm}
-\begin{table}[ht]
-\centering
-\begin{tabular}{ c || c c }
-	Term									&	Configuration Table \\
-	$(X_2\rightarrow (X_1 \rightarrow F))$	& $X_1$ & $X_2$ \\
-	\hline
-	$A \rightarrow (A \rightarrow F)$ 		& $A$ & $A$ \\
-	$(b:B) \rightarrow A$ 					& - & - \\
-	$B$ 									& - & - \\
-	$C \rightarrow (A \rightarrow F)$ 		& $A$ & $C$\\
-	$(b:B) \rightarrow (B \rightarrow F)$ 	& $B$ & $b:B$\\
-\end{tabular}
-\caption{Matching the term of $a$ from the must-list with those of the cs-list. A configuration table contains only constants. If a $X_i$ can not yet be evaluated the place is left empty.}
-\end{table}
+\subsection{Matching and Conditions}
+Until very recently this step had a very different approach, which unfortunately proved to hold more than one mistake. Some could be fixed but one remained that could not be fixed with the original approach so after I though I would be done with coding I had to reimplement this whole part again. But in exchange it is no operating as it is supposed to.
 
 
-\subsubsection{Y-Wilds and Conditions}
-Later the the definition of the cs-list was changed such that it may also include more general formulas using variables. The purpose behind it was to have a way to include concepts such as tautologies. As a convention those special variables in the cs-list will be called \emph{y-wilds} and be denoted as $Y_i$. An example of such a special entry in the cs-list would be the proof term $t:Y_1 \rightarrow (Y_2 \rightarrow Y_1)$ where $Y_1$ and $Y_2$ may represent any term\footnote{For this implementation only terms that use only the operations for justification logic as introduced in Chapter XX may be used.}
 
-As mentioned before this additional feature made the current process of comparing the \emph{musts} with the corresponding entries in cs-list as well as the following \emph{merge} step a lot more complicated. Suddenly it comparing is not only a match or no match, but the result may be relation/dependency between different variables. The problems lies in the fact that when comparing $X_i$ with $Y_j$ either could be anything. Before there were only different possibilities of what one certain $X_i$ could be, but now the choice of a $X_i$ depends on the choice of the $Y_i$ and vice a verse. The table as it is used most only contain constants but the found information about the relations could not be ignored. To handle this situation I had to find a way of passing those \emph{conditions} on. 
-
-\begin{definition}
-For one match between a configuration term from the cs-list and a \emph{must}-term (one line in the configuration table) there may be zero or more \emph{conditions} that apply to this certain match. \\
-A \emph{condition} is a tuple with two positions. The first position gives the $X_i$ to which the condition applies and the second position holds the condition posed on this \emph{X-wild}. The condition may contain any term, including \emph{X-wilds} or \emph{Y-wilds} but it is always \emph{on} a \emph{X-wild}.
-\end{definition}
-
-\begin{example}
-	\begin{itemize}Conditions on $X_i$
-		\item $(X_1, X_3)$\\ This is a $X$-to-$X$ condition meaning that $X_1$ and $X_3$ must have the same value.
-		\item $(X_1, X_2 \rightarrow F)$\\ This condition allows us to set $X1$ as soon as we know $X2$.
-		\item $(X_1, Y_1 \rightarrow X_3)$\\ In this condition $Y_1$ may be any value, but if $Y_1$ is present in an other condition in this configuration, it must be replaced by the value set here for $Y_1$.
-	\end{itemize}
-\end{example}
-
-For this kind of condition applying it was necessarily to follow the following assertion:
-
-\begin{assertion}
-Each $X_i$ occurs at most once within one \emph{must}-term.\footnote{This basically follows from the way how the \emph{X-wilds} are generated. Each Multiplication-Operator gives exactly one new \emph{X-wild}. For more details see the Implementation Chapter.}
-\end{assertion}
-
-
-\begin{example}
-$t:X_3 \rightarrow (X_3 \rightarrow F)$ is not possible.
-\end{example}
-
-An other assumption I previously assumed has proven to be wrong only now when I tried to present it here. The assertion stated that a condition never contains a \emph{X-wild} and a \emph{Y-wild} in the same term as you find it in the last example for the conditions. This assertion would have simplified the merging of configurations with conditions quiet a bit. Unfortunately the assertion doesn't hold. The example that disproves it will be presented below. Solving this was easier that I feared but it was still a nasty bit of work.
-\todoWriteMore{Example for Y \emph{and} X in condition}
-
-\par
-To summarize we have now per one \emph{must} of a atomized formula a configuration table which includes the possible matches of the needed proof terms from the cs-list. The next step will try to merge this different configurations together to find one or more configuration for the $X-wilds$ that works for all proof constants.
-
-\subsection{Merge}
-The merging of the different configuration is the last important step in this algorithm. If a merge is possible this atomized formula is provable and if all atomized formulas are provable then so is the original given justification term.
-
-Performing a merge without having any conditions is a straight forward implementation, where priority was given to a simple and easy understandable structure and not to a optimal performance time. Each line of one table is check with every other line of a second table, if the merge is possible, the result will be listed in a new table, if the merge is not possible the next line is used. The resulting table is then merged with the table of the next proof constant, so in the end the finale table may contain one or several lines or none at all. 
-
-\vspace{0.2cm}
-\begin{table}[ht]
-\centering
-\begin{tabular}{ c c c c c }
-	 & $X_1$ & $X_2$ & $X_3$ & $X_4$\\
- 	\hline
- 	\emph{i}  	& A 	& 		& B 	& \\
- 				& B 	&		& C 	& \\
- 				& C 	& 		& A 	& \\
- 	\hline
- 	\emph{ii}  	& 		&		& B 	& A\\
- 				& 	 	&		& C 	& A\\
- 				&		&		& C 	& B\\
-  	\hline
-  	\emph{iii}	& A 	& A 	& 		& A\\
- 	  			& A 	& C 	& 		& A\\
- 	  			& B 	& B		&		& B\\
-
- 	\hline 
-\end{tabular}
-\caption{Configuration table. Each section of the table represents the configuration table for one proof constant.}
-\end{table}
-
-\vspace{0.2cm}
-\begin{table}[ht]
-\centering
-\begin{tabular}{ c c c c c }
-	 & $X_1$ & $X_2$ & $X_3$ & $X_4$\\
- 	\hline
- 	Merge of \emph{i} and \emph{ii}
- 				& A 	& 	 	& B 	& A \\
- 	  			& B 	& 	 	& C 	& A \\
- 	  			& B 	& 	 	& C 	& B \\
- 	\hline	  
- 	Adding \emph{iii} to merge
- 			  	& A 	& A		& B 	& A\\
- 				& B 	& B		& C 	& B\\
- 	\hline
- 	\hline 
-\end{tabular}
-\caption{Merge table. The last section is the final configuration. Since there is a possible configuration the must term from which these configurations are is provable.}
-\end{table}
-
-As for the conditions which where introduced in the previous chapter, those will be evaluated only if there is a merge of the constants as shown in the table is possible. After the merge is successful each condition will be applied one after another. A condition can break the merge of two lines and thus make it not usable, it may also add further constants to the line or it might be, that the condition is not relevant yet and thus is simply passed on for the next line merge. Again this is best show in a example. It will be covered in the next Chapter.
-
-\todoWriteMore{Examle with a condition that sets some but not all \emph{X-wilds}}
 
 \par This concludes not only the merge step but the whole divide and conquer chapter. I personally have found it rather easy to understand the individual steps but difficult to not get lost in the overall view. For that reason chapter \ref{chap: Example} will cover one single example designed to show all aspects of the algorithm and run it through to understand it better.

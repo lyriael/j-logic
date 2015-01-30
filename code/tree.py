@@ -236,7 +236,7 @@ def has_bad_bang(formula):
     return False
 
 
-def musts(proof_term: str):
+def musts(proof_term):
     '''
     This method will retrieve all proof constants with their corresponding formulas derived from the proof term.
 
