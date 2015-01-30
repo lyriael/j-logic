@@ -30,6 +30,7 @@ class Tests(unittest.TestCase):
         self.assertDictEqual({'X1': ['(Y1->Y2)']}, unify('(Y1->Y2)', 'X1'))
         self.assertDictEqual({'Y1': ['X3', 'F'], 'X2': ['Y2'], 'Y2': ['X2'], 'X3': ['Y1']},
                              unify('(Y1->(Y2->Y1))', '(X3->(X2->F))'))
+        print(unify('(X1->F)', '(a:X2)'))
 
     def test_sum_split1(self):
         self.assertEqual(2, len(sum_split('((a+b):F)')))

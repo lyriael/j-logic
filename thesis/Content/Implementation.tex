@@ -59,11 +59,25 @@ All those conditions are stored as tuples in a list and are returned in form of 
 
 
 \subsection{simplify}
-\todoWriteMore{Write about simplify}
+This methods is used to get a result once all conditions are obtained by \texttt{unify}. The method is implemented in a way that it does only \emph{simplify} the conditions for \emph{one} Variable. To \emph{simplify} a whole set of variables with their conditions a very simple method called \texttt{resolve\_conditions} in \texttt{FormuaTools} is used. 
+
+The aim of this method is that after it run there is only one condition term left for this variable and the variable itself does not occur anywhere else except as key to its condition. The reason behind this it that eventually we will have for every variable only one condition left. We would know for each variable what its value would be. As it is so often this idea proved harder to realize than first anticipated.
+
+Where as I usually present here an excerpt from the original source code in the case of this method I rather present the idea in a more pseudo code manner since the source code contains a lot of indexing and parsing of data types that make it cumbersome to read and understand.
+
+$X$ shall be our variable, and $F_1, F_2, ... F_n$ are all conditions that are mapped for this variable.
+
+\begin{itemize}
+	\item Preprocess all $F_i$: If any $F_i$ contains $X$ as part of its term we have a contradiction and the method will return \texttt{None} to indicate the contradiction. An exception is however if $F_i == X$ since this is not a very useful but a valid statement.
+	\item For each pair $F_i$, $F_j$ we will use \texttt{unify} to check if those conditions are compatible. As we have seen above we will get a set of conditions again from \texttt{unify}. From the preprocess we are guarantied, that all those new conditions do not contain the variable $X$. If there is one pair of conditions that is not compatible the method will return \texttt{None} again to indicate the found contradiction.
+	\item Choose one $F_k$ to be the only of the $F_n$ conditions to be put back in the set of original conditions. Since $F_k$ was matched with every other $F_i$ in the preceding step this one condition on $X$ together with the newly found conditions ensure that we don't loose any information and at the same time have only one condition on $X$ left.
+	\item Replace all occurrences of $X$ in conditions of other variables with the single condition set to $X$ by the step above.
+\end{itemize}
+
+The steps above are those originally intended, while implementing it I found that there's a catch. The algorithm work fine the way it is described above for one variable but when iterating through all variables there was a problem because the conditions gained by \emph{unifying} the conditions of one variable might lead to new variable which where not present before because they only appear as part of a condition but not by themselves. The simplest solution seamed to be so initialize all variable and just leave the conditions empty, but because the order in which the variable are \emph{simplified} is not reliable it would be possible that a variable with no conditions is \emph{simplified} and only afterwards new conditions would be added. So the return value of this method is a list of the newly found variables. The condition set doesn't have to be returned since the changes are made in place.
 
 
-\subsection{resolve\_conditions}
-\todoWriteMore{Write about resolve conditions}
+So instead I worked recursively\footnote{To be precise I work with a stack and push any new variable on top so that it is next to be \emph{simplified}.} so that those new variables would be \emph{simplified} and thus replaced everywhere except a variable key and with one condition before the algorithm would randomly take the next variable to \emph{simplify}.
 
 
 \subsection{conquer}
