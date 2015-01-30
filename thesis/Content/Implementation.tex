@@ -26,7 +26,8 @@ I tried to keep the tree as simple as possible, giving the nodes only a value an
 \section{Important Methods}
 In this section I want to show and explain some of the more complicated methods that are important and make up the heart of the algorithm.
 
-\subsection{Tree.musts}
+\subsection{musts}
+
 The method \emph{musts} expects a given proof term to be already \emph{atomized} as it only distinguishes between $!$ and $*$ operations.
 The algorithm takes the formula in form of a tree apart from top to bottom, generating new, smaller terms for every operation it takes apart until the remaining proof term is only a proof constant. Since the resolve of a $*$ operation needs a new \emph{X-wild} and the resolve of a $!$ operation replaces an existing \emph{x-wild} and therefore needs a new as well, the current $i$ for a new \emph{X-wild} $X_i$ is stored and increased in \texttt{v\_count}.
 
@@ -40,7 +41,16 @@ The algorithm takes the formula in form of a tree apart from top to bottom, gene
 
 If for example the current justification term would be $((a*(!b)):F)$, it would be taken apart to the two subformulas $(a:(X_i\rightarrow F))$ and $((!b):(X_i))$. Because of the \emph{atomization} in the steps before it is guaranteed that every $!$ is a (right) child of a  $*$ and since every $*$ creates a new $X_i$, a term here that starts with a $*$ is always on a $X_i$. Since from $!b:X_i$ follows $\exists X_j \quad s.t. \quad !b:(b:X_j)$, all $X_i$ that occurred up to now must be replaced by $(b:X_j)$. In the end we will have only proof constants remaining.
 
-\todoWriteMore{Write about unify, simplify and resolve conditions}
+\subsection{unify}
+\todoWriteMore{Write about unify}
+
+\subsection{simplify}
+\todoWriteMore{Write about simplify}
+
+\subsection{resolve_conditions}
+\todoWriteMore{Write about resolve conditions}
+
 
 \section{Tests}
+The tests I have written for this algorithm have been most important to the success of it. I usually 
 \todoWriteMore{Write about Tests}

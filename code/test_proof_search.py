@@ -180,19 +180,17 @@ class Tests(unittest.TestCase):
         existing = [{'X1':['A'], 'X2':['B']}, {'X1': ['(A->B)'], 'X3': ['C']}]
         new = [{'X1': ['B'], 'X2': ['C']}, {'X1': ['A'], 'X2': ['B']}]
         ps = ProofSearch({}, '')
-        self.assertListEqual([{'X2': ['B'], 'X1': ['A']}], ps.combine(new, existing))
+        self.assertListEqual([{'X2': ['B'], 'X1': ['A']}], combine(new, existing))
 
     def test_combine2(self):
-        existing = [{'X1':['A'], 'X2':['B']}, {'X2': ['(A->B)']}]
+        existing = [{'X1': ['A'], 'X2':['B']}, {'X2': ['(A->B)']}]
         new = [{'X1': ['A'], 'X3': ['C']}]
-        ps = ProofSearch({}, '')
         self.assertListEqual([{'X3': ['C'], 'X2': ['B'], 'X1': ['A']}, {'X3': ['C'], 'X2': ['(A->B)'], 'X1': ['A']}],
-                             ps.combine(new, existing))
+                             combine(new, existing))
 
     def test_nice(self):
-        ps = ProofSearch({}, '')
         self.assertListEqual([[('X2', ''), ('X3', 'F')]],
-                             ps.nice([{'Y1': ['F'], 'X2': ['X2'], 'Y2': ['X2'], 'X3': ['F']}]))
+                             nice([{'Y1': ['F'], 'X2': ['X2'], 'Y2': ['X2'], 'X3': ['F']}]))
 
     def test_conquer_all_atoms1(self):
         cs = defaultdict(list, {'s': ['(B->A)'],

@@ -1,4 +1,4 @@
-from tree import *
+from formula_tools import *
 
 
 class ProofSearch:
