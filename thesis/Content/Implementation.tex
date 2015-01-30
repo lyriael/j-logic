@@ -42,15 +42,40 @@ The algorithm takes the formula in form of a tree apart from top to bottom, gene
 If for example the current justification term would be $((a*(!b)):F)$, it would be taken apart to the two subformulas $(a:(X_i\rightarrow F))$ and $((!b):(X_i))$. Because of the \emph{atomization} in the steps before it is guaranteed that every $!$ is a (right) child of a  $*$ and since every $*$ creates a new $X_i$, a term here that starts with a $*$ is always on a $X_i$. Since from $!b:X_i$ follows $\exists X_j \quad s.t. \quad !b:(b:X_j)$, all $X_i$ that occurred up to now must be replaced by $(b:X_j)$. In the end we will have only proof constants remaining.
 
 \subsection{unify}
-\todoWriteMore{Write about unify}
+I spend probably most of my implementing time on this method, or rather on its predecessor. It used to be a lot longer and more complicated because it differentiated various cases if a formula would contain one or another kind of variable.
+With this new and (hopefully) last implementation there is no different handling for \emph{X-wild} or \emph{Y-wild} variables on that level. Only much later when all results are put together will those variables be handled different accordingly.
+
+The method is actually quiet forward: It takes two formulas\footnote{It is expected that the only occurring operations are $\rightarrow$ and $:$. It should be rather easy to extend the code at this point to accept also other operations but from what I can expect as input this is not necessary here.} and compares them on the basis of their tree structure. While the structure remains the same thus operations and constants match for both formulas the methods pushes the subtrees of both on the stack until either one of the subtrees consists only of a node containing a variable or a mismatch is found. In the later case \texttt{None} will be return the method is stopped. In the case that we find a node with a variable for one tree it will be formed into a \emph{condition} for that variable, where the variable is the key and whatever we find in the other tree at this place is the value.
+
+\begin{figure}[H]
+	\vspace{-10pt}
+	\lstinputlisting[firstline=1, lastline=25]{/home/lyriael/BA/j-logic/thesis/code_formula_tools.py}
+	\vspace{-10pt}
+	\caption{Excerpt $unify$ from $FormulaTools$.}
+	\vspace{-10pt}
+\end{figure}
+
+All those conditions are stored as tuples in a list and are returned in form of a dictionary, where all conditions for one variable can be accessed by the variable itself as key. At the current state conditions that apply to a variable may be contradictory, but it the responsibility of this method is only to collect those and not to valuate them. This is done by the method \texttt{simplify} and in a further extension also in the method \texttt{resolve\_conditions}.
+
 
 \subsection{simplify}
 \todoWriteMore{Write about simplify}
 
-\subsection{resolve_conditions}
+
+\subsection{resolve\_conditions}
+\todoWriteMore{Write about resolve conditions}
+
+
+\subsection{conquer}
 \todoWriteMore{Write about resolve conditions}
 
 
 \section{Tests}
-The tests I have written for this algorithm have been most important to the success of it. I usually 
-\todoWriteMore{Write about Tests}
+The tests I have written for this algorithm have been most important to the success of it. They served me in two ways: To check if my code would behave and actually do what I expected it to do and the other use was when I suddenly stumbled across a example or a situation where I did not know what I would expect I could see what my implementation would do with it, thus helping me to understand it better.
+Of course blessing of the tests is also a curse as it is because of the tests that I found so many mistakes that I've made and forcing me to do it again and again.
+
+As can be seen when looking at the source code not all all methods are tested on a same quality level. Methods that I deemed simple usually have only one or two tests. An example for that is \texttt{nice} from \texttt{ProofSearch}, this methods simply rearranges the elements of a dictionary and returns a nice readable output that summarized the content of the original input. In contrast to this methods are methods like the \texttt{conquer} methods and the \texttt{divide} method from \texttt{ProofSearch} or the \texttt{to\_s} from \texttt{Tree} which basically tests if the parsing between String and Tree works correctly.
+
+To name some numbers, there are currently\footnote{Even though the program is finished it is still possible that I add more tests to get rid of any doubts, so the numbers are not fix.} a total of 66 tests. Almost halve of which are found in \texttt{ProofSearch}. 
+
+As for the technology I used a simple unittesting framework.

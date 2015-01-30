@@ -179,7 +179,6 @@ class Tests(unittest.TestCase):
     def test_combine(self):
         existing = [{'X1':['A'], 'X2':['B']}, {'X1': ['(A->B)'], 'X3': ['C']}]
         new = [{'X1': ['B'], 'X2': ['C']}, {'X1': ['A'], 'X2': ['B']}]
-        ps = ProofSearch({}, '')
         self.assertListEqual([{'X2': ['B'], 'X1': ['A']}], combine(new, existing))
 
     def test_combine2(self):
