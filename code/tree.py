@@ -23,7 +23,7 @@ class Tree(object):
         :param formula: String
         :return: None
         """
-        term = prepare_parse(formula)
+        term = _prepare_parse(formula)
         current = self.root
         current.set_root()
 
@@ -91,20 +91,8 @@ class Tree(object):
                 return node
         return None
 
-    def subtree(self, node):
-        '''
-        Returns a deep copy from the subtree of the given node.
-
-        :param node:
-        :return subtree: Tree
-        '''
-        if node is None:
-            return None
-        else:
-            return Tree(self._inorder_string(node))
-
-    def deep_copy(self):
-        return Tree(self._inorder_string(self.root))
+    def is_wild(self):
+        return self.root.is_leaf() and ('X' in self.root.token or 'Y' in self.root.token)
 
     def _left_split(self, plus_node):
         '''
@@ -135,7 +123,20 @@ class Tree(object):
                 plus_node.parent.set_right(plus_node.right)
 
 
-def prepare_parse(string):
+def subtree(node):
+    '''
+    Returns a deep copy of the subtree of the given node.
+
+    :param node: Node
+    :return subtree: Tree
+    '''
+    if node is None:
+        return Tree('')
+    else:
+        return Tree(str(node))
+
+
+def _prepare_parse(string):
     '''
     separate operators, parentheses and variables and returns them as a list.
     '''

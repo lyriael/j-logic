@@ -18,9 +18,9 @@ class ProofSearch:
         '''
         If formula is given, it will be split into atomic formulas right away.
 
-        :param cs: Dict
-        :param formula: String
-        :return: None
+        :param cs: dict
+        :param formula: string
+        :return self: ProofSearch
         '''
         self.cs = defaultdict(list, cs)
         self.formula = formula
@@ -30,15 +30,6 @@ class ProofSearch:
             self.atoms = self.atomize()
             for atom in self.atoms:
                 self.musts[atom] = musts(atom)
-
-    def set_formula(self, formula):
-        self.formula = formula
-        self.atoms = self.atomize()
-        for atom in self.atoms:
-            self.musts[atom] = musts(atom)
-
-    def set_cs(self, cs):
-        self.cs = defaultdict(list, cs)
 
     def atomize(self):
         '''
@@ -74,25 +65,41 @@ class ProofSearch:
                 splits.remove(formula)
         return splits
 
-    def conquer_one_atom(self, atom):
+    def conquer(self):
         '''
-        #todo: Docu
-        :param atom: ((a*b)*(!c)):F, self.musts[atom] =
-        :return merged_conditions: list of dicts
+        # todo: Doc
+        :return result: bool
+        :return proof: dict
+        '''
+        proof = {}
+        result = False
+        for atom in self.atoms:
+            proof[atom] = nice(self._conquer_one_atom(atom))
+            if proof[atom] is not None:
+                result = True
+        return result, proof
+
+    def _conquer_one_atom(self, atom):
+        '''
+        # todo: Docu
+        :param atom: string
+        :return merged_conditions: list
         '''
         all_conditions = {}
         # Collect all conditions for each must.
-        for must in self.musts[atom]:
-            c = []
-            for term in self.cs[must[0]]:
-                match = unify(term, must[1])
+        for proof_constant, condition_term in self.musts[atom]:
+            proofs_for_atom = []
+            # compare the condition_term with all available entries in cs.
+            for cs_term in self.cs[proof_constant]:
+                match = unify(cs_term, condition_term)
                 if match is not None:
                     resolved = resolve_conditions(match)
                     if resolved is not None:
-                        c.append(resolved)
-            # if at least one match was found
-            if c:
-                all_conditions[must] = c
+                        proofs_for_atom.append(resolved)
+            # if at least one match between the condition_term and an entry in cs was found.
+            if proofs_for_atom:
+                all_conditions[(proof_constant, condition_term)] = proofs_for_atom
+            # no possible match. All is lost.
             else:
                 return None
         merged_conditions = []
@@ -104,19 +111,10 @@ class ProofSearch:
                 return None
         return merged_conditions
 
-    def conquer_all_atoms(self):
-        proof = {}
-        result = False
-        for atom in self.atoms:
-            proof[atom] = nice(self.conquer_one_atom(atom))
-            if proof[atom] != 'Not provable.':
-                result = True
-        return result, proof
-
 
 def nice(conquered_atom):
     if conquered_atom is None:
-            return 'Not provable.'
+            return None
     all = []
     for possible_solutions in conquered_atom:
         table = []
@@ -153,16 +151,13 @@ def combine(conditions_to_add, existing_conditions):
 
 
 def merge_dicts(dct1, dct2):
-    if not dct1:
-        return dct2
-    if not dct2:
-        return dct1
+    # XOR
+    if bool(dct1) != bool(dct2):
+        return dct1 or dct2
+
     merged = defaultdict(list)
-    dct1 = defaultdict(list, dct1)
-    dct2 = defaultdict(list, dct2)
+    dct1, dct2 = defaultdict(list, dct1), defaultdict(list, dct2)
     all_keys = list(set(list(dct1.keys()) + list(dct2.keys())))
     for key in all_keys:
-        merged[key] += dct1[key]
-        merged[key] += dct2[key]
-        merged[key] = sorted(list(set(merged[key])))
+        merged[key] = sorted(set(dct1[key] + dct2[key]))
     return merged

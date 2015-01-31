@@ -1,5 +1,5 @@
 import unittest
-from tree import Tree
+from tree import *
 
 
 class Tests(unittest.TestCase):
@@ -59,9 +59,9 @@ class Tests(unittest.TestCase):
     def test_subtree(self):
         tree = Tree('((a*(!(b+c))):F)')
         node = tree.root.left
-        subtree = tree.subtree(node)
-        self.assertEqual('*', subtree.root.token)
-        self.assertEqual('(a*(!(b+c)))', str(subtree))
+        st = subtree(node)
+        self.assertEqual('*', st.root.token)
+        self.assertEqual('(a*(!(b+c)))', str(st))
 
     def test_inorder_nodes(self):
         tree = Tree('((a*(!(b+c))):F)')

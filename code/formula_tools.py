@@ -1,4 +1,4 @@
-from tree import Tree
+from tree import *
 from collections import defaultdict
 import itertools
 
@@ -19,11 +19,12 @@ def sum_split(formula):
     If no sum exists in the formula, the returned list will simply contain the original formula.
     A empty List should never be returned.
 
+    :param formula: string
     :return formulas: list
     '''
-    tree = Tree(formula)
-    proof_term = tree.subtree(tree.root.left)   # Tree, e.g.: ((a*b)+c)
-    subformula = tree.root.right.to_s()         # String, e.g.: F
+    t = Tree(formula)
+    proof_term = subtree(t.root.left)
+    subformula = subtree(t.root.right)
 
     done = []
     todo = [proof_term]
@@ -32,12 +33,12 @@ def sum_split(formula):
         if f.first('+') is None:
             done.append(f)
         else:
-            left = f.deep_copy()
+            left = subtree(f)
             node = left.first('+')
             left._left_split(node)
             todo.append(left)
 
-            right = f.deep_copy()
+            right = subtree(f)
             node = right.first('+')
             right._right_split(node)
             todo.append(right)
@@ -45,7 +46,7 @@ def sum_split(formula):
     # make to string and remove duplicates
     result = []
     for tree in done:
-        result.append('(%s:%s)' % (str(tree), subformula))
+        result.append('(%s:%s)' % (str(tree), str(subformula)))
     return list(set(result))
 
 
@@ -61,24 +62,24 @@ def simplify_introspection(formula):
     :return formula: str
     '''
     tree = Tree(formula)
-    assert tree.root.token == ':'
+    proof_term = subtree(tree.root.left)
+    subformula = subtree(tree.root.right)
 
-    if tree.root.left.token != '!':
+    if proof_term.root.token != '!':
         # formula has no '!' operation on top.
         return formula
     else:
-        # Comparing subtrees
-        #        :
-        #      /   \
-        #     !    ST
-        #      \
-        #      ST
-        left = tree.subtree(tree.root.left.right)
-        right = tree.subtree(tree.root.right.left)
+        #         :
+        #      /     \
+        #     !       :
+        #      \     / \
+        #    left right ST
+        left = subtree(proof_term.root.right)
+        right = subtree(subformula.root.left)
         # if both sides are the same, construct simplified formula as string.
         if right == left:
-            subformula = tree.subtree(tree.root.right.right)
-            return '(%s:%s)' % (str(right), str(subformula))
+            subformula = str(tree.root.right.right)
+            return '(%s:%s)' % (str(right), subformula)
         else:
             return None
 
@@ -114,35 +115,35 @@ def musts(proof_term):
     '''
     tree = Tree(proof_term)
     consts = []         # returning container. Formulas in string form.
-    swaps = []          # contains replacements for Wilds from '!'. => ('X2', '(b:X3)') in string form
-    v_count = 1         # needed for Wilds (X1, X2, ...)
+    assignements = []          # contains replacements for Wilds from '!'. => ('X2', '(b:X3)') in string form
+    v_count = 1        # needed for Wilds (X1, X2, ...)
     todo = [tree]       # contains trees that still need to be handled.
     while todo:
         f = todo.pop()
-        proof_term = f.subtree(f.root.left)
-        subformula = f.subtree(f.root.right)
+        proof_term = subtree(f.root.left)
+        subformula = subtree(f.root.right)
 
         if proof_term.root.is_leaf(): # constant
             consts.append((str(proof_term), str(subformula)))
         elif proof_term.root.token == '*':
-            left = proof_term.subtree(proof_term.root.left)
-            right = proof_term.subtree(proof_term.root.right)
+            left = subtree(proof_term.root.left)
+            right = subtree(proof_term.root.right)
             todo.append(Tree('(%s:(X%s->%s))' % (str(left), str(v_count), str(subformula))))
             todo.append(Tree('(%s:X%s)' % (str(right), str(v_count))))
             v_count += 1
         elif proof_term.root.token == '!':
-            left = proof_term.subtree(f.root.left.right)
+            left = subtree(f.root.left.right)
             s = '(%s:X%s)' % (str(left), str(v_count))
             todo.append(Tree(s))
-            swaps.append((str(subformula), s))
+            assignements.append((str(subformula), s))
             v_count += 1
-    return sorted(_replace(consts, swaps))
+    return sorted(_replace(consts, assignements))
 
 
-def _replace(consts, swaps):
+def _replace(consts, assignments):
     '''
     :param consts: list
-    :param swaps: list
+    :param assignments: list
 
     Wilds that must be replaces because of '!'. Change are made in place.
 
@@ -154,7 +155,7 @@ def _replace(consts, swaps):
     :return consts: list
     '''
     for index in range(len(consts)):
-        for xi, replacement in swaps:
+        for xi, replacement in assignments:
             consts[index] = (consts[index][0], consts[index][1].replace(xi, replacement))
     return consts
 
@@ -179,34 +180,17 @@ def unify(first_formula, second_formula):
     while stack:
         f1, f2 = stack.pop()
         # If the root node is the same (either operation or constant)
-        if f1.root.token == f2.root.token:
+        if f1.root == f2.root:
             # If the its a operator, go on. If it's a constant we're done.
             if f1.root.token in ['->', ':']:
-                stack.append((f1.subtree(f1.root.left), f2.subtree(f2.root.left)))
-                stack.append((f1.subtree(f1.root.right), f2.subtree(f2.root.right)))
-        # If the root is not the same, either it is a mismatch, or there are wilds.
-        # Stuff that is put in 'result' has on one side only a wild-constant.
+                stack.append((subtree(f1.root.left), subtree(f2.root.left)))
+                stack.append((subtree(f1.root.right), subtree(f2.root.right)))
+        # If the root is not the same, either it is a mismatch, or there is at least one wild.
+        elif f1.is_wild() or f2.is_wild():
+            result.append((str(f1), str(f2)))
         else:
-            # (X1, A->B), (Y1, G), ...
-            if (_has_no_wilds(str(f1)) and _has_wilds(f2.root.token)) or \
-                (_has_no_wilds(str(f2)) and _has_wilds(f1.root.token)):
-                result.append((str(f1), str(f2)))
-            # (X1, Y2->F), (Y1, X1), (X1, Y1->Y1), ...
-            elif _has_wilds(str(f1)) and _has_wilds(str(f2)):
-                assert _has_wilds(f1.root.token) or _has_wilds(f2.root.token)
-                result.append((str(f1), str(f2)))
-            # (Y1->F, b:B), (F, Y1->Y2), ...
-            else:
-                return None
+            return None
     return condition_list_to_dict(result)
-
-
-def _has_wilds(term):
-    return 'X' in term or 'Y' in term
-
-
-def _has_no_wilds(term):
-    return not _has_wilds(term)
 
 
 def simplify(var, conditions):
@@ -221,7 +205,7 @@ def simplify(var, conditions):
         Variable (X-wild or Y-wild) used as key.
     :param conditions: dict
         All conditions, they will be changed inplace.
-    :return new_vars: dict
+    :return new_vars: list
         New variables that were not present as key before.
     '''
     # get all (X1, Fi)
@@ -229,8 +213,7 @@ def simplify(var, conditions):
 
     # If there are no conditions for var, we're done.
     if not fs:
-        conditions[var] = []
-        return conditions
+        return []
 
     # Preprocess those: if there is any condition where X1 occurs in Fi, then we have a contradiction,
     # except if X1 == Fi
@@ -252,10 +235,7 @@ def simplify(var, conditions):
 
     # Replace all X1 in the Fis of the other Variables. X1 will only occur as the chosen one.
     for key in conditions:
-        tmp = []
-        for item in conditions[key]:
-            tmp.append(item.replace(var, chosen))
-        conditions[key] = tmp
+        conditions[key] = [item.replace(var, chosen) for item in conditions[key]]
 
     # Add new conditions to old conditions. Collect new variables to return.
     new_vars = []
@@ -282,21 +262,22 @@ def condition_list_to_dict(conditions):
         conditions are in form of a list.
     '''
     dct = defaultdict(list)
-    if not conditions:
-        return {}
-
     # breaking tuples up and sort the values into a dict.
-    for con in conditions:
-        if con[0][0] in ['Y', 'X']:
-            dct[con[0]].append(con[1])
-        if con[1][0] in ['Y', 'X']:
-            dct[con[1]].append(con[0])
-
-    # adding all variables to the dic, even if they are not isolated and
+    for c1, c2 in conditions:
+        # this will put redundant information:
+        # ('X1', 'X2') => {'X1': ['X2'], 'X2': ['X1']}
+        if _is_wild(c1):
+            dct[c1].append(c2)
+        if _is_wild(c2):
+            dct[c2].append(c1)
+    # remove doublets.
     for key in dct:
         dct[key] = list(set(dct[key]))
-
     return dct
+
+
+def _is_wild(term):
+    return term[0] in ['X', 'Y']
 
 
 def condition_dict_to_list(conditions):
@@ -311,9 +292,7 @@ def condition_dict_to_list(conditions):
         term is a condition that applies to that variable.
     '''
     lst = []
-    if not conditions:
-        return []
-
+    # generating condition tuples.
     for key in conditions:
         for item in conditions[key]:
             lst.append((key, item))
@@ -332,6 +311,9 @@ def resolve_conditions(conditions):
     :return conditions: dict
         Resolved conditions, or None if a contradiction is found.
     '''
+    if conditions is None:
+        return None
+
     vars_todo = list(conditions.keys())
     while vars_todo:
         var = vars_todo.pop()

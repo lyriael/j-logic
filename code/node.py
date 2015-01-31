@@ -8,6 +8,23 @@ class Node(object):
         self.right = None
         self.sibling = None
 
+    def __eq__(self, other):
+        '''
+        Compares the value of the respective tokens.
+        :param other: Node
+        :return equal: bool
+        '''
+        return self.token == other.token
+
+    def __str__(self):
+        '''
+        This method gives a string representation of the subtree of this node.
+        To get only its value, use self.token.
+
+        :return subtree: string
+        '''
+        return self._inorder_string(self)
+
     def is_root(self):
         return self.parent == self
 

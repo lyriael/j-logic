@@ -8,7 +8,7 @@ class Tests(unittest.TestCase):
         ps = ProofSearch({'a': ['(A->(A->F))', '((b:B)->A)', 'B', '(C->(A->F))', '((b:B)->(B->F))'], 'b': ['B']}, '')
         ps.atoms = ['test']
         ps.musts['test'] = [('a', '(X2->(X1->F))'), ('b', 'C')]
-        conditions = ps.conquer_one_atom('test')
+        conditions = ps._conquer_one_atom('test')
         self.assertIsNone(conditions)
 
     def test_conquer_one_atom1(self):
@@ -18,13 +18,13 @@ class Tests(unittest.TestCase):
         self.assertListEqual([defaultdict(list, {'X2': ['A'], 'X1': ['A']}),
                               defaultdict(list, {'X2': ['C'], 'X1': ['A']}),
                               defaultdict(list, {'X2': ['(b:B)'], 'X1': ['B']})],
-                             ps.conquer_one_atom('test'))
+                             ps._conquer_one_atom('test'))
 
     def test_conquer_one_atom2(self):
         ps = ProofSearch({'a': ['(A->(A->F))', '((b:B)->A)', 'B', '(C->(A->F))', '((b:B)->(B->F))'], 'b': ['B']}, '')
         ps.atoms = ['test']
         ps.musts['test'] = [('a', '(X2->(X1->F))'), ('b', 'C')]
-        one = ps.conquer_one_atom('test')
+        one = ps._conquer_one_atom('test')
         self.assertIsNone(one)
 
     def test_conquer_one_atom3(self):
@@ -33,13 +33,13 @@ class Tests(unittest.TestCase):
         ps.musts['test'] = [('a', '(X3->(X2->F))')]
         self.assertListEqual([defaultdict(list, {'X2': ['C'], 'X3': ['(b:B)']}),
                               defaultdict(list, {'Y1': ['F'], 'X2': ['X2'], 'Y2': ['X2'], 'X3': ['F']})],
-                             ps.conquer_one_atom('test'))
+                             ps._conquer_one_atom('test'))
 
     def test_conquer_one_atom4(self):
-        self.assertListEqual([{}], ProofSearch({'a': ['F']}, '(a:F)').conquer_one_atom('(a:F)'))
+        self.assertListEqual([{}], ProofSearch({'a': ['F']}, '(a:F)')._conquer_one_atom('(a:F)'))
 
     def test_conquer_one_atom5(self):
-        self.assertIsNone(ProofSearch({'a': ['F']}, '(a:G)').conquer_one_atom('(a:G)'))
+        self.assertIsNone(ProofSearch({'a': ['F']}, '(a:G)')._conquer_one_atom('(a:G)'))
 
     def test_conquer_one_atom6(self):
         ps = ProofSearch({'a': ['(A->(A->F))', '((b:B)->A)', 'B', '(C->(A->F))', '((b:B)->(B->F))'], 'b': ['B']}, '')
@@ -48,7 +48,7 @@ class Tests(unittest.TestCase):
         self.assertListEqual([defaultdict(list, {'X2': ['A'], 'X1': ['A']}),
                               defaultdict(list, {'X2': ['C'], 'X1': ['A']}),
                               defaultdict(list, {'X2': ['(b:B)'], 'X1': ['B']})],
-                             ps.conquer_one_atom('test'))
+                             ps._conquer_one_atom('test'))
 
     def test_conquer_one_atom7(self):
         ps = ProofSearch({'a': ['(Y1->(Y2->Y3))', '(Y1->Y2)']}, '')
@@ -56,14 +56,14 @@ class Tests(unittest.TestCase):
         ps.musts['test'] = [('a', '(X1->X2)')]
         self.assertListEqual([defaultdict(list, {'X2': ['(Y2->Y3)'], 'Y1': ['Y1'], 'X1': ['Y1']}),
                               defaultdict(list, {'X2': ['X2'], 'Y1': ['Y1'], 'X1': ['Y1'], 'Y2': ['X2']})],
-                             ps.conquer_one_atom('test'))
+                             ps._conquer_one_atom('test'))
 
     def test_conquer_one_atom8(self):
         ps = ProofSearch({'a': ['(Y1->(Y2->Y1))'], 'b': ['B']}, '')
         ps.atoms = ['test']
         ps.musts['test'] = [('a', '(X2->(X1->F))')]
         self.assertListEqual([defaultdict(list, {'Y1': ['F'], 'X1': ['X1'], 'Y2': ['X1'], 'X2': ['F']})],
-                             ps.conquer_one_atom('test'))
+                             ps._conquer_one_atom('test'))
 
     def test_conquer_one_atom9(self):
         ps = ProofSearch({'a': ['(Y1->(Y2->Y3))'], 'b': ['B']}, '')
@@ -71,43 +71,43 @@ class Tests(unittest.TestCase):
         ps.musts['test'] = [('a', '(X1->(X2->X3))')]
         self.assertListEqual([defaultdict(list, {'X1': ['X1'], 'Y1': ['X1'], 'X2': ['X2'],
                                                  'X3': ['X3'], 'Y3': ['X3'], 'Y2': ['X2']})],
-                             ps.conquer_one_atom('test'))
+                             ps._conquer_one_atom('test'))
 
     def test_conquer_one_atom10(self):
         ps = ProofSearch({'a': ['(A->B)', '(Y1->Y2)'], 'b': ['B']}, '')
         ps.atoms = ['test']
         ps.musts['test'] = [('a', '(A->B)')]
         self.assertListEqual([{}, defaultdict(list, {'Y1': ['A'], 'Y2': ['B']})],
-                             ps.conquer_one_atom('test'))
+                             ps._conquer_one_atom('test'))
 
     def test_conquer_one_atom11(self):
         ps = ProofSearch({'a': ['(Y1->Y1)']}, '')
         ps.atoms = ['test']
         ps.musts['test'] = [('a', '(A->B)')]
-        self.assertIsNone(ps.conquer_one_atom('test'))
+        self.assertIsNone(ps._conquer_one_atom('test'))
 
     def test_conquer_one_atom12(self):
         ps = ProofSearch({'a': ['((c:X3)->X1)']}, '')
         ps.atoms = ['test']
         ps.musts['test'] = [('a', '(G->(H->G))')]
-        self.assertIsNone(ps.conquer_one_atom('test'))
+        self.assertIsNone(ps._conquer_one_atom('test'))
 
     def test_conquer_one_atom13(self):
         ps = ProofSearch({'a': ['(A->(A->F))', '((b:B)->A)', 'B', '(C->(A->F))', '((b:B)->(B->F))'], 'b': ['C']}, '')
         ps.atoms = ['test']
         ps.musts['test'] = [('a', '(X2->(X1->F))')]
         self.assertListEqual([defaultdict(list, {'X2': ['A'], 'X1': ['A']}), defaultdict(list, {'X2': ['C'], 'X1': ['A']}),
-                              defaultdict(list, {'X2': ['(b:B)'], 'X1': ['B']})], ps.conquer_one_atom('test'))
+                              defaultdict(list, {'X2': ['(b:B)'], 'X1': ['B']})], ps._conquer_one_atom('test'))
 
-    def test_conquer_all_atoms4(self):
-        result = ProofSearch({'a': ['F']}, '(a:F)').conquer_all_atoms()
+    def test_conquer4(self):
+        result = ProofSearch({'a': ['F']}, '(a:F)').conquer()
         self.assertTrue(result[0])
         self.assertDictEqual({'(a:F)': []}, result[1])
 
-    def test_conquer_all_atoms5(self):
-        result = ProofSearch({'a': ['F']}, '(a:G)').conquer_all_atoms()
+    def test_conquer5(self):
+        result = ProofSearch({'a': ['F']}, '(a:G)').conquer()
         self.assertFalse(result[0])
-        self.assertDictEqual({'(a:G)': 'Not provable.'}, result[1])
+        self.assertDictEqual({'(a:G)': None}, result[1])
 
     def test_resolve_conditions(self):
         self.assertIsNone(resolve_conditions(defaultdict(list, {'X1': ['A', 'B']})))
@@ -191,35 +191,35 @@ class Tests(unittest.TestCase):
         self.assertListEqual([[('X2', ''), ('X3', 'F')]],
                              nice([{'Y1': ['F'], 'X2': ['X2'], 'Y2': ['X2'], 'X3': ['F']}]))
 
-    def test_conquer_all_atoms1(self):
+    def test_conquer1(self):
         cs = defaultdict(list, {'s': ['(B->A)'],
               't': ['B'],
               'v': ['(A->F)']})
         formula = '((v*((s*t)+(!u))):F)'
         ps = ProofSearch(cs, formula)
-        result = ps.conquer_all_atoms()
+        result = ps.conquer()
         self.assertTrue(result[0])
         self.assertDictEqual({'((v*(s*t)):F)': [[('X1', 'A'), ('X2', 'B')]],
-                              '((v*(!u)):F)': 'Not provable.'},
+                              '((v*(!u)):F)': None},
                              result[1])
 
-    def test_conquer_all_atoms2(self):
+    def test_conquer2(self):
         formula = '(((((a*b)*(!b))+((!b)+c))+((!b)*d)):(b:F))'
         cs = {'a': ['(G->((b:B)->(b:F)))', '(Y1->(Y2->Y1))'], 'b': ['(b:F)', 'G']}
         ps = ProofSearch(cs, formula)
-        result = ps.conquer_all_atoms()
+        result = ps.conquer()
         self.assertTrue(result[0])
-        self.assertDictEqual({'(c:(b:F))': 'Not provable.',
-                              '(b:F)': 'Not provable.',
+        self.assertDictEqual({'(c:(b:F))': None,
+                              '(b:F)': None,
                               '(((a*b)*(!b)):(b:F))': [[('X2', '(b:F)'), ('X3', '(b:F)')],
                                                        [('X2', 'G'), ('X3', '(b:F)')]]},
                              result[1])
 
-    def test_conquer_all_atoms3(self):
+    def test_conquer3(self):
         ps = ProofSearch({'a': ['((A->C)->F)'], 'b': ['(Y1->(Y2->Y1))'], 'c': ['C']}, '((a*(b*c)):F)')
         self.assertListEqual([{'Y1': ['C'], 'X2': ['C'], 'X1': ['(A->C)'], 'Y2': ['A']}],
-                             ps.conquer_one_atom('((a*(b*c)):F)'))
-        result = ps.conquer_all_atoms()
+                             ps._conquer_one_atom('((a*(b*c)):F)'))
+        result = ps.conquer()
         self.assertTrue(result[0])
         self.assertDictEqual({'((a*(b*c)):F)': [[('X1', '(A->C)'), ('X2', 'C')]]}, result[1])
 
