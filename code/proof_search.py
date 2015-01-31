@@ -61,24 +61,24 @@ class ProofSearch:
         # first step: make sum-splits
         splits = sum_split(self.formula)
 
-        # second step: simplify formula if top operation is bang
+        # second step: simplify formula if top operation is introspection
         for formula in splits[:]:
             splits.remove(formula)
-            new_formula = simplify_bang(formula)
+            new_formula = simplify_introspection(formula)
             if new_formula:
                 splits.append(new_formula)
 
         # third step: remove formulas where '!' is left child of '*'
         for formula in splits[:]:
-            if has_bad_bang(formula):
+            if has_bad_introspection(formula):
                 splits.remove(formula)
         return splits
 
     def conquer_one_atom(self, atom):
         '''
-
+        #todo: Docu
         :param atom: ((a*b)*(!c)):F, self.musts[atom] =
-        :return: list of dicts
+        :return merged_conditions: list of dicts
         '''
         all_conditions = {}
         # Collect all conditions for each must.
@@ -114,11 +114,11 @@ class ProofSearch:
         return result, proof
 
 
-def nice(conqured_atom):
-    if conqured_atom is None:
+def nice(conquered_atom):
+    if conquered_atom is None:
             return 'Not provable.'
     all = []
-    for possible_solutions in conqured_atom:
+    for possible_solutions in conquered_atom:
         table = []
         for tpl in condition_dict_to_list(possible_solutions)[:]:
             if 'X' in tpl[0] and tpl[0] == tpl[1]:
@@ -132,21 +132,22 @@ def nice(conqured_atom):
 
 def combine(conditions_to_add, existing_conditions):
     '''
+    #todo: Doc
     :param conditions_to_add: list
     :param existing_conditions: list
-    :return:
+    :return combined_conditions: list
     '''
     if not existing_conditions:
         return conditions_to_add
 
-    combined_conditiones = []
+    combined_conditions = []
     for existing in existing_conditions:
         for new in conditions_to_add:
             match = resolve_conditions(merge_dicts(existing, new))
             if match:
-                combined_conditiones.append(match)
-    if combined_conditiones:
-        return combined_conditiones
+                combined_conditions.append(match)
+    if combined_conditions:
+        return combined_conditions
     else:
         return None
 

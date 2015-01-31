@@ -30,7 +30,7 @@ class Tests(unittest.TestCase):
         self.assertDictEqual({'X1': ['(Y1->Y2)']}, unify('(Y1->Y2)', 'X1'))
         self.assertDictEqual({'Y1': ['X3', 'F'], 'X2': ['Y2'], 'Y2': ['X2'], 'X3': ['Y1']},
                              unify('(Y1->(Y2->Y1))', '(X3->(X2->F))'))
-        print(unify('(X1->F)', '(a:X2)'))
+        #print(unify('(X1->F)', '(a:X2)'))
 
     def test_sum_split1(self):
         self.assertEqual(2, len(sum_split('((a+b):F)')))
@@ -52,11 +52,11 @@ class Tests(unittest.TestCase):
         self.assertListEqual(['((!((!a)*(c*(!d)))):F)', '((!(b*(c*(!d)))):F)',
                               '((e*f):F)', '((e*g):F)'], sorted(a))
 
-    def test_simplify_bang(self):
-        self.assertEqual('(a:A)', simplify_bang('((!a):(a:A)))'))
-        self.assertEqual('(((a+b)*c):F)', simplify_bang('((!((a+b)*c)):(((a+b)*c):F))'))
-        self.assertEqual('', simplify_bang('((!((a+b)*c)):((b*c):F))'))
-        self.assertEqual('(a:A)', simplify_bang('(a:A)'))
+    def test_simplify_introspection(self):
+        self.assertEqual('(a:A)', simplify_introspection('((!a):(a:A)))'))
+        self.assertEqual('(((a+b)*c):F)', simplify_introspection('((!((a+b)*c)):(((a+b)*c):F))'))
+        self.assertIsNone(simplify_introspection('((!((a+b)*c)):((b*c):F))'))
+        self.assertEqual('(a:A)', simplify_introspection('(a:A)'))
 
     def test_condition_list_to_dict(self):
         l = [('X1', '(A->Y2)'), ('Y2', 'X12'), ('A', 'X3')]
@@ -92,6 +92,13 @@ class Tests(unittest.TestCase):
                              conditions)
         self.assertSetEqual(set(new_vars), set(['X3', 'Y1']))
 
+    def test_simplify2(self):
+        var = 'Y1'
+        conditions = defaultdict(list, {'Y1': ['X3', 'F'], 'X2': ['Y2'], 'Y2': ['X2'], 'X3': ['Y1']})
+        new_vars = simplify(var, conditions)
+        self.assertDictEqual({'Y1': ['F'], 'X2': ['Y2'], 'Y2': ['X2'], 'X3': ['F']}, conditions)
+        self.assertSetEqual(set(new_vars), set([]))
+
     def test_resolve_conditions(self):
         conditions = defaultdict(list, {'X2': ['(X1->B)', '(A->B)'], 'X3': ['(X4->X1)', '(X5->A)'], 'X4': ['C'], 'X6': ['(X1->X3)']})
         self.assertDictEqual({'X1': ['A'], 'X2': ['(A->B)'], 'X3': ['(C->A)'], 'X4': ['C'], 'X5': ['C'], 'X6': ['(A->(C->A))']},
@@ -101,14 +108,10 @@ class Tests(unittest.TestCase):
         conditions = defaultdict(list, {'Y1': ['X3', 'F'], 'X2': ['Y2'], 'Y2': ['X2'], 'X3': ['Y1']})
         self.assertDictEqual({'Y1': ['F'], 'X2': ['X2'], 'Y2': ['X2'], 'X3': ['F']}, resolve_conditions(conditions))
 
-    def test_simplify2(self):
-        var = 'Y1'
-        conditions = defaultdict(list, {'Y1': ['X3', 'F'], 'X2': ['Y2'], 'Y2': ['X2'], 'X3': ['Y1']})
-
-    def test_has_bad_bang(self):
-        self.assertTrue(has_bad_bang('(((!a)*b):F)'))
-        self.assertTrue(has_bad_bang('((((!a)*b)*(!c)):F)'))
-        self.assertFalse(has_bad_bang('(((a*(!b))*(!c)):F)'))
+    def test_has_bad_introspection(self):
+        self.assertTrue(has_bad_introspection('(((!a)*b):F)'))
+        self.assertTrue(has_bad_introspection('((((!a)*b)*(!c)):F)'))
+        self.assertFalse(has_bad_introspection('(((a*(!b))*(!c)):F)'))
 
     def test_musts(self):
         self.assertListEqual([('a', '(X1->F)'), ('b', 'X1')], musts('((a*b):F)'))

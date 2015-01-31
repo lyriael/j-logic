@@ -69,20 +69,20 @@ class Tests(unittest.TestCase):
         current.set_root()
         self.assertEqual(root, current)
         current = root.new_left()
-        bang = current
-        current = bang.new_left()
+        introspection = current
+        current = introspection.new_left()
         current = current.parent
-        self.assertEqual(bang, current)
+        self.assertEqual(introspection, current)
         current.token = '!'
-        self.assertEqual('!', bang.token)
+        self.assertEqual('!', introspection.token)
         current.left = None
-        self.assertIsNone(bang.left)
+        self.assertIsNone(introspection.left)
         current = current.new_right()
         a = current
         current.token = 'a'
         self.assertEqual('a', a.token)
         current = current.parent
-        self.assertEqual(bang, current)
+        self.assertEqual(introspection, current)
         current = current.parent
         self.assertEqual(current, root)
         current.token = ':'

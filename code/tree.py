@@ -10,6 +10,12 @@ class Tree(object):
         self.root = Node()
         self._parse_formula(formula)
 
+    def __str__(self):
+        return self._inorder_string(self.root)
+
+    def __eq__(self, other):
+        return str(self) == str(other)
+
     def _parse_formula(self, formula):
         """
         Makes a binary tree from the given Formula. Used only for initialization.
@@ -37,14 +43,6 @@ class Tree(object):
             else:
                 current.token = item
                 current = current.parent
-
-
-
-    def to_s(self):
-        '''
-        Returns formula as a String using inorder.
-        '''
-        return self._inorder_string(self.root)
 
     def _inorder_string(self, node):
         '''
