@@ -1,6 +1,7 @@
 from tree import *
 from collections import defaultdict
 import itertools
+import copy
 
 
 def sum_split(formula):
@@ -171,7 +172,7 @@ def unify(first_formula, second_formula):
         First formula.
     :param second_formula: string
         Second formula.
-    :return conditions: dict
+    :return conditions: dict <set>
         The conditions are sorted by variables (X-wilds and Y-wilds). It may be possible that not every variable is
         available as key,  example: {'X2': ['Y1']}.
     '''
@@ -180,7 +181,7 @@ def unify(first_formula, second_formula):
     while stack:
         f1, f2 = stack.pop()
         # If the root node is the same (either operation or constant)
-        if f1.root == f2.root:
+        if f1.root.token == f2.root.token:
             # If the its a operator, go on. If it's a constant we're done.
             if f1.root.token in ['->', ':']:
                 stack.append((subtree(f1.root.left), subtree(f2.root.left)))
@@ -203,14 +204,13 @@ def simplify(var, conditions):
 
     :param var: string
         Variable (X-wild or Y-wild) used as key.
-    :param conditions: dict
+    :param conditions: dict <set>
         All conditions, they will be changed inplace.
     :return new_vars: list
         New variables that were not present as key before.
     '''
     # get all (X1, Fi)
     fs = conditions.pop(var, [])
-
     # If there are no conditions for var, we're done.
     if not fs:
         return []
@@ -218,35 +218,39 @@ def simplify(var, conditions):
     # Preprocess those: if there is any condition where X1 occurs in Fi, then we have a contradiction,
     # except if X1 == Fi
     for fi in fs:
-        if var in fi and var != fi:
+        if var == fi:
+            fs.remove(fi)
+        if var in fi:
             return None
 
     # Unify each with another: Gives new conditions. If any match returns None, we have a contradiction and stop.
-    a_lst = []
+    new_conditions = defaultdict(set)
     for f1, f2 in itertools.combinations(fs, 2):
-        new_conditions = unify(f1, f2)
-        if new_conditions is None:
+        conditions_unify = unify(f1, f2)
+        if conditions_unify is None:
             return None
-        a_lst += condition_dict_to_list(new_conditions)
-    a_dct = condition_list_to_dict(a_lst)
+        new_conditions.update(conditions_unify)
 
     # Keep one of the (X1, Fi), so we don't loose all reference.
     chosen = fs.pop()
-
     # Replace all X1 in the Fis of the other Variables. X1 will only occur as the chosen one.
     for key in conditions:
-        conditions[key] = [item.replace(var, chosen) for item in conditions[key]]
+        conditions[key] = set(item.replace(var, chosen) for item in conditions[key])
 
     # Add new conditions to old conditions. Collect new variables to return.
     new_vars = []
-    for key in a_dct:
+    for key in new_conditions:
         if not conditions[key]:
             new_vars.append(key)
-        conditions[key] += a_dct[key]
-        conditions[key] = list(set(conditions[key]))
+        conditions[key].update(new_conditions[key])
 
     # Finally add the chosen one to the conditions.
-    conditions[var] = [chosen]
+    conditions[var].update([chosen])
+
+    # todo: clean up!
+    for key in conditions:
+        if key in conditions[key]:
+            conditions[key].remove(key)
     return new_vars
 
 
@@ -257,22 +261,19 @@ def condition_list_to_dict(conditions):
     :param conditions: list
         A list of tuples, where the first place within the tuple is a single variable (X-wild or Y-wild) and the other
         term is a condition that applies to that variable.
-    :return: dict
+    :return: dict <set>
         In the dictionary the conditions are sorted by variable (X-wilds and Y-wilds) which serve as keys. The
         conditions are in form of a list.
     '''
-    dct = defaultdict(list)
+    dct = defaultdict(set)
     # breaking tuples up and sort the values into a dict.
     for c1, c2 in conditions:
         # this will put redundant information:
         # ('X1', 'X2') => {'X1': ['X2'], 'X2': ['X1']}
         if _is_wild(c1):
-            dct[c1].append(c2)
+            dct[c1].update({c2})
         if _is_wild(c2):
-            dct[c2].append(c1)
-    # remove doublets.
-    for key in dct:
-        dct[key] = list(set(dct[key]))
+            dct[c2].update({c1})
     return dct
 
 
@@ -306,9 +307,9 @@ def resolve_conditions(conditions):
 
     This method makes inplace changes to the conditions!
 
-    :param conditions: dict
+    :param conditions: dict <set>
         Variables are keys to their conditions.
-    :return conditions: dict
+    :return conditions: dict <set>
         Resolved conditions, or None if a contradiction is found.
     '''
     if conditions is None:
@@ -322,3 +323,35 @@ def resolve_conditions(conditions):
             return None
         vars_todo += new_vars
     return conditions
+
+
+def combine(conditions_to_add, existing_conditions):
+    '''
+    #todo: Doc
+    :param conditions_to_add: list
+    :param existing_conditions: list
+    :return combined_conditions: list
+    '''
+    if not existing_conditions:
+        return conditions_to_add
+
+    combined_conditions = []
+    for existing in existing_conditions:
+        for new in conditions_to_add:
+            match = resolve_conditions(merge_dicts(existing, new))
+            if match:
+                combined_conditions.append(match)
+    if combined_conditions:
+        return combined_conditions
+    else:
+        return None
+
+
+def merge_dicts(dct1, dct2):
+    dct1_tmp = defaultdict(set, copy.deepcopy(dct1))
+    dct2_tmp = defaultdict(set, copy.deepcopy(dct2))
+    all_keys = list(set(list(dct1_tmp.keys()) + list(dct2_tmp.keys())))
+
+    for key in all_keys:
+        dct1_tmp[key].update(dct2_tmp[key])
+    return dct1_tmp

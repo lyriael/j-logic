@@ -15,9 +15,9 @@ class Tests(unittest.TestCase):
         ps = ProofSearch({'a': ['(A->(A->F))', '((b:B)->A)', 'B', '(C->(A->F))', '((b:B)->(B->F))'], 'b': ['B']}, '')
         ps.atoms = ['test']
         ps.musts['test'] = [('a', '(X2->(X1->F))'), ('b', 'B')]
-        self.assertListEqual([defaultdict(list, {'X2': ['A'], 'X1': ['A']}),
-                              defaultdict(list, {'X2': ['C'], 'X1': ['A']}),
-                              defaultdict(list, {'X2': ['(b:B)'], 'X1': ['B']})],
+        self.assertListEqual([defaultdict(set, {'X2': {'A'}, 'X1': {'A'}}),
+                              defaultdict(set, {'X2': {'C'}, 'X1': {'A'}}),
+                              defaultdict(set, {'X2': {'(b:B)'}, 'X1': {'B'}})],
                              ps._conquer_one_atom('test'))
 
     def test_conquer_one_atom2(self):
@@ -31,8 +31,9 @@ class Tests(unittest.TestCase):
         ps = ProofSearch({'a': ['((b:B)->(C->F))', 'A', '(Y1->(Y2->Y1))']}, '')
         ps.atoms = ['test']
         ps.musts['test'] = [('a', '(X3->(X2->F))')]
-        self.assertListEqual([defaultdict(list, {'X2': ['C'], 'X3': ['(b:B)']}),
-                              defaultdict(list, {'Y1': ['F'], 'X2': ['X2'], 'Y2': ['X2'], 'X3': ['F']})],
+        print(ps._conquer_one_atom('test'))
+        self.assertListEqual([defaultdict(set, {'X2': {'C'}, 'X3': {'(b:B)'}}),
+                              defaultdict(set, {'Y1': {'F'}, 'Y2': {'X2'}, 'X3': {'F'}})],
                              ps._conquer_one_atom('test'))
 
     def test_conquer_one_atom4(self):
@@ -42,42 +43,42 @@ class Tests(unittest.TestCase):
         self.assertIsNone(ProofSearch({'a': ['F']}, '(a:G)')._conquer_one_atom('(a:G)'))
 
     def test_conquer_one_atom6(self):
-        ps = ProofSearch({'a': ['(A->(A->F))', '((b:B)->A)', 'B', '(C->(A->F))', '((b:B)->(B->F))'], 'b': ['B']}, '')
+        ps = ProofSearch({'a': {'(A->(A->F))', '((b:B)->A)', 'B', '(C->(A->F))', '((b:B)->(B->F))'}, 'b': {'B'}}, '')
         ps.atoms = ['test']
         ps.musts['test'] = [('a', '(X2->(X1->F)))')]
-        self.assertListEqual([defaultdict(list, {'X2': ['A'], 'X1': ['A']}),
-                              defaultdict(list, {'X2': ['C'], 'X1': ['A']}),
-                              defaultdict(list, {'X2': ['(b:B)'], 'X1': ['B']})],
+        self.assertListEqual([defaultdict(set, {'X2': {'C'}, 'X1': {'A'}}),
+                              defaultdict(set, {'X2': {'(b:B)'}, 'X1': {'B'}}),
+                              defaultdict(set, {'X2': {'A'}, 'X1': {'A'}})],
                              ps._conquer_one_atom('test'))
 
     def test_conquer_one_atom7(self):
-        ps = ProofSearch({'a': ['(Y1->(Y2->Y3))', '(Y1->Y2)']}, '')
+        ps = ProofSearch({'a': {'(Y1->(Y2->Y3))', '(Y1->Y2)'}}, '')
         ps.atoms = ['test']
         ps.musts['test'] = [('a', '(X1->X2)')]
-        self.assertListEqual([defaultdict(list, {'X2': ['(Y2->Y3)'], 'Y1': ['Y1'], 'X1': ['Y1']}),
-                              defaultdict(list, {'X2': ['X2'], 'Y1': ['Y1'], 'X1': ['Y1'], 'Y2': ['X2']})],
+        self.assertListEqual([defaultdict(set, {'X1': {'Y1'}, 'Y2': {'X2'}}),
+                              defaultdict(set, {'X2': {'(Y2->Y3)'}, 'X1': {'Y1'}})],
                              ps._conquer_one_atom('test'))
 
     def test_conquer_one_atom8(self):
-        ps = ProofSearch({'a': ['(Y1->(Y2->Y1))'], 'b': ['B']}, '')
+        ps = ProofSearch({'a': {'(Y1->(Y2->Y1))'}, 'b': {'B'}}, '')
         ps.atoms = ['test']
         ps.musts['test'] = [('a', '(X2->(X1->F))')]
-        self.assertListEqual([defaultdict(list, {'Y1': ['F'], 'X1': ['X1'], 'Y2': ['X1'], 'X2': ['F']})],
+        print(ps._conquer_one_atom('test'))
+        self.assertListEqual([defaultdict(set, {'Y1': {'F'}, 'Y2': {'X1'}, 'X2': {'F'}})],
                              ps._conquer_one_atom('test'))
 
     def test_conquer_one_atom9(self):
-        ps = ProofSearch({'a': ['(Y1->(Y2->Y3))'], 'b': ['B']}, '')
+        ps = ProofSearch({'a': {'(Y1->(Y2->Y3))'}, 'b': {'B'}}, '')
         ps.atoms = ['test']
         ps.musts['test'] = [('a', '(X1->(X2->X3))')]
-        self.assertListEqual([defaultdict(list, {'X1': ['X1'], 'Y1': ['X1'], 'X2': ['X2'],
-                                                 'X3': ['X3'], 'Y3': ['X3'], 'Y2': ['X2']})],
+        self.assertListEqual([defaultdict(set, {'Y1': {'X1'}, 'Y3': {'X3'}, 'Y2': {'X2'}})],
                              ps._conquer_one_atom('test'))
 
     def test_conquer_one_atom10(self):
         ps = ProofSearch({'a': ['(A->B)', '(Y1->Y2)'], 'b': ['B']}, '')
         ps.atoms = ['test']
         ps.musts['test'] = [('a', '(A->B)')]
-        self.assertListEqual([{}, defaultdict(list, {'Y1': ['A'], 'Y2': ['B']})],
+        self.assertListEqual([{}, defaultdict(set, {'Y1': {'A'}, 'Y2': {'B'}})],
                              ps._conquer_one_atom('test'))
 
     def test_conquer_one_atom11(self):
@@ -96,8 +97,8 @@ class Tests(unittest.TestCase):
         ps = ProofSearch({'a': ['(A->(A->F))', '((b:B)->A)', 'B', '(C->(A->F))', '((b:B)->(B->F))'], 'b': ['C']}, '')
         ps.atoms = ['test']
         ps.musts['test'] = [('a', '(X2->(X1->F))')]
-        self.assertListEqual([defaultdict(list, {'X2': ['A'], 'X1': ['A']}), defaultdict(list, {'X2': ['C'], 'X1': ['A']}),
-                              defaultdict(list, {'X2': ['(b:B)'], 'X1': ['B']})], ps._conquer_one_atom('test'))
+        self.assertListEqual([defaultdict(set, {'X2': {'A'}, 'X1': {'A'}}), defaultdict(list, {'X2': {'C'}, 'X1': {'A'}}),
+                              defaultdict(set, {'X2': {'(b:B)'}, 'X1': {'B'}})], ps._conquer_one_atom('test'))
 
     def test_conquer4(self):
         result = ProofSearch({'a': ['F']}, '(a:F)').conquer()
@@ -110,38 +111,38 @@ class Tests(unittest.TestCase):
         self.assertDictEqual({'(a:G)': None}, result[1])
 
     def test_resolve_conditions(self):
-        self.assertIsNone(resolve_conditions(defaultdict(list, {'X1': ['A', 'B']})))
-        self.assertIsNone(resolve_conditions(defaultdict(list, {'X1': ['B', '(Y2->F)']})))
-        self.assertIsNone(resolve_conditions(defaultdict(list, {'X1': ['(A->B)', '(Y2->X2)'], 'X2': ['C']})))
-        self.assertIsNone(resolve_conditions(defaultdict(list, {'X1': ['(B->(A->F))', '(X3->(X2->F))'],
-                                                                'X2': ['A'], 'X3': ['C']})))
-        self.assertDictEqual(resolve_conditions(defaultdict(list, {'X1': ['A', 'X3'], 'X2': ['B']})),
-                             {'X1': ['A'], 'X2': ['B'], 'X3': ['A']})
-        self.assertDictEqual(resolve_conditions(defaultdict(list, {'X1': ['(A->F)', '(X2->F)'], 'X2': ['A']})),
-                             {'X1': ['(A->F)'], 'X2': ['A']})
-        self.assertDictEqual(resolve_conditions(defaultdict(list, {'X1': ['(B->(A->F))', '(X3->(X2->F))'], 'X2': ['A']})),
-                             {'X1': ['(B->(A->F))'], 'X2': ['A'], 'X3': ['B']})
-        self.assertDictEqual(resolve_conditions(defaultdict(list, {'X1': ['(X2->X3)'], 'X2': ['B'], 'X3': ['C']})),
-                             {'X1': ['(B->C)'], 'X2': ['B'], 'X3': ['C']})
-        self.assertDictEqual(resolve_conditions(defaultdict(list, {'X1': ['(X2->X3)'], 'X2': ['B']})),
-                             {'X1': ['(B->X3)'], 'X2': ['B']})
-        self.assertDictEqual(resolve_conditions(defaultdict(list, {'X1': ['(Y2->F)'], 'X2': ['B']})),
-                             {'X1': ['(Y2->F)'], 'X2': ['B']})
-        self.assertDictEqual(resolve_conditions(defaultdict(list, {'X1': ['(B->F)', '(Y2->F)']})),
-                             {'X1': ['(B->F)'], 'Y2': ['B']})
-        self.assertDictEqual(resolve_conditions(defaultdict(list, {'X1': ['(B->(A->B))', '(Y1->Y2)']})),
-                             {'X1': ['(B->(A->B))'], 'Y2': ['(A->B)'], 'Y1': ['B']})
-        self.assertDictEqual(resolve_conditions(defaultdict(list, {'X1': ['(Y2->X2)'], 'X2': ['B']})),
-                             {'X1': ['(Y2->B)'], 'X2': ['B']})
-        self.assertDictEqual(resolve_conditions(defaultdict(list, {'X1': ['(A->B)', '(Y2->X2)']})),
-                             {'X1': ['(A->B)'], 'X2': ['B'], 'Y2': ['A']})
-        self.assertDictEqual(resolve_conditions(defaultdict(list, {'X1': ['(A->B)', '(Y2->X2)'], 'X2': ['B']})),
-                             {'X1': ['(A->B)'], 'X2': ['B'], 'Y2': ['A']})
-        self.assertDictEqual(resolve_conditions(defaultdict(list, {'X1': ['(A->B)'], 'X2': ['(X3->Y1)'], 'X3': ['B']})),
-                             {'X1': ['(A->B)'], 'X2': ['(B->Y1)'], 'X3': ['B']})
-        self.assertDictEqual(resolve_conditions(defaultdict(list, {'X1': ['(Y2->X3)', '(A->B)'],
-                                                                   'X2': ['C'], 'X3': ['B']})),
-                             {'X1': ['(A->B)'], 'X2': ['C'], 'X3': ['B'], 'Y2': ['A']})
+        self.assertIsNone(resolve_conditions(defaultdict(set, {'X1': {'A', 'B'}})))
+        self.assertIsNone(resolve_conditions(defaultdict(set, {'X1': {'B', '(Y2->F)'}})))
+        self.assertIsNone(resolve_conditions(defaultdict(set, {'X1': {'(A->B)', '(Y2->X2)'}, 'X2': {'C'}})))
+        self.assertIsNone(resolve_conditions(defaultdict(set, {'X1': {'(B->(A->F))', '(X3->(X2->F))'},
+                                                                'X2': {'A'}, 'X3': {'C'}})))
+        self.assertDictEqual(resolve_conditions(defaultdict(set, {'X1': {'A', 'X3'}, 'X2': {'B'}})),
+                             {'X1': {'A'}, 'X2': {'B'}, 'X3': {'A'}})
+        self.assertDictEqual(resolve_conditions(defaultdict(set, {'X1': {'(A->F)', '(X2->F)'}, 'X2': {'A'}})),
+                             {'X1': {'(A->F)'}, 'X2': {'A'}})
+        self.assertDictEqual(resolve_conditions(defaultdict(set, {'X1': {'(B->(A->F))', '(X3->(X2->F))'}, 'X2': {'A'}})),
+                             {'X1': {'(B->(A->F))'}, 'X2': {'A'}, 'X3': {'B'}})
+        self.assertDictEqual(resolve_conditions(defaultdict(set, {'X1': {'(X2->X3)'}, 'X2': {'B'}, 'X3': {'C'}})),
+                             {'X1': {'(B->C)'}, 'X2': {'B'}, 'X3': {'C'}})
+        self.assertDictEqual(resolve_conditions(defaultdict(set, {'X1': {'(X2->X3)'}, 'X2': {'B'}})),
+                             {'X1': {'(B->X3)'}, 'X2': {'B'}})
+        self.assertDictEqual(resolve_conditions(defaultdict(set, {'X1': {'(Y2->F)'}, 'X2': {'B'}})),
+                             {'X1': {'(Y2->F)'}, 'X2': {'B'}})
+        self.assertDictEqual(resolve_conditions(defaultdict(set, {'X1': {'(B->F)', '(Y2->F)'}})),
+                             {'X1': {'(B->F)'}, 'Y2': {'B'}})
+        self.assertDictEqual(resolve_conditions(defaultdict(set, {'X1': {'(B->(A->B))', '(Y1->Y2)'}})),
+                             {'X1': {'(B->(A->B))'}, 'Y2': {'(A->B)'}, 'Y1': {'B'}})
+        self.assertDictEqual(resolve_conditions(defaultdict(set, {'X1': {'(Y2->X2)'}, 'X2': {'B'}})),
+                             {'X1': {'(Y2->B)'}, 'X2': {'B'}})
+        self.assertDictEqual(resolve_conditions(defaultdict(set, {'X1': {'(A->B)', '(Y2->X2)'}})),
+                             {'X1': {'(A->B)'}, 'X2': {'B'}, 'Y2': {'A'}})
+        self.assertDictEqual(resolve_conditions(defaultdict(set, {'X1': {'(A->B)', '(Y2->X2)'}, 'X2': {'B'}})),
+                             {'X1': {'(A->B)'}, 'X2': {'B'}, 'Y2': {'A'}})
+        self.assertDictEqual(resolve_conditions(defaultdict(set, {'X1': {'(A->B)'}, 'X2': {'(X3->Y1)'}, 'X3': {'B'}})),
+                             {'X1': {'(A->B)'}, 'X2': {'(B->Y1)'}, 'X3': {'B'}})
+        self.assertDictEqual(resolve_conditions(defaultdict(set, {'X1': {'(Y2->X3)', '(A->B)'},
+                                                                   'X2': {'C'}, 'X3': {'B'}})),
+                             {'X1': {'(A->B)'}, 'X2': {'C'}, 'X3': {'B'}, 'Y2': {'A'}})
 
     def test_atomize(self):
         f = ProofSearch({}, '(((!b)+a):(b:X))')
@@ -177,14 +178,14 @@ class Tests(unittest.TestCase):
                              ps.musts)
 
     def test_combine(self):
-        existing = [{'X1':['A'], 'X2':['B']}, {'X1': ['(A->B)'], 'X3': ['C']}]
-        new = [{'X1': ['B'], 'X2': ['C']}, {'X1': ['A'], 'X2': ['B']}]
-        self.assertListEqual([{'X2': ['B'], 'X1': ['A']}], combine(new, existing))
+        existing = [defaultdict(set, {'X1': {'A'}, 'X2': {'B'}}), defaultdict(set, {'X1': {'(A->B)'}, 'X3': {'C'}})]
+        new = [defaultdict(set, {'X1': {'B'}, 'X2': {'C'}}), defaultdict(set, {'X1': {'A'}, 'X2': {'B'}})]
+        self.assertListEqual([defaultdict(set, {'X2': {'B'}, 'X1': {'A'}})], combine(new, existing))
 
     def test_combine2(self):
-        existing = [{'X1': ['A'], 'X2':['B']}, {'X2': ['(A->B)']}]
-        new = [{'X1': ['A'], 'X3': ['C']}]
-        self.assertListEqual([{'X3': ['C'], 'X2': ['B'], 'X1': ['A']}, {'X3': ['C'], 'X2': ['(A->B)'], 'X1': ['A']}],
+        existing = [{'X1': {'A'}, 'X2':{'B'}}, {'X2': {'(A->B)'}}]
+        new = [{'X1': {'A'}, 'X3': {'C'}}]
+        self.assertListEqual([{'X3': {'C'}, 'X2': {'B'}, 'X1': {'A'}}, {'X3': {'C'}, 'X2': {'(A->B)'}, 'X1': {'A'}}],
                              combine(new, existing))
 
     def test_nice(self):
@@ -217,16 +218,8 @@ class Tests(unittest.TestCase):
 
     def test_conquer3(self):
         ps = ProofSearch({'a': ['((A->C)->F)'], 'b': ['(Y1->(Y2->Y1))'], 'c': ['C']}, '((a*(b*c)):F)')
-        self.assertListEqual([{'Y1': ['C'], 'X2': ['C'], 'X1': ['(A->C)'], 'Y2': ['A']}],
+        self.assertListEqual([{'X2': {'C'}, 'Y1': {'C'}, 'X1': {'(A->C)'}, 'Y2': {'A'}}],
                              ps._conquer_one_atom('((a*(b*c)):F)'))
         result = ps.conquer()
         self.assertTrue(result[0])
         self.assertDictEqual({'((a*(b*c)):F)': [[('X1', '(A->C)'), ('X2', 'C')]]}, result[1])
-
-    def test_merge_dicts(self):
-        self.assertDictEqual({'X1': ['a', 'b', 'c'], 'X2': ['a', 'b'], 'X3': ['a', 'b', 'c']},
-                             merge_dicts({'X2': ['a', 'b'], 'X3': ['a']},
-                                         {'X1': ['a', 'b', 'c'], 'X2':['b'], 'X3': ['b', 'c']}))
-        self.assertDictEqual({'X2': ['B'], 'X3': ['C'], 'X1': ['A']},
-                             merge_dicts({'X3': ['C']}, {'X1': ['A'], 'X2': ['B']}))
-        self.assertDictEqual({'X1': ['A', 'X3'], 'X2': ['B']}, merge_dicts({'X1': ['X3']}, {'X1': ['A'], 'X2': ['B']}))

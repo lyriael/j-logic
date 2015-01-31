@@ -85,7 +85,7 @@ class ProofSearch:
         :param atom: string
         :return merged_conditions: list
         '''
-        all_conditions = {}
+        all_conditions = defaultdict(set)
         # Collect all conditions for each must.
         for proof_constant, condition_term in self.musts[atom]:
             proofs_for_atom = []
@@ -128,36 +128,3 @@ def nice(conquered_atom):
     return all
 
 
-def combine(conditions_to_add, existing_conditions):
-    '''
-    #todo: Doc
-    :param conditions_to_add: list
-    :param existing_conditions: list
-    :return combined_conditions: list
-    '''
-    if not existing_conditions:
-        return conditions_to_add
-
-    combined_conditions = []
-    for existing in existing_conditions:
-        for new in conditions_to_add:
-            match = resolve_conditions(merge_dicts(existing, new))
-            if match:
-                combined_conditions.append(match)
-    if combined_conditions:
-        return combined_conditions
-    else:
-        return None
-
-
-def merge_dicts(dct1, dct2):
-    # XOR
-    if bool(dct1) != bool(dct2):
-        return dct1 or dct2
-
-    merged = defaultdict(list)
-    dct1, dct2 = defaultdict(list, dct1), defaultdict(list, dct2)
-    all_keys = list(set(list(dct1.keys()) + list(dct2.keys())))
-    for key in all_keys:
-        merged[key] = sorted(set(dct1[key] + dct2[key]))
-    return merged
