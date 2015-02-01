@@ -115,7 +115,7 @@ def musts(proof_term):
     '''
     tree = Tree(proof_term)
     consts = []         # returning container. Formulas in string form.
-    assignements = []   # contains replacements for Wilds from '!'. => ('X2', '(b:X3)') in string form
+    assignments = []   # contains replacements for Wilds from '!'. => ('X2', '(b:X3)') in string form
     v_count = 1         # needed for Wilds (X1, X2, ...)
     todo = [tree]       # contains trees that still need to be handled.
     while todo:
@@ -135,9 +135,9 @@ def musts(proof_term):
             left = subtree(f.root.left.right)
             s = '(%s:X%s)' % (str(left), str(v_count))
             todo.append(Tree(s))
-            assignements.append((str(subformula), s))
+            assignments.append((str(subformula), s))
             v_count += 1
-    return sorted(_replace(consts, assignements))
+    return sorted(_replace(consts, assignments))
 
 
 def _replace(consts, assignments):

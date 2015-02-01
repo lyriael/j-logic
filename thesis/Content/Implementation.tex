@@ -1,18 +1,5 @@
 %!TEX root = ../bachelors_thesis.tex
 
-\section{Model Overview}
-For the implementation of this algorithm there was only one model that truly stood out in the sense of object orientated programming. For all other functions it proved rather difficult to find a clear class where it belonged to and also making good use of responsibilities of those classes. As mentioned in chapter \ref{chap: Justification Logic} the main work was done using syntax trees and so it was the most obvious class to build. I decided to make a extra class for the \emph{Nodes} where all the small things like setting a child, and checking if it is a root and such would be handled. \emph{Tree} and \emph{Node} could have been merge to be one class only but I found it easier to work with the code if the more standard and trivial stuff of binary trees was separated from what was more specific for this algorithm. A lot of the \emph{atomize} part is handled by the \emph{Tree} class since it works within the formula and also changes the structure of it.
-
-The most important class however is the \emph{ProofSearch} class. It acts as a sort of main class as the initialization of the formula and the cs-list takes place here. It is also here that the methods of the \emph{Tree} class are called from. Its responsibility is to handle all algorithmic task that can be done without using a syntax tree. So the major logic of the conquer step is implemented here.
-
-Last there is the typical \emph{Helper} class. The methods here are usually rather short  and simple and serve the purpose of making the \emph{Tree} and \emph{ProofSearch} class appear cleaner. It may be argued that some of those methods present in \emph{Helper} should be better placed in \emph{ProofSearch} and vice a verse but then again the argument for a clean object orientated model design for an algorithm is questionable and very difficult to archive.
-
-\begin{figure}[H]
-	\includegraphics[width=0.9\textwidth]{/home/lyriael/BA/j-logic/thesis/Figures/uml_01.pdf}
-	\caption{Simplified UML graphic of the classes used for implementing the algorithm. The list of methods and attributes is by no means complete and should simply give an idea of the construction.}
-	\label{uml}
-\end{figure}
-
 \section{Operation Syntax Tree}
 One of the earliest challenges was a useful representation of a formula with which I could work decently. Interestingly enough a binary tree came only later into my mind, after I tested various libraries from Python. There were libraries that seemed very useful at first as they were math-specific. Analyzing formulas that contained $*$ or $+$ were fairly easy but as $:$ and $!$ are not very common operations I could not customize the tested libraries enough to handle those as well.
 
@@ -20,76 +7,134 @@ So it happened while I was searching yet for another library that I tumbled over
 
 I decided to implement my own tree for that purpose. It might be argued that a lot of work could be saved if I used available syntax trees but for one thing I relished the idea of implementing a tree structure that I would use myself and thus finally use what I have learned in lecture ages ago and second I would have to make custom changes to a finished solution anyway and those changes are probably more work than the implementation of a binary tree which is rather simple.
 
-I tried to keep the tree as simple as possible, giving the nodes only a value and not a unique key. The greatest challenge given by implementing a syntax tree was to handle the unary operator $!$. As braces serve to determine the depth of a tree and a binary operation tells you when to start climbing up again, it required so extra case handling for the $!$ operator. From the point on when the tree was working, it was not only important to the algorithm, but could also be used to check if the input was written correctly. Therefore most of the tests that test the string handling of a tree are the result of formulas used somewhere else but which needed syntax spell checking. 
+I tried to keep the tree as simple as possible, giving the nodes only a value, not needing a unique key. The greatest challenge given by implementing a syntax tree was to handle the unary operator $!$. As braces serve to determine the depth of a tree and a binary operation tells you when to start climbing up again, it required so extra case handling for the $!$ operator. From the point on when the tree was working, it was not only important to the algorithm, but could also be used to check if the input was written correctly. Therefore most of the tests that test the string handling of a tree are the result of formulas used somewhere else but which needed syntax spell checking. 
+
+\section{Model Overview}
+Finding a good model design for this algorithm was rather hard. I ended up with a few model classes in a traditional sense and the inevitable helper class that contains a bunch of static methods. I think for a very clean design all of the source code would best be put in one, or at most two classes and be shipped as a single module. As can be seen in the simplified UML presented below there is no real interaction between the classes. They mainly serve the purpose to hide complicated code and provide a certain level of abstraction. For that reason all, or most of it could be included in the master class \texttt{ProofSearch}. But I find it more agreeable to browse through different files of code than to have it all clustered up in one big file.
+
+I believe that the reason for this situation of design it the fact that the code altogether represents a single algorithm and thus it is not as intuitive to model as other things where the domain implies more straight forward objects with corresponding responsibilities and relations.
+
+On the other hand it shall be pointed out that it surely would be possible to structure this project in a more object-oriented style. But doing so would probably cost more time and effort then what eventually would be won by it.
+
+\subsection{Classes}
+
+\subsubsection[Tree and Node]{\texttt{Tree} and \texttt{Node}}
+As seen in the previous section I use a binary tree to represent, search and manipulate formulas. The class \texttt{Tree} and also the associated class \texttt{Node} are a standard implementation of a syntax tree made to precisely fit my purpose. 
+
+\begin{figure}[H]
+	\includegraphics[width=0.9\textwidth]{/home/lyriael/BA/j-logic/thesis/Figures/uml_j-logic.png}
+	\caption{Simplified UML graphic of the classes used for implementing the algorithm. The list of methods and attributes is by no means complete and should simply give an idea of the construction.}
+	\label{uml}
+\end{figure}
 
 
-\section{Important Methods}
-In this section I want to show and explain some of the more complicated methods that are important and make up the heart of the algorithm.
+\subsubsection[ProofSearch]{\texttt{ProofSearch}}
+This class can be considered as the main class of this project. It takes the user input, evaluates the justification formula and finally returns if the formula is provable or not. If it is, the output will also provide a proof.
 
-\subsection{musts}
+\subsubsection[FormulaTools]{\texttt{FormulaTools}}
+The name of the class reveals already its usage. This class doesn't quiet deserve to be called such since it does not describe any model but simply serves as a box of tools. Tools which perform functions that are not solely related with the model \texttt{Tree} and \texttt{Node} or with \texttt{ProofSearch}. It is something like a go-in-between for the those. Removing this class would result in a lot of static methods for both the \texttt{Tree} and the \texttt{ProofSearch} class and for many of them it would not even be clear where to. 
 
-The method \emph{musts} expects a given proof term to be already \emph{atomized} as it only distinguishes between $!$ and $*$ operations.
-The algorithm takes the formula in form of a tree apart from top to bottom, generating new, smaller terms for every operation it takes apart until the remaining proof term is only a proof constant. Since the resolve of a $*$ operation needs a new \emph{X-wild} and the resolve of a $!$ operation replaces an existing \emph{x-wild} and therefore needs a new as well, the current $i$ for a new \emph{X-wild} $X_i$ is stored and increased in \texttt{v\_count}.
+But it is still possible to describe it as a model its responsibilities. It main concern lays in handling formula and any task given for one or a set of formulas. In contrast to that the \texttt{Tree} is only concerned with the formula that makes up its structure and the \texttt{ProofSearch} that does not actually handle formulas but evaluates the result a action on a formula gives.
+
+
+\section{Selected Methods}
+In this section I want to show and explain some of the more complicated methods that are important and make up the heart of the algorithm. The source code of the methods presented here are excerpts only and occasional their in line comments where shortened or to keep the snippets as short as possible and to avoid unnecessary repetition of information since the code comments are of course very similar to the description presented in this chapter. The aim of this section is to provide a insight of the source code without the need to read through all of it. 
+
+Still the source code attached is provided with a full documentation, not only containing method description but also rich in line comments, examples and explanations. 
+
+\subsection[atomize]{\texttt{atomize, ProofSearch}}
+The method \texttt{atomize} can be seen as the whole \emph{divide} step of the algorithm. Although I was tempted to name it as such I did not change it although it would have fitted very nicely with the corresponding method \texttt{conquer} which will be presented here as well. I felt that the name \emph{atomize} carries more meaning than \emph{divide} and after all the \emph{divide} and \emph{conquer} approach is more a general one and does not fit a hundred percent for this algorithm.
+
+The method is straight forward, doing what has been described before in chapter \ref{chap: Algorithm A Divide and Conquer Approach}: It splits the formula for each $+$ found and then tries to simplify all subformulas that start with a $!$. Subformulas that are not resolvable\footnote{Such would be formulas that start with a $!$ but cannot be simplified or formulas that contain a $!$ on the left side of a $*$.} are removed, leaving those that we call \emph{atoms}.
 
 \begin{figure}[H]
     \vspace{-10pt}
-	\lstinputlisting[firstline=2, lastline=22]{/home/lyriael/BA/j-logic/thesis/code_tree.py}
+	\lstinputlisting[firstline=2, lastline=17]{/home/lyriael/BA/j-logic/thesis/Figures/code/musts.py}
 	\vspace{-10pt}
-	\caption{Excerpt from $Tree.musts$}
+	\caption{Excerpt $atomize$ from $ProofSearch$.}
 	\vspace{-10pt}
 \end{figure}
 
-If for example the current justification term would be $((a*(!b)):F)$, it would be taken apart to the two subformulas $(a:(X_i\rightarrow F))$ and $((!b):(X_i))$. Because of the \emph{atomization} in the steps before it is guaranteed that every $!$ is a (right) child of a  $*$ and since every $*$ creates a new $X_i$, a term here that starts with a $*$ is always on a $X_i$. Since from $!b:X_i$ follows $\exists X_j \quad s.t. \quad !b:(b:X_j)$, all $X_i$ that occurred up to now must be replaced by $(b:X_j)$. In the end we will have only proof constants remaining.
+\subsection[musts]{\texttt{musts, FormulaTools}}
+The method \emph{musts} expects a given proof term to be \emph{atomized} already as it only distinguishes between $!$ and $*$ operations.
+The algorithm takes the formula apart from top to bottom, generating new, smaller terms for every operation it takes apart until the remaining proof term is only a proof constant. Since the resolve of a $*$ operation needs a new \emph{X-wild} and the resolve of a $!$ operation replaces an existing \emph{X-wild} with a new, the current $i$ for a new \emph{X-wild} $X_i$ is stored and increased in \texttt{v\_count}.
 
-\subsection{unify}
-I spend probably most of my implementing time on this method, or rather on its predecessor. It used to be a lot longer and more complicated because it differentiated various cases if a formula would contain one or another kind of variable.
-With this new and (hopefully) last implementation there is no different handling for \emph{X-wild} or \emph{Y-wild} variables on that level. Only much later when all results are put together will those variables be handled different accordingly.
+\begin{figure}[H]
+    \vspace{-10pt}
+	\lstinputlisting[firstline=2, lastline=20]{/home/lyriael/BA/j-logic/thesis/Figures/code/musts.py}
+	\vspace{-10pt}
+	\caption{Excerpt $musts$ from $FormulaTools$}
+	\vspace{-10pt}
+\end{figure}
 
-The method is actually quiet forward: It takes two formulas\footnote{It is expected that the only occurring operations are $\rightarrow$ and $:$. It should be rather easy to extend the code at this point to accept also other operations but from what I can expect as input this is not necessary here.} and compares them on the basis of their tree structure. While the structure remains the same thus operations and constants match for both formulas the methods pushes the subtrees of both on the stack until either one of the subtrees consists only of a node containing a variable or a mismatch is found. In the later case \texttt{None} will be return the method is stopped. In the case that we find a node with a variable for one tree it will be formed into a \emph{condition} for that variable, where the variable is the key and whatever we find in the other tree at this place is the value.
+If for example the current justification term would be $((a*(!b)):F)$, it would be taken apart to the two subformulas $(a:(X_i\rightarrow F))$ and $((!b):(X_i))$.
+
+Because of the \emph{atomization} in the steps before, it is guaranteed that every $!$ is a (right) child of a  $*$ and since every $*$ creates a new $X_i$, a term here that starts with a $*$ is always on a $X_i$. 
+
+Since from $!b:X_i$ follows $\exists X_j \quad s.t. \quad !b:(b:X_j)$, all $X_i$ that occurred up to now must be replaced by $(b:X_j)$. In the end we will have only proof constants remaining.
+
+\subsection[unify]{\texttt{unify, FormulaTools}}
+I spend probably most of my implementing time on this method, or rather on many its predecessor. It used to be a lot longer and more complicated because it differentiated various cases if a formula would contain one or another kind of variable.
+With this final implementation no difference is made between handling \emph{X-wild} or \emph{Y-wild} variables on that level. Only much later when all results are put together will those variables be handled accordingly.
+
+The method takes two formulas\footnote{It is expected that the only occurring operations are $\rightarrow$ and $:$. It should be rather easy to extend the code at this point to accept also other operations but from what I can expect as input this is not necessary here.} and compares them on the basis of their tree structure. If roots of both trees are operations and matching, the children of both Nodes are pushed on a stack to be further compared later on. If either one of the trees being compared consists only of a leaf that does not match the other node we either have found a contradiction or a \emph{condition}. In the first case \texttt{None} will be return the method is stopped. In the other case that we find a node with a variable for one tree it will be formed into a \emph{condition} for that variable, where the variable is the key and whatever we find in the other tree at this place is the value.
+
+All those conditions are stored as tuples in a set and are returned in form of a dictionary, where all conditions for one variable can be accessed by the variable itself as key. At the current state conditions that apply to a variable may be contradictory, but it the responsibility of this method only to collect those and not to valuate them. This will done by the method \texttt{simplify} and in a further extension also in the method \texttt{resolve\_conditions}.
 
 \begin{figure}[H]
 	\vspace{-10pt}
-	\lstinputlisting[firstline=1, lastline=25]{/home/lyriael/BA/j-logic/thesis/code_formula_tools.py}
+	\lstinputlisting[firstline=2, lastline=25]{/home/lyriael/BA/j-logic/thesis/Figures/code/unify.py}
 	\vspace{-10pt}
 	\caption{Excerpt $unify$ from $FormulaTools$.}
 	\vspace{-10pt}
 \end{figure}
 
-All those conditions are stored as tuples in a list and are returned in form of a dictionary, where all conditions for one variable can be accessed by the variable itself as key. At the current state conditions that apply to a variable may be contradictory, but it the responsibility of this method is only to collect those and not to valuate them. This is done by the method \texttt{simplify} and in a further extension also in the method \texttt{resolve\_conditions}.
+
+\subsection[simplify]{\texttt{simplify, FormulaTools}}
+
+The aim of this method is that after it has run there is only one condition term left for the variable it takes as input and this variable does not occur anywhere else except as key to its condition. For example, if we had $ [(A \rightarrow B), X_2, (Y_1 \rightarrow Y_2)]$ as conditions for the variable $X_1$ and $[(X_1)]$ as condition for $X_2$ after running the method we would get $[(A \rightarrow B)]$ for $X_1$, $[((A \rightarrow B), (Y_1 \rightarrow Y_2)]$ for $X_2$ and also $[(A)]$ for the new found variable $Y_1$ and $[(B)]$ for the new found variable $Y_2$. Thus we have eliminated all occurrences of the variable $X_1$ and as a consequence of this we found new variables that were not present before. 
+
+Implementing this method proved harder then first excepted since I didn't anticipated the role of the new found variables at first. The method \texttt{resolve\_conditions} handles the order in which this method is called on each variable. It simply pushes the new found variables on top of its stack to make sure they are not forgotten. Because \texttt{resolve\_conditions} needs to know the new variables \texttt{simplify} makes changes to the condition set in place and instead of returning the conditions, it returns a list with all newfound variables.
+
+\begin{figure}[H]
+	\vspace{-10pt}
+	\lstinputlisting[firstline=13, lastline=39]{/home/lyriael/BA/j-logic/thesis/Figures/code/simplify.py}
+	\vspace{-10pt}
+	\caption{Excerpt $simplify$ from $FormulaTools$.}
+	\vspace{-10pt}
+\end{figure}
 
 
-\subsection{simplify}
-This methods is used to get a result once all conditions are obtained by \texttt{unify}. The method is implemented in a way that it does only \emph{simplify} the conditions for \emph{one} Variable. To \emph{simplify} a whole set of variables with their conditions a very simple method called \texttt{resolve\_conditions} in \texttt{FormuaTools} is used. 
+\subsection[conquer]{\texttt{conquer, ProofSearch}}
+Although the method \texttt{conquer} is the one returning the final result, the actual work is done by the method \texttt{conquer\_one\_atom}. As the name suggests it checks the provability of one atom only. \texttt{conquer} then simply summarizes the result of each atom and give a readable output.
 
-The aim of this method is that after it run there is only one condition term left for this variable and the variable itself does not occur anywhere else except as key to its condition. The reason behind this it that eventually we will have for every variable only one condition left. We would know for each variable what its value would be. As it is so often this idea proved harder to realize than first anticipated.
+\texttt{conquer\_one\_atom} is structured in two main loops. In the first loop it collects all possible configurations for each of the \emph{musts} of the atom. If for any \emph{must} no valid configuration can be found the method will terminate because one invalid \emph{must} makes the whole atom unprovable.
 
-Where as I usually present here an excerpt from the original source code in the case of this method I rather present the idea in a more pseudo code manner since the source code contains a lot of indexing and parsing of data types that make it cumbersome to read and understand.
+\begin{figure}[H]
+	\vspace{-10pt}
+	\lstinputlisting[firstline=3, lastline=22]{/home/lyriael/BA/j-logic/thesis/Figures/code/conquer.py}
+	\vspace{-10pt}
+	\caption{First excerpt $conquer\_one\_ atom$ from $FormulaTools$.}
+	\vspace{-10pt}
+\end{figure}
 
-$X$ shall be our variable, and $F_1, F_2, ... F_n$ are all conditions that are mapped for this variable.
+The second loop then tries to find one (or more) overall configuration(s) that is compatible with at least one of the configurations per \emph{must}. If at some stage there is no entry left in \texttt{merged\_conditions}, it means that the conditions posed by the new encountered configuration of the musts are not compatible with the old ones and thus the atom is not provable.
 
-\begin{itemize}
-	\item Preprocess all $F_i$: If any $F_i$ contains $X$ as part of its term we have a contradiction and the method will return \texttt{None} to indicate the contradiction. An exception is however if $F_i == X$ since this is not a very useful but a valid statement.
-	\item For each pair $F_i$, $F_j$ we will use \texttt{unify} to check if those conditions are compatible. As we have seen above we will get a set of conditions again from \texttt{unify}. From the preprocess we are guarantied, that all those new conditions do not contain the variable $X$. If there is one pair of conditions that is not compatible the method will return \texttt{None} again to indicate the found contradiction.
-	\item Choose one $F_k$ to be the only of the $F_n$ conditions to be put back in the set of original conditions. Since $F_k$ was matched with every other $F_i$ in the preceding step this one condition on $X$ together with the newly found conditions ensure that we don't loose any information and at the same time have only one condition on $X$ left.
-	\item Replace all occurrences of $X$ in conditions of other variables with the single condition set to $X$ by the step above.
-\end{itemize}
+\begin{figure}[H]
+	\vspace{-10pt}
+	\lstinputlisting[firstline=26, lastline=41]{/home/lyriael/BA/j-logic/thesis/Figures/code/conquer.py}
+	\vspace{-10pt}
+	\caption{Second excerpt $conquer\_one\_ atom$ from $FormulaTools$.}
+	\vspace{-10pt}
+\end{figure}
 
-The steps above are those originally intended, while implementing it I found that there's a catch. The algorithm work fine the way it is described above for one variable but when iterating through all variables there was a problem because the conditions gained by \emph{unifying} the conditions of one variable might lead to new variable which where not present before because they only appear as part of a condition but not by themselves. The simplest solution seamed to be so initialize all variable and just leave the conditions empty, but because the order in which the variable are \emph{simplified} is not reliable it would be possible that a variable with no conditions is \emph{simplified} and only afterwards new conditions would be added. So the return value of this method is a list of the newly found variables. The condition set doesn't have to be returned since the changes are made in place.
-
-
-So instead I worked recursively\footnote{To be precise I work with a stack and push any new variable on top so that it is next to be \emph{simplified}.} so that those new variables would be \emph{simplified} and thus replaced everywhere except a variable key and with one condition before the algorithm would randomly take the next variable to \emph{simplify}.
-
-
-\subsection{conquer}
-\todoWriteMore{Write about resolve conditions}
+\bigskip
 
 
 \section{Tests}
-The tests I have written for this algorithm have been most important to the success of it. They served me in two ways: To check if my code would behave and actually do what I expected it to do and the other use was when I suddenly stumbled across a example or a situation where I did not know what I would expect I could see what my implementation would do with it, thus helping me to understand it better.
+The simple unittests I have written for this algorithm have been most important to the success of it. They served me in two ways: First to check if my code would behave and actually do what I expected it to do and second when I suddenly stumbled across a example or a situation where I did not know what I would expect I would simple write a test for it and see what happens, thus helping me to understand it better.
 Of course blessing of the tests is also a curse as it is because of the tests that I found so many mistakes that I've made and forcing me to do it again and again.
 
-As can be seen when looking at the source code not all all methods are tested on a same quality level. Methods that I deemed simple usually have only one or two tests. An example for that is \texttt{nice} from \texttt{ProofSearch}, this methods simply rearranges the elements of a dictionary and returns a nice readable output that summarized the content of the original input. In contrast to this methods are methods like the \texttt{conquer} methods and the \texttt{divide} method from \texttt{ProofSearch} or the \texttt{to\_s} from \texttt{Tree} which basically tests if the parsing between String and Tree works correctly.
+As can be seen when looking at the source code not all all methods are tested on a same quality level. Methods that I deemed simple usually have only one or two tests. An example for that is \texttt{summarize} from \texttt{ProofSearch}, this methods simply rearranges the elements of a dictionary and returns a nice readable output that summarized the content of the original input. In contrast to this methods are methods like the \texttt{conquer} methods and the \texttt{divide} method from \texttt{ProofSearch} or the \texttt{to\_s} from \texttt{Tree} which basically tests if the parsing between String and Tree works correctly.
 
 To name some numbers, there are currently\footnote{Even though the program is finished it is still possible that I add more tests to get rid of any doubts, so the numbers are not fix.} a total of 66 tests. Almost halve of which are found in \texttt{ProofSearch}. 
-
-As for the technology I used a simple unittesting framework.
