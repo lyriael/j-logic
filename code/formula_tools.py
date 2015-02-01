@@ -1,7 +1,6 @@
 from tree import *
 from collections import defaultdict
 import itertools
-import copy
 
 
 def sum_split(formula):
@@ -323,54 +322,4 @@ def resolve_conditions(conditions):
     return conditions
 
 
-def combine(conditions_to_add, existing_conditions):
-    '''
-    :param conditions_to_add: list
-    :param existing_conditions: list
-    :return combined_conditions: list
-    '''
-    # todo: DOC
-    if not existing_conditions:
-        return conditions_to_add
 
-    combined_conditions = []
-    for existing in existing_conditions:
-        for new in conditions_to_add:
-            match = resolve_conditions(merge_dicts(existing, new))
-            if match:
-                combined_conditions.append(match)
-    if combined_conditions:
-        return combined_conditions
-    else:
-        return None
-
-
-def merge_dicts(dct1, dct2):
-    '''
-    :param dct1:
-    :param dct2:
-    :return:
-    '''
-    # todo: DOC
-    dct1_tmp = defaultdict(set, copy.deepcopy(dct1))
-    dct2_tmp = defaultdict(set, copy.deepcopy(dct2))
-    all_keys = list(set(list(dct1_tmp.keys()) + list(dct2_tmp.keys())))
-    for key in all_keys:
-        dct1_tmp[key].update(dct2_tmp[key])
-    return dct1_tmp
-
-
-def nice(conquered_atom):
-    if conquered_atom is None:
-            return None
-    all = []
-    for possible_solutions in conquered_atom:
-        table = []
-        for tpl in condition_dict_to_list(possible_solutions)[:]:
-            if 'X' in tpl[0] and tpl[0] == tpl[1]:
-                table.append((tpl[0], ''))
-            elif 'X' in tpl[0]:
-                table.append(tpl)
-        if table:
-            all.append(sorted(table))
-    return all

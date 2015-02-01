@@ -178,13 +178,13 @@ class Tests(unittest.TestCase):
     def test_combine(self):
         existing = [defaultdict(set, {'X1': {'A'}, 'X2': {'B'}}), defaultdict(set, {'X1': {'(A->B)'}, 'X3': {'C'}})]
         new = [defaultdict(set, {'X1': {'B'}, 'X2': {'C'}}), defaultdict(set, {'X1': {'A'}, 'X2': {'B'}})]
-        self.assertListEqual([defaultdict(set, {'X2': {'B'}, 'X1': {'A'}})], combine(new, existing))
+        self.assertListEqual([defaultdict(set, {'X2': {'B'}, 'X1': {'A'}})], merge_conditions(new, existing))
 
     def test_combine2(self):
         existing = [{'X1': {'A'}, 'X2':{'B'}}, {'X2': {'(A->B)'}}]
         new = [{'X1': {'A'}, 'X3': {'C'}}]
         self.assertListEqual([{'X3': {'C'}, 'X2': {'B'}, 'X1': {'A'}}, {'X3': {'C'}, 'X2': {'(A->B)'}, 'X1': {'A'}}],
-                             combine(new, existing))
+                             merge_conditions(new, existing))
 
     def test_conquer1(self):
         cs = defaultdict(list, {'s': ['(B->A)'],
@@ -217,3 +217,24 @@ class Tests(unittest.TestCase):
         result = ps.conquer()
         self.assertTrue(result[0])
         self.assertDictEqual({'((a*(b*c)):F)': [[('X1', '(A->C)'), ('X2', 'C')]]}, result[1])
+
+    def test_add_dicts(self):
+        self.assertDictEqual(defaultdict(set, {'X1': {'a', 'b', 'c'}, 'X2': {'a', 'b'}, 'X3': {'a', 'b', 'c'}}),
+                             add_dicts(defaultdict(set, {'X2': {'a', 'b'}, 'X3': {'a'}}),
+                                         defaultdict(set, {'X1': {'a', 'b', 'c'}, 'X2':{'b'}, 'X3': {'b', 'c'}})))
+        self.assertDictEqual({'X2': {'B'}, 'X3': {'C'}, 'X1': {'A'}},
+                             add_dicts({'X3': {'C'}}, {'X1': {'A'}, 'X2': {'B'}}))
+        self.assertDictEqual({'X1': {'A', 'X3'}, 'X2': {'B'}}, add_dicts({'X1': {'X3'}}, {'X1': {'A'}, 'X2': {'B'}}))
+        self.assertDictEqual({'X1': {'A', 'B'}}, add_dicts({'X1': {'A', 'B'}}, {}))
+        self.assertDictEqual({'X1': {'A', 'B'}}, add_dicts({}, {'X1': {'A', 'B'}}))
+
+    def test_add_dicts2(self):
+        dict1 = defaultdict(set, {'X2': {'B'}, 'X1': {'A'}})
+        dict2 = defaultdict(set, {'X2': {'C'}, 'X1': {'B'}})
+        add_dicts(dict1, dict2)
+        self.assertDictEqual(defaultdict(set, {'X2': {'B'}, 'X1': {'A'}}), dict1)
+        self.assertDictEqual(defaultdict(set, {'X2': {'C'}, 'X1': {'B'}}), dict2)
+
+    def test_summarize(self):
+        self.assertListEqual([[('X2', ''), ('X3', 'F')]],
+                             summarize([{'Y1': ['F'], 'X2': ['X2'], 'Y2': ['X2'], 'X3': ['F']}]))

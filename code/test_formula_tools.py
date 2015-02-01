@@ -120,24 +120,3 @@ class Tests(unittest.TestCase):
         self.assertListEqual([('a', '(X5->(((d*(!e)):X2)->F))'), ('b', '(X6->X5)'),
                               ('c', 'X6'), ('d', '((e:X4)->X2)'), ('e', 'X4')],
                              musts('(((a*(b*c))*(!(d*(!e)))):F)'))
-
-    def test_merge_dicts(self):
-        self.assertDictEqual(defaultdict(set, {'X1': {'a', 'b', 'c'}, 'X2': {'a', 'b'}, 'X3': {'a', 'b', 'c'}}),
-                             merge_dicts(defaultdict(set, {'X2': {'a', 'b'}, 'X3': {'a'}}),
-                                         defaultdict(set, {'X1': {'a', 'b', 'c'}, 'X2':{'b'}, 'X3': {'b', 'c'}})))
-        self.assertDictEqual({'X2': {'B'}, 'X3': {'C'}, 'X1': {'A'}},
-                             merge_dicts({'X3': {'C'}}, {'X1': {'A'}, 'X2': {'B'}}))
-        self.assertDictEqual({'X1': {'A', 'X3'}, 'X2': {'B'}}, merge_dicts({'X1': {'X3'}}, {'X1': {'A'}, 'X2': {'B'}}))
-        self.assertDictEqual({'X1': {'A', 'B'}}, merge_dicts({'X1': {'A', 'B'}}, {}))
-        self.assertDictEqual({'X1': {'A', 'B'}}, merge_dicts({}, {'X1': {'A', 'B'}}))
-
-    def test_merge_dicts2(self):
-        dict1 = defaultdict(set, {'X2': {'B'}, 'X1': {'A'}})
-        dict2 = defaultdict(set, {'X2': {'C'}, 'X1': {'B'}})
-        merge_dicts(dict1, dict2)
-        self.assertDictEqual(defaultdict(set, {'X2': {'B'}, 'X1': {'A'}}), dict1)
-        self.assertDictEqual(defaultdict(set, {'X2': {'C'}, 'X1': {'B'}}), dict2)
-
-    def test_nice(self):
-        self.assertListEqual([[('X2', ''), ('X3', 'F')]],
-                             nice([{'Y1': ['F'], 'X2': ['X2'], 'Y2': ['X2'], 'X3': ['F']}]))
