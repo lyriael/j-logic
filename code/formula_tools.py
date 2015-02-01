@@ -116,8 +116,8 @@ def musts(proof_term):
     '''
     tree = Tree(proof_term)
     consts = []         # returning container. Formulas in string form.
-    assignements = []          # contains replacements for Wilds from '!'. => ('X2', '(b:X3)') in string form
-    v_count = 1        # needed for Wilds (X1, X2, ...)
+    assignements = []   # contains replacements for Wilds from '!'. => ('X2', '(b:X3)') in string form
+    v_count = 1         # needed for Wilds (X1, X2, ...)
     todo = [tree]       # contains trees that still need to be handled.
     while todo:
         f = todo.pop()
@@ -165,7 +165,7 @@ def unify(first_formula, second_formula):
     '''
     This method compares two formulas by matching them against each other. If a match is not possible, None will be
     returned.
-    This method makes no further analysis of the matches. Duplicated entries as well as contradiction for one variable
+    This method makes no further analysis of the matches. It is possible that there are contradictions a variable.
     is possible.
 
     :param first_formula: string
@@ -174,7 +174,7 @@ def unify(first_formula, second_formula):
         Second formula.
     :return conditions: dict <set>
         The conditions are sorted by variables (X-wilds and Y-wilds). It may be possible that not every variable is
-        available as key,  example: {'X2': ['Y1']}.
+        available as key,  example: {'X2': {'Y1'}}.
     '''
     stack = [(Tree(first_formula), Tree(second_formula))]
     result = []
@@ -212,18 +212,16 @@ def simplify(var, conditions):
     # get all (X1, Fi)
     fs = conditions.pop(var, [])
     # If there are no conditions for var, we're done.
-    if not fs:
-        return []
+    if not fs: return []
 
-    # Preprocess those: if there is any condition where X1 occurs in Fi, then we have a contradiction,
-    # except if X1 == Fi
+    # Preprocess fs: if there is any condition where X1 occurs in Fi then we have a contradiction
+    # except if precisely X1 == Fi
     for fi in fs:
-        if var == fi:
-            fs.remove(fi)
-        if var in fi:
+        if var in fi and var != fi:
             return None
 
-    # Unify each with another: Gives new conditions. If any match returns None, we have a contradiction and stop.
+    # Unify each with another: Gives new conditions.
+    # If any match returns None, we have a contradiction and stop.
     new_conditions = defaultdict(set)
     for f1, f2 in itertools.combinations(fs, 2):
         conditions_unify = unify(f1, f2)
@@ -231,26 +229,26 @@ def simplify(var, conditions):
             return None
         new_conditions.update(conditions_unify)
 
-    # Keep one of the (X1, Fi), so we don't loose all reference.
+    # Keep one of the (X1, Fi) and replace all X1 in the Fis of the other Variables.
+    # X1 will only occur as the chosen one.
     chosen = fs.pop()
-    # Replace all X1 in the Fis of the other Variables. X1 will only occur as the chosen one.
     for key in conditions:
         conditions[key] = set(item.replace(var, chosen) for item in conditions[key])
 
-    # Add new conditions to old conditions. Collect new variables to return.
+    # Add the chose one and the new conditions to old conditions.
+    # Collect new variables to return.
+    conditions[var].update([chosen])
     new_vars = []
     for key in new_conditions:
         if not conditions[key]:
             new_vars.append(key)
         conditions[key].update(new_conditions[key])
 
-    # Finally add the chosen one to the conditions.
-    conditions[var].update([chosen])
-
-    # todo: clean up!
+    # Clean redundant entries like {'X1': {'X1'}}
     for key in conditions:
         if key in conditions[key]:
             conditions[key].remove(key)
+
     return new_vars
 
 
@@ -327,11 +325,11 @@ def resolve_conditions(conditions):
 
 def combine(conditions_to_add, existing_conditions):
     '''
-    #todo: Doc
     :param conditions_to_add: list
     :param existing_conditions: list
     :return combined_conditions: list
     '''
+    # todo: DOC
     if not existing_conditions:
         return conditions_to_add
 
@@ -348,10 +346,31 @@ def combine(conditions_to_add, existing_conditions):
 
 
 def merge_dicts(dct1, dct2):
+    '''
+    :param dct1:
+    :param dct2:
+    :return:
+    '''
+    # todo: DOC
     dct1_tmp = defaultdict(set, copy.deepcopy(dct1))
     dct2_tmp = defaultdict(set, copy.deepcopy(dct2))
     all_keys = list(set(list(dct1_tmp.keys()) + list(dct2_tmp.keys())))
-
     for key in all_keys:
         dct1_tmp[key].update(dct2_tmp[key])
     return dct1_tmp
+
+
+def nice(conquered_atom):
+    if conquered_atom is None:
+            return None
+    all = []
+    for possible_solutions in conquered_atom:
+        table = []
+        for tpl in condition_dict_to_list(possible_solutions)[:]:
+            if 'X' in tpl[0] and tpl[0] == tpl[1]:
+                table.append((tpl[0], ''))
+            elif 'X' in tpl[0]:
+                table.append(tpl)
+        if table:
+            all.append(sorted(table))
+    return all

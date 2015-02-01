@@ -137,3 +137,7 @@ class Tests(unittest.TestCase):
         merge_dicts(dict1, dict2)
         self.assertDictEqual(defaultdict(set, {'X2': {'B'}, 'X1': {'A'}}), dict1)
         self.assertDictEqual(defaultdict(set, {'X2': {'C'}, 'X1': {'B'}}), dict2)
+
+    def test_nice(self):
+        self.assertListEqual([[('X2', ''), ('X3', 'F')]],
+                             nice([{'Y1': ['F'], 'X2': ['X2'], 'Y2': ['X2'], 'X3': ['F']}]))

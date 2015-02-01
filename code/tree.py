@@ -2,9 +2,6 @@ from node import Node
 
 
 class Tree(object):
-    '''
-    All searches and changes within a formula.
-    '''
 
     def __init__(self, formula):
         self.root = Node()
@@ -18,7 +15,7 @@ class Tree(object):
 
     def _parse_formula(self, formula):
         """
-        Makes a binary tree from the given Formula. Used only for initialization.
+        Makes a binary tree from the given Formula. Used only at initialization.
 
         :param formula: String
         :return: None
@@ -46,7 +43,6 @@ class Tree(object):
 
     def _inorder_string(self, node):
         '''
-
         :param node: Node
             Node from where on the inorder should start.
         :return term: string
@@ -64,9 +60,7 @@ class Tree(object):
 
     def _preorder_nodes(self, node):
         '''
-        Used by different methods to walk the tree.
-
-        :param node: Node
+       :param node: Node
             Node from where the preoder should start.
         :return nodes: list
             All nodes in preoder.

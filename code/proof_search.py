@@ -67,10 +67,10 @@ class ProofSearch:
 
     def conquer(self):
         '''
-        # todo: Doc
         :return result: bool
         :return proof: dict
         '''
+        # todo: DOC
         proof = {}
         result = False
         for atom in self.atoms:
@@ -81,10 +81,10 @@ class ProofSearch:
 
     def _conquer_one_atom(self, atom):
         '''
-        # todo: Docu
         :param atom: string
         :return merged_conditions: list
         '''
+        # todo: DOC
         all_conditions = defaultdict(set)
         # Collect all conditions for each must.
         for proof_constant, condition_term in self.musts[atom]:
@@ -111,20 +111,5 @@ class ProofSearch:
                 return None
         return merged_conditions
 
-
-def nice(conquered_atom):
-    if conquered_atom is None:
-            return None
-    all = []
-    for possible_solutions in conquered_atom:
-        table = []
-        for tpl in condition_dict_to_list(possible_solutions)[:]:
-            if 'X' in tpl[0] and tpl[0] == tpl[1]:
-                table.append((tpl[0], ''))
-            elif 'X' in tpl[0]:
-                table.append(tpl)
-        if table:
-            all.append(sorted(table))
-    return all
 
 
