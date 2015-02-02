@@ -1,52 +1,75 @@
 %!TEX root = ../../bachelors_thesis.tex
 \section{Conquer}
-First we have to know what to look up in the cs-list for which proof constant. Those proof constants and the corresponding terms will be called \emph{musts} since even now I lack a more suitable word for it and in the source code it is always referred as such.
 
 Once that the \emph{musts} have been obtained we can search the cs-list for terms that match it. Since a \emph{must} usually consists of variables (\emph{X-wilds})that are not determined it is possible that we get more then one match per proof term. Also since the cs-list allows terms that contain variables (\emph{Y-wilds})as well this will impose further conditions on the possible choice of the term of a proof term. In the second step all those possibilities and conditions are collected.
 
 Then in the third and most important step those configurations and conditions will be merged. It will be checked if there is a possible combination from the given options such as the atomized formula is provable. It is then only a small step to collect the results of all other atoms of the original formula to determine the provability of the original formula. 
 
-\subsection{Get Must}
-The operator rules which were presented in Chapter XX gives us the instruction how we can take a formula apart to look the individual proof term up in the cs-list. The rule for the Sum-Operation was already used in the divide-step for the sumsplit in \ref{sumsplit}.
 
-It can be summarized that each Multiplication-Operation in a term adds one variable, which will here be called \emph{wilds} or \emph{x-wilds} where as a Bang-Operation will replace an existing \emph{wild} with a new wild combined with the proof constant of that case. 
+\subsection{Matching with CS-List}
+Central for the whole \emph{conquer} part is the approach how two formulas are compared with each other and what to do with the result. This will be needed when we first try to match our \emph{musts} with what we find in the cs-list and later again when we assemble the different conditions and merge them to configurations.
 
-The algorithm starts at the top of the syntax tree of the proof term of the formula and for each level it descends it recursively calls the same method on this child nodes.
+For one atom we have now several \emph{musts}, each of these musts corresponds to a proof constant and holds a term usually made up from at least one variable ( \emph{X-wilds}). On the other hand the terms we find within the cs-list are not only terms with constants but also axioms that can contain variables ( \emph{Y-wilds}) as well. This means that the result of a comparison of such two formulas are conditions that apply to certain variables. 
 
-So for a term like this $(a*(!b))*c):F$ the following will be evaluated:
+If we compare the term $(X_2 \rightarrow (X_1 \rightarrow F))$ of a must with the term $(Y_1 \rightarrow (Y_2 \rightarrow Y_1)$ from the cs list for example, we get:
+\begin{align*}
+	X_1 &: \{Y_2\} \\
+	X_2 &: \{Y_1\} \\
+	Y_1 &: \{X_2, F\} \\
+	Y_2 &: \{X_1\} 
+\end{align*}
 
-\begin{equation}\label{musts}
-\begin{split}
-	(a*(!b))*b):F \\
-	& \Rightarrow a*(!b):  X_1 \rightarrow F \\
-	& \Rightarrow b:  X_1
-\end{split}
-\end{equation}
-\begin{equation}\label{musts1}
-\begin{split}
-	(a*(!b)): X_1 \rightarrow F \\
-	& \Rightarrow a: X_2 \rightarrow (X_1 \rightarrow F)\\
-	& \Rightarrow !b: X_2
-\end{split}
-\end{equation}
-\begin{equation}\label{musts2}
-\begin{split}
-	!b: X_2 \\
-	& \Rightarrow X_2 = b:X_3
-\end{split}
-\end{equation}
+Which can be shorted without loosing any informations to:
 
-$X_2$ will be replaced by $b:X_3$ so our final \emph{must}-list will look like this: 
-\begin{equation}\label{must-list}
-musts_{(a*(!b))*c):F} = \{a: [(b:X_3) \rightarrow (X_1 \rightarrow F)], b: [X_1, X_3] \}
-\end{equation}
+\begin{align*}
+	X_1 &: \{Y_1\} \\
+	X_2 &: \{F\} \\
+	Y_2 &: \{F\}
+\end{align*}
 
-As can be seen in this example a proof constant my have more than one term that needs to be looked up in the cs-list.
+So for every entry which we compare to our \emph{must} gives us a set of \emph{conditions} on the occurring variables. Each set represents a possible proof for the \emph{must}, but since all \emph{musts} have to be proofed and since they contain variables that also occur in other \emph{musts} the sets of conditions for one \emph{must} has to be combined with all the sets of the other \emph{musts}.
 
-\subsection{Matching and Conditions}
-Until very recently this step had a very different approach, which unfortunately proved to hold more than one mistake. Some could be fixed but one remained that could not be fixed with the original approach so after I though I would be done with coding I had to reimplement this whole part again. But in exchange it is no operating as it is supposed to.
+\subsection{Merging Conditions to Configurations}
+Suppose we have \emph{musts} $m_1, m_2, ..., m_n$ for a certain atom. From the previous step each of these $a_i$ has at least\footnote{If there is not entry in the cs-list that matches the criteria of a \emph{must} it makes the whole atom unprovable.} one set of conditions, possible more. Our aim no is to find one set of conditions for each \emph{must} such that when we put all those conditions together we will have not contradiction. This will give us the final configuration of the variables\footnote{We are only concerned for the \emph{X-wilds} but we will still need to tag the \emph{Y-wilds} along.}.
+
+Let us say we have for the \emph{musts} $m_k$ and $m_{k+1}$ the following sets of conditions: For $m_k$ we find only one set, for $m_{k+1}$ we shall have two.
 
 
+\begin{align*}
+	m_k: [	& \{X_1: \{(A \rightarrow X_3)\}, X_2: \{A\}\}]\\
+	m_{k+1}: [	& \{X_1: \{(X_2 \rightarrow B)\}, X_4: \{X_3\}\},\\
+			& \{X_1: \{X_2\}, X_4: \{B\}\}]
+\end{align*}
+
+We see already that the first set of $a_j$ is compatible with the set of $a_i$ and the second set of $a_j$ is not. To archive the same result with the algorithm the two conditions are are joined:
+
+\begin{align*}
+	m_k \cup m_{k+1}:[& \{	X_1: \{(A \rightarrow X_3), (X_2 \rightarrow B)\}, 
+						X_2: \{A\}\}, 
+						X_4: \{X_3\}\},\\
+					& \{X_1: \{(A \rightarrow X_3), X_2\},
+						X_2: \{A\}\}, 
+						X_4: \{B\}\}]\\
+\end{align*}
+
+For the first set of condition we get from the join, resolving the conditions for $X_1$ will give us $X_2:A$ which fits with the condition for $X_2$ that is already present and $X_3: B$ which will give us also $X_4: B$.
+
+In the second set the resolve of the conditions does not work out. From $X_1$ we get that $X_2: (A \rightarrow X_3)$ which is not compatible with the existing condition on $X_2$ that states $X_2: A$.
+
+So as result from the merge above we will get
+
+\begin{align*}
+	m_k \cap m_{k+1}: [	& \{X_1: \{(A \rightarrow B)\}, X_2: \{A\}\}, X_3: \{B\}, X_4: \{B\}\}]\\
+\end{align*}
+
+Merging one \emph{must} after another until all $m_n$ are included in will either give us the configuration of the variables eventually or fail because there is no possible configuration for this atom.
+
+\subsection{Analyzing the Results}
+In the end we get for each atom from the original formula a set of possible configurations. A set may contain several configurations, meaning that the variables of this atom can be configured differently, it may contain only one configuration or none at all, meaning that there are no valid configurations for the variables of this atom.
+
+Sine proofing one atom of a formula proves the whole formula, the last step taken by the algorithm is to check if at least one atom is provable. In theory the algorithm could stop as soon as it finds the first provable atom, but in this implementation is checks all the atoms and aside from giving a simple \texttt{True} or \texttt{False} it provides also the configuration of the variables for all valid atoms.
 
 
+
+\bigskip
 \par This concludes not only the merge step but the whole divide and conquer chapter. I personally have found it rather easy to understand the individual steps but difficult to not get lost in the overall view. For that reason chapter \ref{chap: Example} will cover one single example designed to show all aspects of the algorithm and run it through to understand it better.

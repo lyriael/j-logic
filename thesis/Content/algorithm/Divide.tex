@@ -13,7 +13,7 @@ Those three steps which are called \emph{Atomize} in the source code break a giv
 This basically concludes the Divide-Part of this algorithm. The only thing left to done in the Conquer step is to check each of these formula. In the case of Justification Logic it means they need to be looked up in the \emph{constant specification}.
 
 
-\subsection{Atomize}
+\subsection{Atomize a Justification Formula}
 In this section \emph{formula} usually refers only to the justification term of the formula and is used as a synonym. If it should be understood differently it will be stated so explicitly.
 \begin{definition}[atomized]
 	A formula or term is called \textbf{atomized} if it fulfills the following conditions:
@@ -88,3 +88,41 @@ The last line gives a contradiction since there is no possible $x$ or $y$ such t
 \par
 This concludes the \emph{atomization} of one formula to many simple formulas which can be checked for provability individually. A formula now consists only of Multiplication-Operations and valid Bang-Operations. The next chapter will show how one atomized formula can be checked for provability.
 
+\subsection{Get the Must Terms}
+First we have to know what to look up in the cs-list for which proof constant. Those proof constants and the corresponding terms will be called \emph{musts} since even now I lack a more suitable word for it and in the source code it is always referred as such.
+
+The operator rules which were presented in Chapter XX gives us the instruction how we can take a formula apart to look the individual proof term up in the cs-list. The rule for the Sum-Operation was already used in the divide-step for the sumsplit in \ref{sumsplit}.
+
+It can be summarized that each Multiplication-Operation in a term adds one variable, which will here be called \emph{wilds} or \emph{x-wilds} where as a Bang-Operation will replace an existing \emph{wild} with a new wild combined with the proof constant of that case. 
+
+The algorithm starts at the top of the syntax tree of the proof term of the formula and for each level it descends it recursively calls the same method on this child nodes.
+
+So for a term like this $(a*(!b))*c):F$ the following will be evaluated:
+
+\begin{equation}\label{musts}
+\begin{split}
+	(a*(!b))*b):F \\
+	& \Rightarrow a*(!b):  X_1 \rightarrow F \\
+	& \Rightarrow b:  X_1
+\end{split}
+\end{equation}
+\begin{equation}\label{musts1}
+\begin{split}
+	(a*(!b)): X_1 \rightarrow F \\
+	& \Rightarrow a: X_2 \rightarrow (X_1 \rightarrow F)\\
+	& \Rightarrow !b: X_2
+\end{split}
+\end{equation}
+\begin{equation}\label{musts2}
+\begin{split}
+	!b: X_2 \\
+	& \Rightarrow X_2 = b:X_3
+\end{split}
+\end{equation}
+
+$X_2$ will be replaced by $b:X_3$ so our final \emph{must}-list will look like this: 
+\begin{equation}\label{must-list}
+musts_{(a*(!b))*c):F} = [ \bigl( a, ((b:X_3) \rightarrow (X_1 \rightarrow F)) \bigr) , \bigl( b, X_1 \bigr) , \bigl( b, X_3 \bigr) ] 
+\end{equation}
+
+As can be seen in this example a proof constant may have more than one term that needs to be looked up in the cs-list.

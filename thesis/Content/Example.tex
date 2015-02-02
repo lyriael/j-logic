@@ -155,6 +155,22 @@ This finally gives us all the \emph{musts} for $a_2$. As can be seen belove the 
 
 It should be noted here that a proof constant may be in more than one of the \emph{musts} for one \emph{atom}. 
 
-\todoWriteMore{Finish Example}
+\section{Conditions and Merging}
+From the previous steps we have now two atoms with their \emph{musts} which we will check for provability. 
 
+\begin{equation}\label{cs}
+\begin{split}
+	cs = \{\\
+	& a: [(H \rightarrow (c:F)), ((E \rightarrow (c:D)) \rightarrow (c:F)), (E \rightarrow (c:D))],\\
+	& b: [((c:F) \rightarrow H), ((c:D) \rightarrow (a:F)), ((H \rightarrow G) \rightarrow H), (Y_1 \rightarrow (Y_2 \rightarrow Y_1))],\\
+	& c: [(c:F), G, D, (G \rightarrow F)] \\
+	\}
+\end{split}
+\end{equation}
+
+As we can see imediately our atom $a_1: (c:F)$ is not provable. The atom itself is already the \emph{must} that we need to check for in the cs-list. Since there is no entry $F$ in cs for the proof constant $c$ the atom is not provable and we are done.
+
+The last remaining atom $a_2$ needs a little bit more work to. First we will select and compare all \emph{musts} of $a_2$ with the corresponding entries in cs and then we need to find a configuration for the variables of the musts, that will fit all \emph{musts}.
+
+\bigskip
 This concludes this chapter where I tried to show as much as possible with an example that is as short and simple as possible and still fits the purpose. 
