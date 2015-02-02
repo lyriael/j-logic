@@ -71,7 +71,7 @@ As before the bang within the term is valid but in contrast to the previous exam
 	\end{split}
 \end{equation}
 
-\subsubsection[third term]{Term \ref{eq:sp_iii}}
+\subsubsection[Third term]{Term \ref{eq:sp_iii}}
 In this term we find the bang operation neither a left child of a multiplication nor as top operation of the proof term and thus there is nothing to do.
 
 \begin{equation}\label{eq:a_2}
@@ -93,7 +93,7 @@ Finally this term has two bangs of which the first is the left child of a multip
 \bigskip
 This completes the \emph{atomize} step for the formula $f$ giving us two \emph{atoms}. Showing that at least one of those is provable is enough to show that $f$ is provable. 
 
-\section{Looking up and merging}
+\section{Looking up the Musts}
 
 \begin{equation*}
 		f = (((!(a+c))+((a+(!a))*(b*(!c)))):(c:F)) 
@@ -112,13 +112,13 @@ For our formula $f$ we have found the two atoms \ref{eq:a_1} and \ref{eq:a_2}. T
 \end{equation*}
 
 \subsection{Musts}
-\subsubsection[First atom]{Atom \ref{eq:a_1}}
+\subsubsection[First atom]{Atom $a_1$ (\ref{eq:a_1})}
 Since $a_1$ consists already only of one proof constant with the correspond term to it there is nothing further to to here.
 \begin{equation}
 	a_1: \quad musts = [(c, F)]
 \end{equation}
 
-\subsubsection[First atom]{Atom \ref{eq:a_2}}
+\subsubsection[Second atom]{Atom $a_2$ (\ref{eq:a_2})}
 For $a_2$ we need to take the proof term apart bit by bit. The first operation we will take apart is a multiplication. Extracting proof constants from a multiplication proof term will always us give a \emph{X-wild}. Whenever a new \emph{X-wilds} appears the $i$ of $X_i$ will simply be increased by 1.
 
 \begin{equation*}\label{eq:musts1_a_2}
@@ -155,22 +155,93 @@ This finally gives us all the \emph{musts} for $a_2$. As can be seen belove the 
 
 It should be noted here that a proof constant may be in more than one of the \emph{musts} for one \emph{atom}. 
 
-\section{Conditions and Merging}
 From the previous steps we have now two atoms with their \emph{musts} which we will check for provability. 
 
-\begin{equation}\label{cs}
-\begin{split}
+\subsection{Using the CS-List}
+As can seen immediately when looking at the cs-list the atom $a_1: (c:F)$ is not provable. The atom itself is already the \emph{must} that we need to check for in the cs-list. Since there is no entry $F$ in cs for the proof constant $c$ the atom is not provable and we are done.
+
+The last remaining atom $a_2$ needs a little bit more work to. First we will select and compare all \emph{musts} of $a_2$ with the corresponding entries in cs and then we need to find a configuration for the variables of the musts, that will fit all \emph{musts}.
+
+\begin{align*}
 	cs = \{\\
 	& a: [(H \rightarrow (c:F)), ((E \rightarrow (c:D)) \rightarrow (c:F)), (E \rightarrow (c:D))],\\
 	& b: [((c:F) \rightarrow H), ((c:D) \rightarrow (a:F)), ((H \rightarrow G) \rightarrow H), (Y_1 \rightarrow (Y_2 \rightarrow Y_1))],\\
 	& c: [(c:F), G, D, (G \rightarrow F)] \\
 	\}
+	\tag{\ref{cs}}
+\end{align*}
+
+
+\subsubsection[look up proof constant a]{Proof Constant $a$}
+Comparing $(X_1 \rightarrow (c:F))$ with all entries in cs for the proof constant $a$ will give us the following two condition set which are only on the variable $X_1$.
+\begin{align}
+	(H \rightarrow (c:F)) & \quad \Rightarrow \quad \{X_1: H\} \\ 
+	((E \rightarrow (c:D)) \rightarrow (c:F)) & \quad \Rightarrow  \quad \{X_1: (E \rightarrow (c:D))\} \label{condition:a}
+\end{align}
+
+\subsubsection[look up proof constant b]{Proof Constant $b$}
+For the proof constant $b$ with \emph{must} term $((c:X_3) \rightarrow X_1)$ we get:
+\begin{align}
+	((c:F) \rightarrow H) & \quad \Rightarrow \quad \{X_1: F, & X_3: H\}\\ 
+	((c:D) \rightarrow (a:F)) & \quad \Rightarrow \quad \{X_1: (a:F), & X_3: D\}\\ 
+	((Y_1 \rightarrow (Y_2 \rightarrow Y_1)) & \quad \Rightarrow \quad \{X_1: (Y_2 \rightarrow Y_1), & Y_1: (c:X_3)\} \label{condition:b}
+\end{align}
+We note that for the last condition set we now have also another kind of variable aside from those given by the \emph{must} term. For the moment both kind of variables are treaded exactly the same.
+
+\subsubsection[look up proof constant c]{Proof Constant $c$}
+Since the must term for proof constant $c$ is simply $X_3$ we get the following conditions 
+\begin{align}
+	(c:F) & \quad \Rightarrow \quad \{X_3: (c:F)\} \\ 
+	G & \quad \Rightarrow \quad \{X_3: G\} \\ 
+	D & \quad \Rightarrow \quad \{X_3: D\}\label{condition:c} \\ 
+	(G \rightarrow F) & \quad \Rightarrow \quad \{X_3: (G \rightarrow F)\} 
+\end{align}
+
+\subsection{Merging Conditions}
+Our aim is that we pick one line from each proof constant and that this merged conditions give us a configuration for the $X$-variables. For example we could pick from each the top line, but it is obvious that this is not a solution since $X_3$ can only be either $H$ or $(c:F)$ but not both.
+
+It is clear that not every line of $a$ can be successfully merged with every line of $b$. We see that we can only take those that have the same term for $X_3$ or there is a $Y$-variable. If fact only the two bottom row are compatible, since no entry form $b$ fits $X_1: H$ from $a$ and only $(Y_2 \rightarrow Y_1)$ can be matched with $(E \rightarrow (c:D))$.
+
+\begin{align}
+	a \cap b: \quad \{X_1: (E \rightarrow (c:D)), \quad X_1: (Y_2 \rightarrow Y_1), \quad Y_1: (c:X_3)\}
+\end{align}
+
+As we see above there are now two conditions that apply to the variable $X_1$. Before we move on and try to merge this set of conditions with one of the lines of $c$ we will resolve the current conditions as far as possible.
+
+Comparing the conditions on $X_1$ we find that $Y_2: E$ and $Y_1: (c:D)$. Since we have already a condition for $Y_1$ that condition is now compared with the new we got from $X_1$ and we will get $X_3: D$. Thus all our variables are now configured:
+
+\begin{align}
+	\{X_1: (E \rightarrow (c:D)), \quad X_3: D, \quad Y_1: (c:D), \quad Y_2: E\}
+\end{align}
+
+As a consequence of merging line (\ref{condition:a}) from $a$ with line (\ref{condition:b}) from $b$ there is no choice left for the variable and the final result depends on finding a line from proof constant $c$ that matches the value for $X_3$ and as it happens this is the case for line (\ref{condition:c}).
+
+
+\subsection{Meaning of the Result}
+Since we found a valid configuration for the atom $a_1$ (\ref{eq:a_1})) we have shown that the formula $f$ (\ref{eq:f})) is provable. But at this point I would like to show what finding the $X$-variables has to do with showing the provability of $f$.
+
+From our previous step we have a configuration for every variable. We are however only interested in the $X$-variables and do not care further about the $Y$-variables. So we know that $X_1 = (E \rightarrow (c:D))$ and $X_3 = D$. If we replace that in the \emph{musts} for all of the proof constants we get the following:
+
+\begin{equation}
+\begin{split}
+	a_2: \quad [&(a: ((E \rightarrow (c:D)) \rightarrow (c:F))), \\
+	&(b: ((c:D) \rightarrow (E \rightarrow (c:D)))), \\
+	&(c: D)]
 \end{split}
 \end{equation}
 
-As we can see imediately our atom $a_1: (c:F)$ is not provable. The atom itself is already the \emph{must} that we need to check for in the cs-list. Since there is no entry $F$ in cs for the proof constant $c$ the atom is not provable and we are done.
+As can be seen these entries can all be found precisely like that in the cs-list. Also from those we can reconstruct the term of $a_2$: 
 
-The last remaining atom $a_2$ needs a little bit more work to. First we will select and compare all \emph{musts} of $a_2$ with the corresponding entries in cs and then we need to find a configuration for the variables of the musts, that will fit all \emph{musts}.
+\begin{align}
+	& (c:D) \\
+	& ((!c):(c:D)) \\
+	& ((b*(!c)):(E \rightarrow (c:D)))\\
+	& ((a*(b*(!c))):(c:F)) \label{ex:reconstruct}
+\end{align}
+
+And with (\ref{ex:reconstruct})) for $a_2$ we have again with what we started right after the atomization step in (\ref{eq:sp_iii}). In the graph below the path with the tree of the atom $a_2$ is highlighted.
+
+\input{/home/lyriael/BA/j-logic/thesis/Figures/trees/tree_example_end.tex}
 
 \bigskip
 This concludes this chapter where I tried to show as much as possible with an example that is as short and simple as possible and still fits the purpose. 

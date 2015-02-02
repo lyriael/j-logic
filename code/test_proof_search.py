@@ -181,9 +181,15 @@ class Tests(unittest.TestCase):
         self.assertListEqual([defaultdict(set, {'X2': {'B'}, 'X1': {'A'}})], merge_conditions(new, existing))
 
     def test_combine2(self):
-        existing = [{'X1': {'A'}, 'X2':{'B'}}, {'X2': {'(A->B)'}}]
+        existing = [{'X1': {'A'}, 'X2': {'B'}}, {'X2': {'(A->B)'}}]
         new = [{'X1': {'A'}, 'X3': {'C'}}]
         self.assertListEqual([{'X3': {'C'}, 'X2': {'B'}, 'X1': {'A'}}, {'X3': {'C'}, 'X2': {'(A->B)'}, 'X1': {'A'}}],
+                             merge_conditions(new, existing))
+
+    def test_combine3(self):
+        existing = [defaultdict(set, {'X1': {'(A->X3)'}, 'X2': {'A'}})]
+        new = [defaultdict(set, {'X1': {'(X2->B)'}, 'X4': {'X3'}}), defaultdict(set, {'X1': {'X2'}, 'X4': {'B'}})]
+        self.assertListEqual([{'X2': {'A'}, 'X3': {'B'}, 'X1': {'(A->B)'}, 'X4': {'B'}}],
                              merge_conditions(new, existing))
 
     def test_conquer1(self):
