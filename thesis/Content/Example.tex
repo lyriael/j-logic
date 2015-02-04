@@ -27,6 +27,8 @@ The data presented here is in the same form as it would be entered into the prog
 
 The given formula $f$ will be transformed into a syntax tree using \emph{parse\_formula} of \emph{Tree}. If the formula is provided when the \emph{ProofSearch} object is initialized the formula will automatically be atomized without having to call this method separately.
 
+\subsection{Sumsplit}
+
 \begin{equation*}
 	(((!(a
     \tikz[baseline]{\node[fill=red!20,anchor=base] (t1){$+$};} c))
@@ -196,6 +198,8 @@ Since the must term for proof constant $c$ is simply $X_3$ we get the following 
 	D & \quad \Rightarrow \quad \{X_3: D\}\label{condition:c} \\ 
 	(G \rightarrow F) & \quad \Rightarrow \quad \{X_3: (G \rightarrow F)\} 
 \end{align}
+
+\section{Constructing the Final Result}
 
 \subsection{Merging Conditions}
 Our aim is that we pick one line from each proof constant and that this merged conditions give us a configuration for the $X$-variables. For example we could pick from each the top line, but it is obvious that this is not a solution since $X_3$ can only be either $H$ or $(c:F)$ but not both.
