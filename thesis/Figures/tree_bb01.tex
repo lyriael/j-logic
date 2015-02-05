@@ -1,27 +1,31 @@
 %!TEX root = ../bachelors_thesis.tex
+\begin{figure}[H]
 \begin{center}
 \begin{tikzpicture}[level distance=1cm,
   level 1/.style={sibling distance=3cm},
   level 2/.style={sibling distance=1.2cm}]
-	\node [arn_n]{$*$}
-	  child {node [arn_w]{\(* \)}
-	    child {node [arn_w] {$s$}}
-	    child {node [arn_w] {$!$}
-	    		child[right] {node [arn_w] {$t$}}
-	    	}
-	    }
-	  child {node [arn_w]{$r$}};
-\end{tikzpicture}
-\begin{tikzpicture}[level distance=1cm,
-  level 1/.style={sibling distance=3cm},
-  level 2/.style={sibling distance=1.2cm}]
-	\node [arn_n]{$*$}
-	  child {node [arn_w]{\(* \)}
+	\node [arn_n]{$:$}
+	  child {node [arn_w]{\(\cdot \)}
 	    child {node [arn_r] {$!$}
 	    		child[right] {node [arn_w] {$t$}}
 	    	}
 	    child {node [arn_w] {$s$}}
 	    }
-	  child {node [arn_w]{$r$}};
+	  child {node [arn_w]{$F$}};
+\end{tikzpicture}
+\hspace{2cm}
+\begin{tikzpicture}[level distance=1cm,
+  level 1/.style={sibling distance=3cm},
+  level 2/.style={sibling distance=1.2cm}]
+	\node [arn_n]{$:$}
+	  child {node [arn_w]{\(\cdot \)}
+	    child {node [arn_w] {$s$}}
+	    child {node [arn_w] {$!$}
+	    		child[right] {node [arn_w] {$t$}}
+	    	}
+	    }
+	  child {node [arn_w]{$F$}};
 \end{tikzpicture}
 \end{center}
+\caption{The left tree show a introspection that gives a contradiction whereas the right tree is valid.}
+\end{figure}

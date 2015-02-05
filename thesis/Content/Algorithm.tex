@@ -1,0 +1,200 @@
+%!TEX root = ../bachelors_thesis.tex
+\section{The Core Idea}
+In my earliest attempts the methods of my algorithm had the tendency to explode with the number of \texttt{if-else} and \texttt{switch} statements. Also they were always very deep nestled. It was sheer impossible to keep track of what had to be done where under which circumstances and whenever I though I had it I found more cases that needed takes special care of. What I really needed was a strategy. I started experiencing with the proof terms of the justification formula, trying to take it somehow apart and restructure the formula in a way that would make handle it easier. I was looking for something like the conjunctive normal form (CNF) and the way how it is used in proof search calculus\footnote{\emph{Proof Search Calculus} as it is introduced in \cite{jaeg}}. Indeed I found a way that allows me to \emph{divide} a justification formula in disjunctive formulas where proving only one of them is also proof for the whole justification formula. The main advantage gained from dividing the justification formula is that the resulting formula have far less variety in the manner of their operations and thus are easier to further analyze.
+
+The comprehension that my approach follows a classic \emph{Divide and Conquer} approach came to me only later when I started \emph{conquering}. The algorithm presented here may not be a model of \emph{Divide and Conquer} but similarities cannot be denied. For that reason I have structured this chapter accordingly.
+
+\medskip
+
+There are two major steps in the divide part of this algorithm. First the justification formula itself will be split into several smaller pieces and adjusted. Second each of those smaller pieces called \emph{atoms} is also being be taken apart so that only their proof constant with a corresponding proof term containing variables remains. The pair of proof constant and proof term will be called \emph{must}\footnote{They are called \emph{musts} in the algorithm because we have to find a match for every single one of them or else the atom is not provable.}.
+
+The conquer step first handles the \emph{musts} of one atom, trying to find a valid match for every \emph{must} in the constant specification list and then evaluates from the results of each \emph{atom} the provability of the originally given justification formula.
+
+\section{Divide}
+The aim of this first step is to split it into smaller pieces and standardize them to make it easier to get the \emph{musts}.
+
+\subsection{Atomize a Justification Formula}\label{chap:Algorithm.atomize}
+\begin{definition}[atomic]
+	A formula or term is called \textbf{atomic} if it fulfills the following conditions:
+	\begin{itemize}
+		\item The term contains no sum operations.
+		\item A introspection operation can neither be the top operation of a term nor be the left operant of a application operation.
+	\end{itemize}	
+\end{definition}
+To make the content presented here more understandable the following example will illustrate the steps taken.\footnote{It is on purpose that the \emph{justification term} is by far more complicated than statement $b:F$ that follows the \emph{justification term}. As far as this algorithm goes the complexity of the statement is of no further consequence and thus is kept as simple as possible to allow a easier overview.}
+
+\subsubsection{Sumsplit}
+\label{sumsplit}
+From the sum rule of justification logic in \ref{rules} it follows that checking for provability in a formula where the top operation is a sum is equal to checking either operant of the sum and if any of it is provable so is the original formula.
+
+\begin{align}\label{ss1}
+	(s+t):F \quad \Rightarrow \quad s:F \lor t:F
+\end{align}
+
+\input{/home/lyriael/BA/j-logic/thesis/Figures/tree_ss01.tex}
+\todo{Caption}
+
+This is also true for formulas where sum is not the top operation. Here $X$ denotes a arbitrary \emph{justification term}.
+
+\begin{align}\label{ss2}
+	(r*(s+t)):F  \quad & \Rightarrow r: X \rightarrow F \land (s+t): X \\
+	& \Rightarrow ( r: X \rightarrow F \land s: X ) \lor ( r: X \rightarrow F \land t: X )
+\end{align}
+
+\input{/home/lyriael/BA/j-logic/thesis/Figures/tree_ss02.tex}
+\todo{Caption}
+
+\subsubsection{Simplify Introspection}
+In this step we try to get rid of any introspection operation that is the first operation of a formula. Either the introspection can be removed and the formula simplified or else the formula is not provable at all and can be discarded.
+
+Derived from the application rule in \ref{rules} we get the following:
+
+\begin{align}\label{sb}
+	!t:(t:F) \quad & \Rightarrow t: F
+\end{align}
+
+\input{/home/lyriael/BA/j-logic/thesis/Figures/tree_sb01.tex}
+\todo{Caption}
+
+Speaking in the manner of a syntax tree it needs to be checked, if the child of the introspection operation is identical with the left child of the right child of the root. In that case the formula can be simplified to right child of the root only. Else there is no way to resolve the introspection operation and the formula has to be discarded.
+
+\subsubsection{Remove Contradicting Introspection}
+This last step in atomizing the formula proved to be on of the hardest to realize. Only countless examples support the claim that the introspection operation must not be the direct left child of a application operation. In coming to that conclusion it has been helpful that no sum operation could make the situation more complex. Because of this and also the fact that a introspection operation is never the top operation in a formula it is guarantied that a introspection operation must be either a right child or a left child of a application operation.
+
+\begin{align}\label{bb}
+	& ((!s)\cdot t):F  \quad \Rightarrow \exists X_1 : (!s): (X_1 \rightarrow F) \quad \land \quad t: X_1\\
+	& (!s): (X_1 \rightarrow F)  \quad \Rightarrow \exists X_2 : (!s):(X_1 \rightarrow F) = (!s):(s:X_2)
+\end{align}\todo{Make this look more like the ones following below.}
+The last line gives a contradiction since there is no possible $X_2$ that would fulfill the condition of $X_1 \rightarrow F = s:X_2$.
+
+\begin{assertion}[Tree Version]
+A introspection operation that is the direct left child of a application operation causes the whole term to be invalid (unprovable), given that the term is without sum operations and no introspection operation at the top.
+\end{assertion}
+
+\input{/home/lyriael/BA/j-logic/thesis/Figures/tree_bb01.tex}
+
+\par
+This concludes the \emph{atomization} of one formula to many simple formulas which can be checked for provability individually. An atomized formula now consists only of application operations and valid introspection operations. The next section will show what further steps are needed to check one atomized formula for its provability.
+
+\subsection{Get the Must Terms}\label{chap:Algorithm.musts}
+To check a justification formula for its provability we need to look up the justification constant from the formula in the constant specification list (from now on called \emph{cs-list} for brevity) and compare the justification term with the term we find there.
+
+The operation rules which were presented in chapter \ref{rules} gives us the instruction how we can take a formula apart to look the individual proof term up in the cs-list. The rule for the sum operation was already used in the previous steps for the \texttt{sumsplit} in \ref{sumsplit}.
+
+Each application operation in a term adds one variable and a introspection operation replaces an existing variable\footnote{The variables we get from constructing the \emph{musts} are called \emph{X-wilds} in the source code in contrast to the variables that might occur in the \emph{cs}-list which are refered to \emph{Y-wilds} respectively.} with a new combined with a proof constant. 
+
+So for a term like this $(a \cdot (!b)) \cdot c):F$ the following will be evaluated:
+
+\begin{equation}\label{musts}
+\begin{split}
+	(a \cdot (!b)) \cdot b):F \\
+	& \Rightarrow a \cdot (!b):  X_1 \rightarrow F \\
+	& \Rightarrow b:  X_1
+\end{split}
+\end{equation}
+\begin{equation}\label{musts1}
+\begin{split}
+	(a \cdot (!b)): X_1 \rightarrow F \\
+	& \Rightarrow a: X_2 \rightarrow (X_1 \rightarrow F)\\
+	& \Rightarrow !b: X_2
+\end{split}
+\end{equation}
+\begin{equation}\label{musts2}
+\begin{split}
+	!b: X_2 \\
+	& \Rightarrow X_2 = b:X_3
+\end{split}
+\end{equation}
+
+$X_2$ will be replaced by $b:X_3$ so our final \emph{musts} for $(a*(!b))*c):F$ looks like this: 
+\begin{equation}\label{must-list}
+ [ \bigl( a, ((b:X_3) \rightarrow (X_1 \rightarrow F)) \bigr) , \bigl( b, X_1 \bigr) , \bigl( b, X_3 \bigr) ] 
+\end{equation}
+
+As can be seen in this example a proof constant may have more than one term that needs to be looked up in the cs-list.
+
+\section{Conquer}
+
+Once that the \emph{musts} have been obtained we can search the cs-list for terms that match it. Since a \emph{must} usually consists of variables that are not determined it is possible that we get more then one match per proof term. Also since the cs-list allows terms that contain variables as well this imposes further conditions on the possible choice of the term of a proof term. All those possibilities and conditions are collected when comparing the musts with the cs-list.
+
+Then in the second and most important step in the conquer part those conditions will be merged. It will be checked if there is a possible combination from the given options such as the atomized formula is provable. It is then only a small step to collect the results of all other atoms of the original formula to determine the provability of the original formula. 
+
+Throughout this section the words \emph{conditions} and \emph{configurations} is being used. Since they mean something very similar but not the same the definition of the usage of those words is presented below:
+
+\begin{definition}[condition]
+A \emph{condition} is either on a $X$ variable or on a $Y$ variable. A condition can be a constant, a variable or a term containing constants and/or variables. One variable may have several \emph{conditions} which may contradict each other at certain stages. A \emph{condition} may not contain the variable on which the \emph{condition} is in its term.\\
+A set of conditions is per proof constant of a \emph{must} at first but it may also be a set for several proof constant after the conditions have been merged.
+\end{definition}
+
+\begin{definition}[configuration]
+A \emph{configuration} is a special case of a \emph{condition}. It is also on a $X$ or $Y$ variable but a configuration contains only constants and no more other variables. There can only be one configuration per variable as it would contradict any other configuration.\\
+\end{definition}
+
+\subsection{Matching with CS-List}
+Central for the whole conquer part is the procedure of comparing two formulas and giving a useful result. This is needed when we first try to match our \emph{musts} with what we find in the cs-list and later again when we assemble the different conditions and merge them together.
+
+For one atom we have now several \emph{musts}, each of these musts corresponds to a proof constant and holds a term usually made up from at least one variable. On the other hand the terms we find within the cs-list are not only terms with constants but also axioms that can contain variables as well. This means that the result of a comparison of such two formulas are conditions that apply to certain variables. 
+
+If we compare the term $(X_2 \rightarrow (X_1 \rightarrow F))$ of a \emph{must} with the term $(Y_1 \rightarrow (Y_2 \rightarrow Y_1)$ from the cs-list for example, we get the following conditions:
+\begin{align*}
+	X_1 &: \{Y_2\} \\
+	X_2 &: \{Y_1\} \\
+	Y_1 &: \{X_2, F\} \\
+	Y_2 &: \{X_1\} 
+\end{align*}
+
+Which can be shorted without loosing any informations to\footnote{This is only one of many options to shorten the conditions, another option would be $Y_1: \{X_2, F\}, Y_2:\{X_1\}$.}:
+
+\begin{align*}
+	X_1 &: \{Y_1\} \\
+	X_2 &: \{F\} \\
+	Y_2 &: \{F\}
+\end{align*}
+
+For every entry in the cs-list that we compare to our \emph{must} gives us a set of conditions for the occurring variables. Each set represents a possible proof for one \emph{must}, but since all \emph{musts} have to be proofed and since they contain variables that also occur in other \emph{musts} the sets of conditions of all \emph{musts} of a atom have to be merged together.
+
+\subsection{Merging Conditions to Configurations}
+Suppose we have \emph{musts} $m_1, m_2, ..., m_n$ for a certain atom. From the previous step each of these $m_i$ has at least\footnote{If there is no entry in the cs-list that matches the criteria of a \emph{must} it makes the whole atom unprovable.} one set of conditions for its variables, possibly more. Our aim is to find one set of conditions for each \emph{must} such that when we put all those conditions together we have not contradiction. This gives us the final configuration of the $X$ variables\footnote{We are only concerned for the \emph{X-wilds} but we still need to tag the \emph{Y-wilds} along.}.
+
+Let us say we have the \emph{musts} $m_k$ and $m_{k+1}$ and the following sets of conditions: For $m_k$ we find only one set, for $m_{k+1}$ we shall have two.
+
+
+\begin{align*}
+	m_k: [	& \{X_1: \{(A \rightarrow X_3)\}, X_2: \{A\}\}]\\
+	m_{k+1}: [	& \{X_1: \{(X_2 \rightarrow B)\}, X_4: \{X_3\}\},\\
+			& \{X_1: \{X_2\}, X_4: \{B\}\}]
+\end{align*}
+
+We see that the first set of $m_j$ is compatible with the set of $m_i$ and the second set of $m_j$ is not.
+
+To archive the same result with the algorithm the two conditions are first simply joined, ignoring possible contradictions, giving us two new sets of conditions.
+
+\begin{align*}
+	& \{	X_1: \{(A \rightarrow X_3), (X_2 \rightarrow B)\}, 
+						X_2: \{A\}\}, 
+						X_4: \{X_3\}\},\\
+					& \{X_1: \{(A \rightarrow X_3), X_2\},
+						X_2: \{A\}\}, 
+						X_4: \{B\}\}\\
+\end{align*}
+
+
+
+For the first set of condition we get from the join, resolving the conditions for $X_1$ gives us $X_2:A$ which also fits with the condition for $X_2$ that is already present. Further $X_3: B$ gives us also $X_4: B$. If the variables that we find in $m_i$ and $m_j$ are all that occur in all other \emph{musts} of the atom we have found a configuration for the variables, thus proving the atom.
+
+\begin{align*}
+	& \{X_1: \{(A \rightarrow B)\}, X_2: \{A\}\}, X_3: \{B\}, X_4: \{B\}\}\\
+\end{align*}
+
+In the second set resolving the conditions does not work out. From $X_1$ we get that $X_2: (A \rightarrow X_3)$ which is not compatible with the existing condition on $X_2$ that states $X_2: A$. Consequently the second set is discarded. If the first set had failed as well there would be no proof for this atom.
+
+
+\subsection{Analyzing the Results}
+In the end we get for each atom from the original formula a set of possible configurations. A set may contain several configurations, meaning that the variables of this atom can be configured differently, it may contain only one configuration, meaning that there is only one possible configuration or there may be none at all, meaning that there are no valid configurations for the variables of this atom thus making it unprovable.
+
+Sine proofing one atom of a formula proves the whole formula, the last step taken by the algorithm is to check if at least one atom is provable. In theory the algorithm could stop as soon as it finds the first provable atom, but in this implementation is checks all the atoms and aside from giving a simple \texttt{True} or \texttt{False} it provides also the configuration(s) of the variables for all provable atoms.
+
+
+
+\bigskip
+\par This concludes not only the merge step but the whole divide and conquer chapter. I personally have found it rather easy to understand the individual steps but difficult to not get lost in the overall view. For that reason chapter \ref{chap: Example} will cover one single example designed to show all aspects of the algorithm and run it through to understand it better.
