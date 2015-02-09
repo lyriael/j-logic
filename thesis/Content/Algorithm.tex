@@ -10,7 +10,7 @@ There are two major steps in the divide part of this algorithm. First the justif
 
 The conquer step first handles the \emph{musts} of one atom, trying to find a valid match for every \emph{must} in the constant specification list and then evaluates from the results of each \emph{atom} the provability of the originally given justification formula.
 
-\section{Divide}
+\section{Divide}\label{chap:Algorithm.divide}
 The aim of this first step is to split it into smaller pieces and standardize them to make it easier to get the \emph{musts}.
 
 \subsection{Atomize a Justification Formula}\label{chap:Algorithm.atomize}
@@ -197,4 +197,5 @@ Sine proofing one atom of a formula proves the whole formula, the last step take
 
 
 \bigskip
-\par This concludes not only the merge step but the whole divide and conquer chapter. I personally have found it rather easy to understand the individual steps but difficult to not get lost in the overall view. For that reason chapter \ref{chap: Example} will cover one single example designed to show all aspects of the algorithm and run it through to understand it better.
+\par This concludes the whole divide and conquer chapter. I personally have found it rather easy to understand the individual steps but difficult not to get lost in the overall view. For that reason chapter \ref{chap: Example} will cover one single example designed to show all aspects of the algorithm and run it through from start to end to help understanding it better.
+

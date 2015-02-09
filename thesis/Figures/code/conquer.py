@@ -4,13 +4,10 @@ all_conditions = defaultdict(set)
 # Collect all conditions for each must.
 # Example: a - proof_constant, X1->F - condition_term
 for proof_constant, condition_term in self.musts[atom]:
-
   proofs_for_atom = []
 
   for cs_term in self.cs[proof_constant]:
-    configuration = match_with_cs_term(
-    					cs_term, condition_term)
-
+    configuration = match_with_cs_term(cs_term, condition_term)
     if configuration is not None:
       proofs_for_atom.append(configuration)
 
