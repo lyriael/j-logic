@@ -1,9 +1,10 @@
 %!TEX root = ../bachelors_thesis.tex
+In this chapter I would like to walk through one example covering as many special cases as possible. As such, the justification term we will look at is rather complicated but it will also show how nicely it can be broken down in more simpler formulas.
 \section{Initialization}
-In this chapter I would like to walk through one example and covering as many special cases as possible. As such, the justification term we will look at is rather complicated. But this example will also show how nicely this will be broken down in more simpler formulas.
+Formula $f$
 
 \begin{equation}\label{eq:f}
-f = (((!(a+c))+((a+(!a))*(b*(!c)))):(c:F))
+f = (((!(a+c))+((a+(!a))\cdot (b\cdot (!c)))):(c:F))
 \end{equation}
 
 
@@ -25,20 +26,20 @@ The data presented here is in the same form as it would be entered into the prog
 
 \section{Walking in Trees: Atomize}
 
-The given formula $f$ will be transformed into a syntax tree using \emph{parse\_formula} of \emph{Tree}. If the formula is provided when the \emph{ProofSearch} object is initialized the formula will automatically be atomized without having to call this method separately.
+The given formula $f$ is transformed into a syntax tree using \texttt{parse\_formula} of \texttt{Tree}. If the formula is provided when the \texttt{ProofSearch} object is initialized the formula will automatically be atomized and the musts for each atom collected without having to call this method separately. 
 
 \subsection{Sumsplit}
-
+Our first step is to split our formula for every sum we encounter.
 \begin{equation*}
 	(((!(a
     \tikz[baseline]{\node[fill=red!20,anchor=base] (t1){$+$};} c))
     \tikz[baseline]{\node[fill=red!20,anchor=base] (t2){$+$};} ((a
-    \tikz[baseline]{\node[fill=red!20,anchor=base] (t3){$+$};} (!a))*(b*(!c)))):(c:F))
+    \tikz[baseline]{\node[fill=red!20,anchor=base] (t3){$+$};} (!a))\cdot (b\cdot (!c)))):(c:F))
 \end{equation*}
 
 \input{/home/lyriael/BA/j-logic/thesis/Figures/trees/tree_example.tex}
 
-The \emph{sum\_split} from \emph{Tree} will give us the following terms in form of a list. 
+The \texttt{sum\_split} from \texttt{Tree} will give us the following terms in form of a list. 
 
 \begin{equation}\label{eq:sp_i}	
 	((!a):(c:F))
@@ -52,19 +53,20 @@ The \emph{sum\_split} from \emph{Tree} will give us the following terms in form 
 \begin{equation}\label{eq:sp_iv}	
 	(((! a)*(b* (! c))):(c:F))												
 \end{equation}
+Some of those will eventually be the atoms for $f$, but they first need to be simplified and checked for valid introspection.
 
-\subsection{Bangs}
-Looking at each of the terms individually we will now further look at them to discard any that have a \emph{bad bang}, meaning a bang that is the left child of a multiplication or if there are terms with bang which can be simplified.
+\subsection{Introspections}
+Looking at each of the terms individually we now look at them to discard any that have a introspection operation that is the left child of a multiplication or if there are proof terms that start with a introspection operation and cannot be simplified. If they can be simplified they will of course not be discarded but simplified.
 
-\subsubsection[First term]{Term \ref{eq:sp_i}}
-In this term we find a bang which is valid, since it is not a left child of a multiplication, but trying to simplify the term shows us that it cannot be resolved thus letting us discard is term.
+\subsubsection[First term]{Term (\ref{eq:sp_i})}
+In this term we find a introspection which is valid, since it is not a left child of a multiplication, but trying to simplify the term shows us that it cannot be resolved thus letting us discard is term.
 
 \begin{equation*}
 	((\tikz[baseline]{\node[fill=red!20,anchor=base] (t1){$!$};}a):(c:F)) 
 \end{equation*}
 
-\subsubsection[Second term]{Term \ref{eq:sp_ii}}
-As before the bang within the term is valid but in contrast to the previous example the term here can be simplified, giving us our first \emph{atom} for formula $f.$
+\subsubsection[Second term]{Term (\ref{eq:sp_ii})}
+As before the introspection within the term is valid and in contrast to the previous example the term here can be simplified, giving us our first \emph{atom} for formula $f.$
 
 \begin{equation}\label{eq:a_1}
 	\begin{split}
@@ -73,8 +75,8 @@ As before the bang within the term is valid but in contrast to the previous exam
 	\end{split}
 \end{equation}
 
-\subsubsection[Third term]{Term \ref{eq:sp_iii}}
-In this term we find the bang operation neither a left child of a multiplication nor as top operation of the proof term and thus there is nothing to do.
+\subsubsection[Third term]{Term (\ref{eq:sp_iii})}
+In this term we find the introspection operation neither a left child of a multiplication nor as top operation of the proof term and thus there is nothing to do here.
 
 \begin{equation}\label{eq:a_2}
 	\begin{split}
@@ -83,8 +85,8 @@ In this term we find the bang operation neither a left child of a multiplication
 	\end{split}
 \end{equation}
 
-\subsubsection[Fourths term]{Term \ref{eq:sp_iv}}
-Finally this term has two bangs of which the first is the left child of a multiplication and thus makes the term invalid. The second bang would be valid, but the first term causes the whole term to be discarded.
+\subsubsection[Fourths term]{Term (\ref{eq:sp_iv})}
+Finally this term has two introspections of which the first is the left child of a multiplication and thus makes the term invalid. The second introspection would be valid, but the first term causes the whole term to be discarded.
 
 \begin{equation*}
 	(((
@@ -93,15 +95,15 @@ Finally this term has two bangs of which the first is the left child of a multip
 \end{equation*}
 
 \bigskip
-This completes the \emph{atomize} step for the formula $f$ giving us two \emph{atoms}. Showing that at least one of those is provable is enough to show that $f$ is provable. 
+This completes the \texttt{atomize} step for the formula $f$ giving us the two atoms $a_1$ and $a_2$. Showing that at least one of those is provable is enough to show that $f$ is provable. 
 
-\section{Looking up the Musts}
+\section{Getting and Looking up the Musts}
 
 \begin{equation*}
 		f = (((!(a+c))+((a+(!a))*(b*(!c)))):(c:F)) 
 		\tag{\ref{eq:f}}  
 \end{equation*}
-For our formula $f$ we have found the two atoms \ref{eq:a_1} and \ref{eq:a_2}. The next steps will be determining the \emph{musts} if needed, matching them against the cs-list and finally merge the possible configurations together to determine if one of the musts is provable.
+For our formula $f$ we have found the two atoms $a_1$and $a_2$. The next steps will be determining the \emph{musts} if needed, matching them against the cs-list and finally merge the possible configurations together to determine if one of the musts is provable.
 
 
 \begin{equation*}
@@ -115,33 +117,31 @@ For our formula $f$ we have found the two atoms \ref{eq:a_1} and \ref{eq:a_2}. T
 
 \subsection{Musts}
 \subsubsection[First atom]{Atom $a_1$ (\ref{eq:a_1})}
-Since $a_1$ consists already only of one proof constant with the correspond term to it there is nothing further to to here.
+Since $a_1$ consists already only of one proof constant with the corresponding term there is nothing further to to here.
 \begin{equation}
 	a_1: \quad musts = [(c, F)]
 \end{equation}
 
 \subsubsection[Second atom]{Atom $a_2$ (\ref{eq:a_2})}
-For $a_2$ we need to take the proof term apart bit by bit. The first operation we will take apart is a multiplication. Extracting proof constants from a multiplication proof term will always us give a \emph{X-wild}. Whenever a new \emph{X-wilds} appears the $i$ of $X_i$ will simply be increased by 1.
+For $a_2$ we need to take the proof term apart bit by bit. The first operation we take apart is a application. Extracting proof constants from a application proof term us give a \emph{X-wild}. 
 
-\begin{equation*}\label{eq:musts1_a_2}
-	\begin{split}
-		((a *(b* (! c))):(c:F)) & \Rightarrow \\
-		& a : (X_1 \rightarrow (c:F)) \\
-		& (b*(! c)): X_1
-	\end{split}	
-\end{equation*}
+Whenever a new X-variable appears the $i$ of $X_i$ will simply be increased by one.
 
-The proof constant $a$ has been isolated but $(b*(! c))$ still needs further taking apart. We repeat the step from above and introduce yet another \emph{X-wild}.
+\begin{align*}\label{eq:musts1_a_2}
+		((a *(b* (! c))):(c:F)) \Rightarrow & \\
+		 a : &(X_1 \rightarrow (c:F)) \\
+		 (b*(! c)): &X_1
+\end{align*}
 
-\begin{equation*}
-	\begin{split}
-	(b*(! c)): X_1 & \Rightarrow \\
-	& b : (X_2 \rightarrow X_1) \\
-	& (! c) : X_2
-	\end{split}	
-\end{equation*}
+The proof constant $a$ has been isolated but $(b*(! c))$ still needs further taking apart. We repeat the step from above and introduce yet another X-variable.
 
-Now $b$ has been isolated as well, leaving only $(! c)$. Having a bang in a situation like this results in a new \emph{X-wild} in combination with the proof term which will replace a previous \emph{X-wild}.
+\begin{align*}
+	(b*(! c)): X_1 \Rightarrow & \\
+	b : & (X_2 \rightarrow X_1) \\
+	(! c) : & X_2
+\end{align*}
+
+Now $b$ has been isolated as well, leaving $(! c)$ as the only unresolved proof constant term. Having a introspection in a situation like this results in a new X-variables in combination with the proof term which will replace a previous X-variables.
 
 \begin{equation*}
 	\begin{split}
@@ -152,37 +152,34 @@ Now $b$ has been isolated as well, leaving only $(! c)$. Having a bang in a situ
 
 This finally gives us all the \emph{musts} for $a_2$. As can be seen belove the \emph{X-wild} $X_2$ has been replaced by $(c:X_3)$.
 \begin{equation}\label{eq:a2_musts}
-	a_2: \quad musts = [(a, (X_1 \rightarrow (c:F))), (b, ((c:X_3) \rightarrow X_1)), (c, X_3)]
+	[(a, (X_1 \rightarrow (c:F))), (b, ((c:X_3) \rightarrow X_1)), (c, X_3)]
 \end{equation}
 
-It should be noted here that a proof constant may be in more than one of the \emph{musts} for one \emph{atom}. 
-
-From the previous steps we have now two atoms with their \emph{musts} which we will check for provability. 
+It should be noted here that the same proof constant may be in more than one of the \emph{musts} for one \emph{atom}. 
 
 \subsection{Using the CS-List}
-As can seen immediately when looking at the cs-list the atom $a_1: (c:F)$ is not provable. The atom itself is already the \emph{must} that we need to check for in the cs-list. Since there is no entry $F$ in cs for the proof constant $c$ the atom is not provable and we are done.
-
-The last remaining atom $a_2$ needs a little bit more work to. First we will select and compare all \emph{musts} of $a_2$ with the corresponding entries in cs and then we need to find a configuration for the variables of the musts, that will fit all \emph{musts}.
+We now have to lock up all \emph{musts} of each atom the see if the atom is provable.
 
 \begin{align*}
-	cs = \{\\
-	& a: [(H \rightarrow (c:F)), ((E \rightarrow (c:D)) \rightarrow (c:F)), (E \rightarrow (c:D))],\\
+	cs = \{& a: [(H \rightarrow (c:F)), ((E \rightarrow (c:D)) \rightarrow (c:F)), (E \rightarrow (c:D))],\\
 	& b: [((c:F) \rightarrow H), ((c:D) \rightarrow (a:F)), ((H \rightarrow G) \rightarrow H), (Y_1 \rightarrow (Y_2 \rightarrow Y_1))],\\
-	& c: [(c:F), G, D, (G \rightarrow F)] \\
-	\}
+	& c: [(c:F), G, D, (G \rightarrow F)]\}
 	\tag{\ref{cs}}
 \end{align*}
 
+The atom $a_1$ (\ref{eq:a_1}) is not provable, since its only \emph{must} $c:F$ cannot be found in the cs-list.
+
+The other atom $a_2$ (\ref{eq:a_2}) needs a little bit more work. First we select and compare all \emph{musts} of $a_2$ with the corresponding entries in the cs-list and then we need to find a configuration for the variables of the musts, that will fit all \emph{musts}.
 
 \subsubsection[look up proof constant a]{Proof Constant $a$}
-Comparing $(X_1 \rightarrow (c:F))$ with all entries in cs for the proof constant $a$ will give us the following two condition set which are only on the variable $X_1$.
+Comparing $(X_1 \rightarrow (c:F))$ with all entries in cs-list for the proof constant $a$ will give us the following two condition sets which are only on the variable $X_1$.
 \begin{align}
 	(H \rightarrow (c:F)) & \quad \Rightarrow \quad \{X_1: H\} \\ 
 	((E \rightarrow (c:D)) \rightarrow (c:F)) & \quad \Rightarrow  \quad \{X_1: (E \rightarrow (c:D))\} \label{condition:a}
 \end{align}
 
 \subsubsection[look up proof constant b]{Proof Constant $b$}
-For the proof constant $b$ with \emph{must} term $((c:X_3) \rightarrow X_1)$ we get:
+For the proof constant $b$ with \emph{must}-term $((c:X_3) \rightarrow X_1)$ we get:
 \begin{align}
 	((c:F) \rightarrow H) & \quad \Rightarrow \quad \{X_1: F, & X_3: H\}\\ 
 	((c:D) \rightarrow (a:F)) & \quad \Rightarrow \quad \{X_1: (a:F), & X_3: D\}\\ 
@@ -191,7 +188,7 @@ For the proof constant $b$ with \emph{must} term $((c:X_3) \rightarrow X_1)$ we 
 We note that for the last condition set we now have also another kind of variable aside from those given by the \emph{must} term. For the moment both kind of variables are treaded exactly the same.
 
 \subsubsection[look up proof constant c]{Proof Constant $c$}
-Since the must term for proof constant $c$ is simply $X_3$ we get the following conditions 
+Since the must term for proof constant $c$ is simply $X_3$ we get the following condition sets.
 \begin{align}
 	(c:F) & \quad \Rightarrow \quad \{X_3: (c:F)\} \\ 
 	G & \quad \Rightarrow \quad \{X_3: G\} \\ 
@@ -200,7 +197,7 @@ Since the must term for proof constant $c$ is simply $X_3$ we get the following 
 \end{align}
 
 \section{Constructing the Final Result}
-
+Now we have several condition sets for each proof constant that have to be put together to a solution.
 \subsection{Merging Conditions}
 Our aim is that we pick one line from each proof constant and that this merged conditions give us a configuration for the $X$-variables. For example we could pick from each the top line, but it is obvious that this is not a solution since $X_3$ can only be either $H$ or $(c:F)$ but not both.
 
@@ -222,7 +219,7 @@ As a consequence of merging line (\ref{condition:a}) from $a$ with line (\ref{co
 
 
 \subsection{Meaning of the Result}
-Since we found a valid configuration for the atom $a_1$ (\ref{eq:a_1})) we have shown that the formula $f$ (\ref{eq:f})) is provable. But at this point I would like to show what finding the $X$-variables has to do with showing the provability of $f$.
+Since we found a valid configuration for the atom $a_1$ (\ref{eq:a_1}) we have shown that the formula $f$ (\ref{eq:f}) is provable. But at this point I would like to show what finding the $X$-variables has to do with showing the provability of $f$.
 
 From our previous step we have a configuration for every variable. We are however only interested in the $X$-variables and do not care further about the $Y$-variables. So we know that $X_1 = (E \rightarrow (c:D))$ and $X_3 = D$. If we replace that in the \emph{musts} for all of the proof constants we get the following:
 
