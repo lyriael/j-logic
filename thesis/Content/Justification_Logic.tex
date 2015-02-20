@@ -1,7 +1,8 @@
 %!TEX root = ../bachelors_thesis.tex
 The theory of justification logic as it is used here requires little knowledge of the wide field of modal logic apart from very basic about logic theory. For the purpose of this proof search a few basic rules and definitions are sufficient to provide the needed knowledge. 
 
- The theory presented here is based mainly on the work of \cite{goet} as well as the older reference \cite{art} and also from the homepage \cite{stan}. This definitions and rules given here are not complete to the justification logic. Priority was given to those informations which are vital for the implementation. So however briefly and incomplete the theory is presented here full reference can be found in the named sources. 
+\todo{Display citation nicely and add some names}
+The theory presented here is based mainly on the work of Goetschi~\cite{goet} as well as the older reference \cite{art} and also from the homepage \cite{stan}. This definitions and rules given here are not complete to the justification logic. Priority was given to those informations which are vital for the implementation. So however briefly and incomplete the theory is presented here full reference can be found in the named sources. 
 
 \section{Background}
 Justification Logic has its origins from the field of modal logic. 
@@ -13,9 +14,9 @@ The language of justification logic is given here in a more traditional form wit
 
 \begin{definition}\label{justification_terms} Apart from formulas, the language of justification logics have another type of syntactic objects called \emph{justification terms}, or simply \emph{terms} given by the following grammar:
 \[
-	t::= c_{i}^{j} | x_i | \bot | (t \cdot t) | (t+t) | !t
+	t::=  \;c_{i}^{j}\; |\; x_i \;|\; \bot \; |\; (t \cdot t)\; |\; (t+t)\; |\; !t
 \]
-where $i$ and $j$ range over positive natural numbers, $c_{i}^{j}$ denotes a (justification) \emph{constant} of level $j$, and $x_i$ denotes a (justification) \emph{variable}.\todo{Use BNF package}
+where $i$ and $j$ range over positive natural numbers, $c_{i}^{j}$ denotes a (justification) \emph{constant} of level $j$, and $x_i$ denotes a (justification) \emph{variable}.
 
 The binary operations $\cdot$ and $+$ are called \emph{application} and \emph{sum}. The unary operation $!$ is called \emph{positive introspection}.
 \end{definition}
@@ -24,9 +25,9 @@ The binary operations $\cdot$ and $+$ are called \emph{application} and \emph{su
 
 \begin{itemize} Application, sum and positive introspection respectively.
 
-	\item[C1] $t:(F \rightarrow G), s:F \vdash t \cdot s: G$\label{rule:c1}
-	\item[C2] $t:F \vdash (t +s):F, \:\: s:F \vdash (t+s):F$\label{rule:c2}
-	\item[C3] $t:F \vdash !t:t:F$\label{rule:c3}
+	\item[C1] $t:(F \rightarrow G), \; s:F \vdash (t \cdot s): G$\label{rule:c1}
+	\item[C2] $t:F \vdash (t +s):F, \; s:F \vdash (t+s):F$\label{rule:c2}
+	\item[C3] $t:F \vdash \; !t:(t:F)$\label{rule:c3}
 \end{itemize}
 
 \end{rules}
@@ -35,7 +36,7 @@ Formulas are constructed from propositional letters and boolean constants in the
 
 \begin{definition}\label{justification_formulas} \emph{Justification formulas} are given by the grammar:
 \[
-A ::= P_i|(A \rightarrow A) | (t:A)
+A ::= P_i\;|\;(A \rightarrow A) \;|\; (t:A)
 \]
 where $P_i$ denotes a proposition, as in the modal language, and $t$ is a justification term in the justification language.
 \end{definition}
@@ -45,5 +46,5 @@ This is almost all we need for the proof search of a (justification) formula. Th
 \begin{definition}\label{cs-def} A constant specification, \emph{CS}, is a finite set of formulas of the form $c:A$ where $c$ is a proof constant and $A$ is a axiom of Justification language.
 \end{definition}
 
-The axioms mention in this definition are \emph{C1-C3} in addition to $t:F \rightarrow F$ and the Axioms of the classical propositional logic in the language of LP.
+The axioms mention in this definition are \emph{C1-C3} in addition to $t:(F \rightarrow F)$ and the Axioms of the classical propositional logic in the language of LP.
 
