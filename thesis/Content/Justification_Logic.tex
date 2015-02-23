@@ -1,16 +1,15 @@
 %!TEX root = ../bachelors_thesis.tex
 The theory of justification logic as it is used here requires little knowledge of the wide field of modal logic apart from very basic about logic theory. For the purpose of this proof search a few basic rules and definitions are sufficient to provide the needed knowledge. 
 
-\todo{Display citation nicely and add some names}
-The theory presented here is based mainly on the work of Goetschi~\cite{goet} as well as the older reference \cite{art} and also from the homepage \cite{stan}. This definitions and rules given here are not complete to the justification logic. Priority was given to those informations which are vital for the implementation. So however briefly and incomplete the theory is presented here full reference can be found in the named sources. 
+The theory presented here is based mainly on the work of Goetschi~\cite{goet} as well as the older reference Artemov~\cite{art} and also from the homepage \cite{stan}. These definitions and rules given here are not complete to the justification logic. Priority was given to those informations which are vital for the implementation. So however briefly and incomplete the theory is presented here full reference can be found in the named sources. 
 
 \section{Background}
 Justification Logic has its origins from the field of modal logic. 
-In model logic $\square A$ means that $A$ is \emph{known} or that we have \emph{proof} of $A$. In justification logic the equivalent would be $t:A$ where $t$ is a \emph{proof term} of $A$. This gives us the notion that \emph{knowledge} or \emph{proofs} may come from different sources. Justification logic lets us connect different \emph{proofs} with a few simple operations and thus gives us a better description of the proof. To quote \todo{Get who and make a proper quotation.}XY: It may be said that where in model logic the knowledge is implicit it is explicit in justification logic\footnote{\cite{goet}}.
+In model logic $\square A$ means that $A$ is \emph{known} or that we have \emph{proof} of $A$. In justification logic the equivalent would be $t:A$ where $t$ is a \emph{proof term} of $A$. This gives us the notion that \emph{knowledge} or \emph{proofs} may come from different sources. Justification logic lets us connect different \emph{proofs} with a few simple operations and thus gives us a better description of the proof. To quote Goetschi~\cite{goet}: It may be said that where in model logic the knowledge is implicit it is explicit in justification logic.
 
 \section{Rules and Definitions}
 
-The language of justification logic is given here in a more traditional form with \emph{falsum} and \emph{implication} as primary propositional connectives. Although for the work done with this implementation only the implication is used and the falsum has been ignored. \footnote{cite here! S. 17} Also not all available syntactic objects are introduces here but only those implemented.
+The language of justification logic is given here in a more traditional form with \emph{falsum} and \emph{implication} as primary propositional connectives. Although for the work done with this implementation only the implication is used and the falsum has been ignored. Also not all available syntactic objects are introduces here but only those implemented.
 
 \begin{definition}\label{justification_terms} Apart from formulas, the language of justification logics have another type of syntactic objects called \emph{justification terms}, or simply \emph{terms} given by the following grammar:
 \[
