@@ -125,34 +125,28 @@ A \emph{configuration} is a set of conditions such that
 \end{enumerate}
 \end{definition}
 
-\subsection{Matching with \emph{cs-list}}
-Central for the whole conquer part is the procedure of comparing two formulas and giving a useful result. This is needed when we first try to match our \emph{musts} with what we find in the \emph{cs-list} and later again when we assemble the different conditions and merge them together.
+\subsection{Matching with the CS-List}
+Central for the conquer part is the procedure of comparing two formulas. We use this when we try to match our \emph{musts} with elements of the \emph{cs-list} and  again when we find and merge the conditions.
 
-For one atom we have now several \emph{musts}, each of these musts corresponds to a proof constant and holds a term usually made up from at least one variable. On the other hand the terms we find within the \emph{cs-list} are not only terms with constants but also axioms that can contain variables as well. This means that the result of a comparison of such two formulas are conditions that apply to certain variables. 
+For one atom we have several \emph{musts}, each of which corresponds to a proof constant and holds a term. This term can consist of variables in turn. The terms we find within the \emph{cs-list} are not only terms with constants but axioms containing variables as well. This means that the result of a comparison of two formulas are conditions. 
 
-If we compare the term $(X_2 \rightarrow (X_1 \rightarrow F))$ of a \emph{must} with the term $(Y_1 \rightarrow (Y_2 \rightarrow Y_1)$ from the \emph{cs-list} for example, we get the following conditions:
-\begin{align*}
-	X_1 &: \{Y_2\} \\
-	X_2 &: \{Y_1\} \\
-	Y_1 &: \{X_2, F\} \\
-	Y_2 &: \{X_1\} 
-\end{align*}
+If for example we compare the term $(X_2 \rightarrow (X_1 \rightarrow F))$ of a \emph{must} with the term $(Y_1 \rightarrow (Y_2 \rightarrow Y_1)$ from the \emph{cs-list}, we get the following conditions:
+\begin{equation*}
+	X_1 : \{Y_2\}, X_2 : \{Y_1\}, Y_1 : \{X_2, F\}, Y_2 : \{X_1\} 
+\end{equation*}
 
 Which can be shorted without loosing any informations to\footnote{This is only one of many options to shorten the conditions, another option would be $Y_1: \{X_2, F\}, Y_2:\{X_1\}$.}:
 
-\begin{align*}
-	X_1 &: \{Y_1\} \\
-	X_2 &: \{F\} \\
-	Y_2 &: \{F\}
-\end{align*}
+\begin{equation*}
+	X_1 : \{Y_1\}, X_2 : \{F\}, Y_2 : \{F\}
+\end{equation*}
 
-For every entry in the \emph{cs-list} that we compare to our \emph{must} gives us a set of conditions for the occurring variables. Each set represents a possible proof for one \emph{must}, but since all \emph{musts} have to be proofed and since they contain variables that also occur in other \emph{musts} the sets of conditions of all \emph{musts} of a atom have to be merged together.
+Every entry in the \emph{cs-list} that we compare to our \emph{must} gives us a set of conditions for the occurring variables. Each set represents a possible proof for one \emph{must}, but since all \emph{musts} must be proven and contain variables that also occur in other \emph{musts} the sets of conditions of all \emph{musts} of an atom have to be merged together.
 
 \subsection{Merging Conditions to Configurations}
-Suppose we have \emph{musts} $m_1, m_2, ..., m_n$ for a certain atom. From the previous step each of these $m_i$ has at least\footnote{If there is no entry in the \emph{cs-list} that matches the criteria of a \emph{must} it makes the whole atom unprovable.} one set of conditions for its variables, possibly more. Our aim is to find one set of conditions for each \emph{must} such that when we put all those conditions together we have not contradiction. This gives us the final configuration of the $X$ variables\footnote{We are only concerned for the \emph{X-wilds} but we still need to tag the \emph{Y-wilds} along.}.
+Suppose we have \emph{musts} $m_1, m_2, \dots, m_n$ for an certain atom. From the previous step each of these $m_i$ has at least one set of conditions\footnote{If there is no entry in the \emph{cs-list} that matches the criteria of the \emph{must} it makes the whole atom unprovable.} for its variables. Our aim is to find one set of conditions for each \emph{must} such that those conditions contain no contradiction. This gives us the final configuration of the $X_i$ variables\footnote{We are only concerned for the $X$ variables but we still need to tag the $Y$ variables along.}.
 
-Let us say we have the \emph{musts} $m_k$ and $m_{k+1}$ and the following sets of conditions: For $m_k$ we find only one set, for $m_{k+1}$ we shall have two.
-
+Let us say we have the \emph{musts} $m_k$ and $m_{k+1}$ and the following sets of conditions: 
 
 \begin{align*}
 	m_k: [	& \{X_1: \{(A \rightarrow X_3)\}, X_2: \{A\}\}]\\
@@ -160,9 +154,9 @@ Let us say we have the \emph{musts} $m_k$ and $m_{k+1}$ and the following sets o
 			& \{X_1: \{X_2\}, X_4: \{B\}\}]
 \end{align*}
 
-We see that the first set of $m_j$ is compatible with the set of $m_i$ and the second set of $m_j$ is not.
+We see that the set of $m_k$ is compatible with the first set of $m_{k+1}$ and the second set of $m_{k+1}$ is not.
 
-To archive the same result with the algorithm the two conditions are first simply joined, ignoring possible contradictions, giving us two new sets of conditions.
+To algorithmically archive the same result the two conditions are first simply joined, ignoring possible contradictions. This gives us two new sets of conditions.
 
 \begin{align*}
 	& \{	X_1: \{(A \rightarrow X_3), (X_2 \rightarrow B)\}, 
@@ -172,7 +166,6 @@ To archive the same result with the algorithm the two conditions are first simpl
 						X_2: \{A\}\}, 
 						X_4: \{B\}\}\\
 \end{align*}
-
 
 
 For the first set of condition we get from the join, resolving the conditions for $X_1$ gives us $X_2:A$ which also fits with the condition for $X_2$ that is already present. Further $X_3: B$ gives us also $X_4: B$. If the variables that we find in $m_i$ and $m_j$ are all that occur in all other \emph{musts} of the atom we have found a configuration for the variables, thus proving the atom.
@@ -185,9 +178,9 @@ In the second set resolving the conditions does not work out. From $X_1$ we get 
 
 
 \subsection{Analyzing the Results}
-In the end we get for each atom from the original formula a set of possible configurations. A set may contain several configurations, meaning that the variables of this atom can be configured differently, it may contain only one configuration, meaning that there is only one possible configuration or there may be none at all, meaning that there are no valid configurations for the variables of this atom thus making it unprovable.
+In the end we get for each atom from the original formula a set of possible configurations. A set containing several configurations means that the variables of this atom can be configured in multiple ways. If it contains only one configuration it means that there is only one possible configuration. Finally if there is none at all, it means that there are not valid configurations for the variables of this atom thus making it unprovable. 
 
-Sine proofing one atom of a formula proves the whole formula, the last step taken by the algorithm is to check if at least one atom is provable. In theory the algorithm could stop as soon as it finds the first provable atom, but in this implementation is checks all the atoms and aside from giving a simple \texttt{True} or \texttt{False} it provides also the configuration(s) of the variables for all provable atoms.
+Since proving one atom of a formula proves the whole formula the algorithm could stop as soon as it finds the first provable atom, but in this implementation is checks all the atoms and aside from giving a simple \texttt{True} or \texttt{False} it provides also the configuration(s) of the variables for all provable atoms.
 
 
 
