@@ -31,7 +31,7 @@ From the sum rule of justification logic in \ref{rules} it follows that checking
 	(s+t):F \quad \Rightarrow \quad s:F \lor t:F
 \end{align}
 
-\input{/home/lyriael/BA/j-logic/thesis/Figures/tree_ss01.tex}
+\input{Figures/tree_ss01.tex}
 
 This is also true for formulas where sum is not the top operation. Here $X$ denotes a arbitrary \emph{justification term}.
 
@@ -40,7 +40,7 @@ This is also true for formulas where sum is not the top operation. Here $X$ deno
 	& \Rightarrow ( r: X \rightarrow F \land s: X ) \lor ( r: X \rightarrow F \land t: X )
 \end{align}
 
-\input{/home/lyriael/BA/j-logic/thesis/Figures/tree_ss02.tex}
+\input{Figures/tree_ss02.tex}
 
 \subsubsection{Simplify Introspection}
 In this step we try to get rid of any introspection operation that is the first operation of a formula. Either the introspection can be removed and the formula simplified or else the formula is not provable at all and can be discarded.
@@ -51,7 +51,7 @@ Derived from the application rule in \ref{rules} we get the following:
 	!t:(t:F) \quad & \Rightarrow t: F
 \end{align}
 
-\input{/home/lyriael/BA/j-logic/thesis/Figures/tree_sb01.tex}
+\input{Figures/tree_sb01.tex}
 
 Speaking in the manner of a syntax tree it needs to be checked, if the child of the introspection operation is identical with the left child of the right child of the root. In that case the formula can be simplified to right child of the root only. Else there is no way to resolve the introspection operation and the formula has to be discarded.
 
@@ -68,7 +68,7 @@ The last line gives a contradiction since there is no possible $X_2$ that would 
 A introspection operation that is the direct left child of a application operation causes the whole term to be invalid (unprovable), given that the term is without sum operations and no introspection operation at the top.
 \end{assertion}
 
-\input{/home/lyriael/BA/j-logic/thesis/Figures/tree_bb01.tex}
+\input{Figures/tree_bb01.tex}
 
 This concludes the \emph{atomization} of one formula to many simple formulas which can be checked for provability individually. An atomized formula now consists only of application operations and valid introspection operations. The next section will show what further steps are needed to check one atomized formula for its provability.
 

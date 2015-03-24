@@ -100,3 +100,6 @@ thesis/short-math-guide.pdf
 +
 +# Linux trash folder which might appear on any partition or disk
 +.Trash-*
+
+# Mac OS stuff
+*.DS_Store

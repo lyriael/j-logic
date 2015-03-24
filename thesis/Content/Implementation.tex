@@ -22,7 +22,7 @@ As seen in the previous section I use a binary tree to represent, search, and ma
 
 \begin{figure}[H]
 	\caption{Simplified UML graphic of the classes used for implementing the algorithm. Additional helper methods and attributes are hidden.}
-	\includegraphics[width=1\textwidth]{/home/lyriael/BA/j-logic/thesis/Figures/uml_j-logic.png}
+	\includegraphics[width=1\textwidth]{Figures/uml_j-logic.png}
 	\label{uml}
 \end{figure}
 
@@ -47,7 +47,7 @@ The method is a straight forward implementation of the algorithm in chapter~\ref
 \begin{figure}[H]
 	\caption{Excerpt $atomize$ from $ProofSearch$.}
     \vspace{-10pt}
-	\lstinputlisting[firstline=2, lastline=17]{/home/lyriael/BA/j-logic/thesis/Figures/code/atomize.py}
+	\lstinputlisting[firstline=2, lastline=17]{Figures/code/atomize.py}
 	\vspace{-10pt}
 \end{figure}
 
@@ -60,7 +60,7 @@ Since the resolution of a application operation introduces a new $X$ variable an
 \begin{figure}[H]
 	\caption{Excerpt $musts$ from $FormulaTools$}
     \vspace{-10pt}
-	\lstinputlisting[firstline=2, lastline=20]{/home/lyriael/BA/j-logic/thesis/Figures/code/musts.py}
+	\lstinputlisting[firstline=2, lastline=20]{Figures/code/musts.py}
 	\vspace{-10pt}
 \end{figure}
 
@@ -78,7 +78,7 @@ All those conditions are stored as tuples in a set and are returned in form of a
 \begin{figure}[H]
 	\caption{Excerpt $unify$ from $FormulaTools$.}
 	\vspace{-10pt}
-	\lstinputlisting[firstline=2, lastline=25]{/home/lyriael/BA/j-logic/thesis/Figures/code/unify.py}
+	\lstinputlisting[firstline=2, lastline=25]{Figures/code/unify.py}
 	\vspace{-10pt}
 \end{figure}
 
@@ -92,7 +92,7 @@ Implementing this method proved harder than first expected since I didn't antici
 \begin{figure}[H]
 	\caption{Excerpt $simplify$ from $FormulaTools$.}
 	\vspace{-10pt}
-	\lstinputlisting[firstline=13, lastline=39]{/home/lyriael/BA/j-logic/thesis/Figures/code/simplify.py}
+	\lstinputlisting[firstline=13, lastline=39]{Figures/code/simplify.py}
 	\vspace{-10pt}
 \end{figure}
 
@@ -105,7 +105,7 @@ Although the method \texttt{conquer} is the one returning the final result, the 
 \begin{figure}[H]
 	\caption{First excerpt $conquer\_one\_ atom$ from $FormulaTools$.}
 	\vspace{-10pt}
-	\lstinputlisting[firstline=3, lastline=19]{/home/lyriael/BA/j-logic/thesis/Figures/code/conquer.py}
+	\lstinputlisting[firstline=3, lastline=19]{Figures/code/conquer.py}
 	\vspace{-10pt}
 \end{figure}
 
@@ -114,7 +114,7 @@ The second loop then tries to find an overall configuration that is compatible w
 \begin{figure}[H]
 	\caption{Second excerpt $conquer\_one\_ atom$ from $FormulaTools$.}
 	\vspace{-10pt}
-	\lstinputlisting[firstline=23, lastline=41]{/home/lyriael/BA/j-logic/thesis/Figures/code/conquer.py}
+	\lstinputlisting[firstline=23, lastline=41]{Figures/code/conquer.py}
 	\vspace{-10pt}
 \end{figure}
 
