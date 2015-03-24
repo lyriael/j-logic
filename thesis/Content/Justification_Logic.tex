@@ -1,17 +1,17 @@
 %!TEX root = ../bachelors_thesis.tex
-The theory of justification logic as it is used here requires little knowledge of the wide field of modal logic apart from very basic about logic theory. For the purpose of this proof search a few basic rules and definitions are sufficient to provide the needed knowledge. 
+The theory of justification logic as it is used here requires little knowledge of the wide field of modal logic apart from the very basics of logic theory. For the purpose of this proof search a few basic rules and definitions are sufficient to provide the knowledge needed. 
 
-The theory presented here is based mainly on the work of Goetschi~\cite{goet} as well as the older reference Artemov~\cite{art} and also from the homepage \cite{stan}. These definitions and rules given here are not complete to the justification logic. Priority was given to those informations which are vital for the implementation. So however briefly and incomplete the theory is presented here full reference can be found in the named sources. 
+The theory presented here is based mainly on the work of Goetschi~\cite{goet} as well as the older reference Artemov~\cite{art} and also from the homepage \todo{WHICH HOMEPAGE} \cite{stan}. The definitions and rules given here do not fully encompass all of justification logic. Priority was given to those vital to the implementation. However briefly and incompletely the theory is presented here, full reference can be found in the sources named. 
 
 \section{Background}
-Justification Logic has its origins from the field of modal logic. 
-In model logic $\square A$ means that $A$ is \emph{known} or that we have \emph{proof} of $A$. In justification logic the equivalent would be $t:A$ where $t$ is a \emph{proof term} of $A$. This gives us the notion that \emph{knowledge} or \emph{proofs} may come from different sources. Justification logic lets us connect different \emph{proofs} with a few simple operations and thus gives us a better description of the proof. To quote Goetschi~\cite{goet}: It may be said that where in model logic the knowledge is implicit it is explicit in justification logic.
+Justification Logic has its roots in the field of modal logic. 
+In modal logic $\square A$ means that $A$ is \emph{known} or that we have \emph{proof} of $A$. In justification logic the equivalent would be $t:A$ where $t$ is a \emph{proof term} of $A$. This gives us the notion that \emph{knowledge} or \emph{proofs} may come from different sources. Justification logic lets us connect different \emph{proofs} with a few simple operations and thus gives us a better description of the proof. To quote Goetschi~\cite{goet}: It can be said that where in modal logic the knowledge is implicit it is explicit in justification logic.\todo{Check Quote}
 
 \section{Rules and Definitions}
 
-The language of justification logic is given here in a more traditional form with \emph{falsum} and \emph{implication} as primary propositional connectives. Although for the work done with this implementation only the implication is used and the falsum has been ignored. Also not all available syntactic objects are introduces here but only those implemented.
+The language of justification logic is given here in a more traditional form with \emph{falsum} and \emph{implication} as primary propositional connectives. Although for the work done with this implementation only the implication is used while the falsum has been ignored. Also, not all available syntactic objects are introduced here - only those implemented.
 
-\begin{definition}\label{justification_terms} Apart from formulas, the language of justification logics have another type of syntactic objects called \emph{justification terms}, or simply \emph{terms} given by the following grammar:
+\begin{definition}\label{justification_terms} Apart from formulas, the language of justification logic has another type of syntactic objects called \emph{justification terms}, or simply \emph{terms} given by the following grammar:
 \[
 	t::=  \;c_{i}^{j}\; |\; x_i \;|\; \bot \; |\; (t \cdot t)\; |\; (t+t)\; |\; !t
 \]
@@ -42,8 +42,8 @@ where $P_i$ denotes a proposition, as in the modal language, and $t$ is a justif
 
 This is almost all we need for the proof search of a (justification) formula. The last definition gives us a reference for the proof constants.
 
-\begin{definition}\label{cs-def} A constant specification, \emph{CS}, is a finite set of formulas of the form $c:A$ where $c$ is a proof constant and $A$ is a axiom of Justification language.
+\begin{definition}\label{cs-def} A constant specification, \emph{CS}, is a finite set of formulas of the form $c:A$ where $c$ is a proof constant and $A$ is a axiom of justification language.
 \end{definition}
 
-The axioms mention in this definition are \emph{C1-C3} in addition to $t:(F \rightarrow F)$ and the Axioms of the classical propositional logic in the language of LP.
+The axioms mentioned in this definition are \emph{C1-C3} in addition to $t:(F \rightarrow F)$ and the Axioms of the classical propositional logic in the language of LP.
 
