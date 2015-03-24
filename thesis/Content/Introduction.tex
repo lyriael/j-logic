@@ -2,27 +2,27 @@
 \chapter{Introduction}
 
 \section{Motivation}
-Justification Logic is not very common and finding example of how it works it difficult. This implementation provides the possibility to search simple examples for their provability thus providing an easier approach to Justification Logic.
+Justification Logic is not very common and finding examples of how it works is difficult. This implementation provides the possibility to search simple examples for their provability, thus providing an easy approach to Justification Logic.
 
 \section{Goal}
-The initial goal of this project was to extend the existing proof search engine Z3~\cite{z3} to also handle Justification Logic. Among the interface languages provided was Python, a language that interested me for quiet some time already. Deeper investigation into Z3 revealed that to make it handle also Justification Logic the given interface in Python would not work. Instead it would have to be integrated into the core of the program which is written in C. The expenses it would require enough understanding of Z3 to do the this integration would be far too costly and as a consequence would leaf me with very little resources left for the intended implementation.
+The initial goal of this project was to extend the existing proof search engine Z3~\cite{z3} to also handle Justification Logic. Among the interface languages provided was Python, a language that I was interested in for quite some time already. Deeper investigation into Z3 revealed that to make it also handle Justification Logic, the interface given would not work. Instead it would have to be integrated into the core of the program which is written in C. The effort required to understand enough of Z3 to do the this integration would be to great and as a consequence would leave very little resources for the intended implementation.
 
-So instead of extending Z3 from Microsoft Research the actual goal was altered into implementing a stand-alone proof search for Justification Logic. That meant the implementation would be easier since it did not depend on anything else anymore. Conversely a lot of the functionality that was hoped to get from Z3 would have to be implemented as well or discarded entirely. The decision to abandon Z3 entirely was made after I had already started implementation with some prototypes in python. As a consequence Python remained the choice of language even thought there might had been more suitable languages for this task.
+So instead of extending from Microsoft Research's Z3, the actual goal was altered into implementing a stand-alone proof search for Justification Logic. That meant the implementation would be easier since it did not depend on anything else anymore. Conversely, a lot of the functionality that I hoped to get from Z3 would have to be implemented as well or discarded entirely. The decision to abandon Z3 entirely was made after I had already started implementation with some prototypes in python. As a consequence Python remained the language of choice even though there might have been more suitable languages for this task.
 
 It was agreed that the program should satisfy to following conditions:
 
 \begin{itemize}
-	\item[Input] The formula to be proven as well as a list of formulas needed for the proof is given as string. It may be presumed that all input is exactly formatted in the way excepted. The input will not be checked for syntax error or general typing mistakes by the program.
-	\item[Output] \emph{True} if the formula is provable and \emph{False} otherwise. \\Ideally there would be a second output in case the formula is provable giving a proof.
+	\item[Input] The formula to be proven as well as a list of formulas needed for the proof, given as strings. It may be presumed that all input is exactly formatted in the way excepted. The input will not be checked for syntax errors or general typing mistakes by the program.
+	\item[Output] \emph{True} if the formula is provable and \emph{False} otherwise. \\Optionally, there would be a second output in case the formula is provable detailing one or more possible proofs.
 \end{itemize}
 
 \section{Overview}
 The next chapter starts with a short introduction to Justification Logic. It will go only just deep enough into the theory to gain sufficient understanding of the given task.
 
-The third chapter introduces the algorithm used in the implementation on a abstract level. This thesis concerns itself more with the practical side of implementation and not the theoretical side of mathematical logic theory. There will be little to no proof here, but instead focus on examples to illustrate how the algorithm works.
+The third chapter introduces the algorithm used in the implementation on an abstract level. This thesis concerns itself more with the practical side of implementation and not the theoretical side of mathematical logic theory. There will be no formal proofs here, but instead I will focus on examples to illustrate how the algorithm works.
 
-The forth chapter provides a selected insight into the classes and methods of the source code. For a thorough study it is however recommended to take a look at the source code itself as this chapter only covers the essentials. 
+The forth chapter provides a selection of the classes and methods of the source code. For a thorough understanding it is however recommended to take a look at the source code itself, as this chapter only covers the essentials. 
 
 The fifth chapter combines the previous two chapters by going through an example from start to end.
 
-Finally the last chapter will discuss the result of the work and give some ideas about how the work of a Justification Logic proof search implementation could be improved.
+Finally, the last chapter will discuss the result of the work and give some ideas about how the work of a Justification Logic proof search implementation could be improved.
