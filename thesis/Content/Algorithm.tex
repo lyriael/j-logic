@@ -129,13 +129,13 @@ For one atom we have several \emph{musts}, each of which can contain multiple pr
 
 If for example we compare the term $(X_2 \rightarrow (X_1 \rightarrow F))$ of a \emph{must} with the term $(Y_1 \rightarrow (Y_2 \rightarrow Y_1)$ from the \emph{cs-list}, we get the following conditions:
 \begin{equation*}
-	X_1 : \{Y_2\}, X_2 : \{Y_1\}, Y_1 : \{X_2, F\}, Y_2 : \{X_1\} 
+	X_1 : \{Y_2\},\; X_2 : \{Y_1\},\; Y_1 : \{X_2, F\},\; Y_2 : \{X_1\} 
 \end{equation*}
 
-Which can be shorted without losing any informations to\footnote{This is only one of many options to shorten the conditions, another option would be $Y_1: \{X_2, F\}, Y_2:\{X_1\}$.}:
+Which can be shorted without losing any informations to\footnote{This is only one of many options to shorten the conditions, another option would be $Y_1: \{X_2, F\},\; Y_2:\{X_1\}$.}:
 
 \begin{equation*}
-	X_1 : \{Y_1\}, X_2 : \{F\}, Y_2 : \{F\}
+	X_1 : \{Y_1\},\; X_2 : \{F\},\; Y_2 : \{F\}
 \end{equation*}
 
 Every entry in the \emph{cs-list} that we compare our \emph{must} to gives us a set of conditions for the occurring variables. Each set represents a possible proof for one \emph{must}, but since all \emph{musts} must be proven and contain variables that also occur in other \emph{musts}, the sets of conditions of all \emph{musts} of an atom have to be merged together.
@@ -146,32 +146,28 @@ Suppose we have \emph{musts} $m_1, m_2, \dots, m_n$ for a certain atom. From the
 Let us say we have the \emph{musts} $m_k$ and $m_{k+1}$ and the following sets of conditions: 
 
 \begin{align*}
-	m_k: [	& \{X_1: \{(A \rightarrow X_3)\}, X_2: \{A\}\}]\\
-	m_{k+1}: [	& \{X_1: \{(X_2 \rightarrow B)\}, X_4: \{X_3\}\},\\
-			& \{X_1: \{X_2\}, X_4: \{B\}\}]
+	m_k: [	& \{X_1: \{(A \rightarrow X_3)\},\; X_2: \{A\}\}]\\
+	m_{k+1}: [	& \{X_1: \{(X_2 \rightarrow B)\},\; X_4: \{X_3\}\},\\
+			& \{X_1: \{X_2\},\; X_4: \{B\}\}]
 \end{align*}
 
-We see that the set of $m_k$ is compatible with the first set of $m_{k+1}$ and the second set of $m_{k+1}$ is not.
+We see that the set of $m_k$ is compatible with the first set of $m_{k+1}$ and the second set of $m_{k+1}$ is not. To algorithmically achieve this result, the sets of conditions are first simply joined, ignoring possible contradictions, giving us two new sets of conditions.
 
-To algorithmically achieve this result, the two conditions are first simply joined, ignoring possible contradictions. This gives us two new sets of conditions.
-
+For the first set of conditions we get from the join, resolving the conditions for $X_1$ gives us $(X_2:A)$ which also fits with the condition for $X_2$ that is already present. Also, $(X_3: B)$ gives us $(X_4: B)$. \footnote{If all the variables occurring in all the other musts are $X1$ to $X4$ we have found a configuration, thus proving the atom.}
 \begin{align*}
-	& \{	X_1: \{(A \rightarrow X_3), (X_2 \rightarrow B)\},
-						X_2: \{A\}, 
+	& \{	X_1: \{(A \rightarrow X_3), (X_2 \rightarrow B)\},\;
+						X_2: \{A\}, \;
 						X_4: \{X_3\}\}\\
-					\Rightarrow \quad & \{X_1: \{(A \rightarrow B)\}, X_2: \{A\}\}, X_3: \{B\}, X_4: \{B\}\}
+					\Rightarrow \quad & \{X_1: \{(A \rightarrow B)\},\; X_2: \{A\}\}, \;X_3: \{B\},\; X_4: \{B\}\}
 \end{align*}
 
-
-For the first set of conditions we get from the join, resolving the conditions for $X_1$ gives us $X_2:A$ which also fits with the condition for $X_2$ that is already present. Also, $X_3: B$ gives us $X_4: B$. \footnote{If all the variables occurring in all the other musts are $X1$ to $X4$ we have found a configuration, thus proving the atom.}
-\todo{Rheinenfolge von Text und Gleichungen}
+In the second set resolving the conditions does not work out. From $X_1$ we get $(X_2: (A \rightarrow X_3))$. This is not compatible with the existing condition $(X_2: A)$. Consequently, the second set is discarded. 
 \begin{align*}
-	& \{X_1: \{(A \rightarrow X_3), X_2\},
-						X_2: \{A\}, 
-						X_4: \{B\}\} \Rightarrow \text{\Lightning} 
+	& \{X_1: \{(A \rightarrow X_3), X_2\},\;
+						X_2: \{A\}, \;
+						X_4: \{B\}\} \\
+					\Rightarrow \quad & \text{\Lightning} 
 \end{align*}
-
-In the second set resolving the conditions does not work out. From $X_1$ we get $X_2: (A \rightarrow X_3)$. This is not compatible with the existing condition $X_2: A$. Consequently, the second set is discarded. 
 
 If the first set had failed as well there would be no proof for this atom.
 

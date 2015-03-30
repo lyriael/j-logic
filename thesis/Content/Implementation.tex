@@ -62,7 +62,7 @@ Since the resolution of an application operator introduces a new $X$ variable an
 	\vspace{-10pt}
 \end{figure}
 
-If for example the current justification term is $((a\cdot (!b)):F)$, it will taken apart into the two subformulas $(a:(X_i\rightarrow F))$ and $((!b):(X_i))$. Further, since from $!b:X_i$ follows $\exists X_j \quad s.t. \quad !b:(b:X_j)$, all $X_i$ that occurred up until now must be replaced by $(b:X_j)$. These values are stored in \texttt{assignments} and eventually replaced. \todo{kleinerer abstand}
+If for example the current justification term is $((a\cdot (!b)):F)$, it will taken apart into the two subformulas $(a:(X_i\rightarrow F))$ and $((!b):(X_i))$. Further, since from $!b:X_i$ follows $\exists X_j \; s.t. \; !b:(b:X_j)$, all $X_i$ that occurred up until now must be replaced by $(b:X_j)$. These values are stored in \texttt{assignments} and eventually replaced.
 
 In the end we will have only proof constants remaining.
 
@@ -83,7 +83,9 @@ All those conditions are stored as tuples in a set and are returned in form of a
 
 \subsection[simplify]{\texttt{simplify, FormulaTools}}
 
-The aim of this method is that it leaves one condition term for the variable\footnote{In the source code the combination of the variable and its single condition is referred to as \emph{the chosen one}.} it takes as input. In the end, this variable does only occur as a key to conditions. For example, if we have $ [(A \rightarrow B), X_2, (Y_1 \rightarrow Y_2)]$ as conditions for $X_1$, and $[(X_1)]$ as a condition for $X_2$, the method returns $[(A \rightarrow B)]$ as the only condition for $X_1$, $[((A \rightarrow B), (Y_1 \rightarrow Y_2)]$ for $X_2$ and also $[(A)]$ for the new found variable $Y_1$ and $[(B)]$ for the new found variable $Y_2$. Thus we have eliminated all occurrences of the variable $X_1$ and as a consequence of this we found new variables that were not present before. \todo{Klammern, Satz fertig verschönern (einfacher?)}
+The aim of this method is to replace all occurrences of the variable given as input except for its usage as key from the condition set.~\footnote{In the source code the condition on the variable is referred to as \emph{the chosen one}.}. 
+
+For example, if we have $ (A \rightarrow B),\; (X_2),\; \text{and } (Y_1 \rightarrow Y_2)$ as conditions for $X_1$, and $(X_1)$ as a condition for $X_2$, the method returns $(A \rightarrow B)$ as the only condition for $X_1$, $(A \rightarrow B) \text{ and } (Y_1 \rightarrow Y_2)$ for $X_2$ and also $(A)$ for the new found variable $Y_1$ and $(B)$ for the new found variable $Y_2$. Thus we have eliminated all occurrences of the variable $X_1$ and as a consequence of this we found new variables that were not present before.
 
 Implementing this method proved harder than expected because I underestimated the significance of the newfound variables. The method \texttt{resolve\_conditions} handles the order in which \texttt{simplify} is called on each variable. \texttt{resolve\_conditions} pushes the newfound variables on top of the stack to make sure they are given priority. Because \texttt{resolve\_conditions} needs to know the new variables, the method \texttt{simplify} makes changes to the condition set in place and instead of returning the conditions as might be expected, it returns the list of newfound variables.
 
