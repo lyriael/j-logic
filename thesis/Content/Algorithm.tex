@@ -26,17 +26,15 @@ To make the content presented here more accessible the steps necessary will be i
 \subsubsection{Sumsplit}
 \label{sumsplit}
 From the sum rule of justification logic in \ref{rules} follows: Checking for provability in a formula where the operation is a sum is equal to checking either operand of the sum for provability. If any of the operands is provable, so is the original formula.
-
 \begin{align}\label{ss1}
-	(s+t):F \quad \Rightarrow \quad s:F \lor t:F
+	(s+t):F \; \Rightarrow \; s:F \lor t:F
 \end{align}
 
 \input{Figures/tree_ss01.tex}
 
 This is also true for formulas where sum is not the top operation. In the example below, $X$ denotes a arbitrary \emph{justification term}.
-
 \begin{align}\label{ss2}
-	(r*(s+t)):F  \quad & \Rightarrow r: X \rightarrow F \land (s+t): X \\
+	(r*(s+t)):F  \; & \Rightarrow r: X \rightarrow F \land (s+t): X \\
 	& \Rightarrow ( r: X \rightarrow F \land s: X ) \lor ( r: X \rightarrow F \land t: X )
 \end{align}
 
@@ -46,16 +44,14 @@ This is also true for formulas where sum is not the top operation. In the exampl
 In this step we try to get rid of any introspection operation that is the first operation of a formula. Either the introspection can be removed and the formula simplified or else the formula is not provable at all and can be discarded.
 
 Derived from the application rule in \ref{rules} we get the following:
-
 \begin{align}\label{sb}
-	!t:(t:F) \quad & \Rightarrow t: F
+	!t:(t:F) \; & \Rightarrow \; t: F
 \end{align}
 
 \input{Figures/tree_sb01.tex}
 
 \subsubsection{Remove Contradicting Introspection}
 This last step in atomizing the formula proved to be on of the hardest to realize. Only countless examples support the claim that the introspection operator must not be the left child of an application operation. Coming to that conclusion, it has been helpful that no sum operator could make the situation more complex. Because of this, and also the fact that an introspection operator is never the top operator in a formula, it is guaranteed that an introspection operator must be either a right child or a left child of an application operator.
-
 \begin{align}\label{bb}
 	((!s)\cdot t):F  & \Rightarrow \exists X_1 : ((!s): (X_1 \rightarrow F) \; \land \; t: X_1)\\
 	(!s): (X_1 \rightarrow F)  &\Rightarrow \exists X_2 : ((X_1 \rightarrow F) = (s:X_2)) & \text{\Lightning}
@@ -80,25 +76,23 @@ The operation rules which were presented in chapter~\ref{rules} give us the inst
 Each application operator in a term adds one variable. An introspection operation $!t:X_i$ replaces the existing variable $X_i$ with a new term that is of the form $t:X_j$. 
 
 So for a term like this $(a \cdot (!b)):F$ the following is evaluated:
-
 \begin{equation}\label{musts1}
 \begin{split}
-	(a \cdot (!b)): F \\
-	& \Rightarrow a: X_1 \rightarrow F\\
-	& \Rightarrow !b: X_1
+	(a \cdot (!b)): F \Rightarrow\\
+	&  a: X_1 \rightarrow F,\\
+	& !b: X_1
 \end{split}
 \end{equation}
 \begin{equation}\label{musts2}
 \begin{split}
-	!b: X_2 \\
-	& \Rightarrow X_1 = b:X_2
+	!b: X_2 \Rightarrow\\
+	& X_1 = b:X_2
 \end{split}
 \end{equation}
 
-$X_2$ will be replaced by $b:X_2$ so our final \emph{musts} for $(a \cdot (!b)):F$ look like this: 
+$X_2$ will be replaced by $(b:X_2)$ so our final \emph{musts} for $(a \cdot (!b)):F$ look like this: 
 \begin{align*}\label{must-list}
- [ 	&\bigl( a, ((b:X_2) \rightarrow  F) \bigr) , \\
- 	&\bigl( b, X_1 \bigr) ] 
+ \bigl( a, ((b:X_2) \rightarrow  F) \bigr) ,\; \bigl( b, X_1 \bigr) 
 \end{align*}
 
 \section{Conquer}
@@ -144,7 +138,6 @@ Every entry in the \emph{cs-list} that we compare our \emph{must} to gives us a 
 Suppose we have \emph{musts} $m_1, m_2, \dots, m_n$ for a certain atom. From the previous step, each of these $m_i$ has at least one set of conditions\footnote{If there is no entry in the \emph{cs-list} that matches the criteria of the \emph{must}, the whole atom is unprovable.} for its variables. Our aim is to find one set of conditions for each \emph{must} such that those conditions contain no contradiction, giving us the final configuration of the $X_i$ variables\footnote{We are only concerned for the $X$ variables but we still need to carry the $Y$ variables along.}.
 
 Let us say we have the \emph{musts} $m_k$ and $m_{k+1}$ and the following sets of conditions: 
-
 \begin{align*}
 	m_k: [	& \{X_1: \{(A \rightarrow X_3)\},\; X_2: \{A\}\}]\\
 	m_{k+1}: [	& \{X_1: \{(X_2 \rightarrow B)\},\; X_4: \{X_3\}\},\\

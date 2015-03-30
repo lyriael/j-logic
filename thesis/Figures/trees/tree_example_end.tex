@@ -1,13 +1,12 @@
 %!TEX root = ../../bachelors_thesis.tex
 \begin{figure}[H]
-\caption{Syntax tree of formula $f$ with atom $a_2$ hightlighted.}
 \begin{center}
-\begin{tikzpicture}[level distance=1.2cm,
-  level 1/.style={sibling distance=5cm},
-  level 2/.style={sibling distance=3.5cm}, 
-  level 3/.style={sibling distance=2cm},
-  level 4/.style={sibling distance=1cm},
-  level 5/.style={sibling distance=1.5cm}, thick,scale=0.9, every node/.style={scale=0.9}]
+\begin{tikzpicture}[level distance=1cm,
+  level 1/.style={sibling distance=6cm},
+  level 2/.style={sibling distance=5cm}, 
+  level 3/.style={sibling distance=2.5cm},
+  level 4/.style={sibling distance=1.5cm},
+  level 5/.style={sibling distance=1cm}, thick,scale=0.75, every node/.style={scale=0.9}]
 	\node [arn_n]{$:$}
 	  child {node [arn_r]{\(+ \)}
 	    child {node [arn_w] {$!$}
@@ -37,4 +36,5 @@
 	  };
 \end{tikzpicture}
 \end{center}
+\caption{Syntax tree of formula $f$ with atom $a_2$ hightlighted.}
 \end{figure}

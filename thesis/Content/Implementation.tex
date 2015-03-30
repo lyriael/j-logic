@@ -21,9 +21,9 @@ The tree was not only important to the algorithm, but could also be used to chec
 As seen in the previous section I use a binary tree to represent, search, and manipulate formulas. The class \texttt{Tree} and the associated class \texttt{Node} are simple implementations of a syntax tree made to precisely fit my purpose. 
 
 \begin{figure}[H]
-	\caption{Simplified UML graphic of the classes used for implementing the algorithm. Additional helper methods and attributes are hidden.}
 	\includegraphics[width=1\textwidth]{Figures/uml_j-logic.png}
 	\label{uml}
+	\caption{Simplified UML graphic of the classes used for implementing the algorithm. Additional helper methods and attributes are hidden.}
 \end{figure}
 
 
@@ -43,10 +43,10 @@ The method \texttt{atomize} can be seen as the \emph{divide} step of the algorit
 The method is a straightforward implementation of the algorithm in chapter~\ref{chap:Algorithm.divide}. It splits the formula for each sum operator found. Then it tries to simplify all subformulas that start with an introspection. Subformulas that are not resolvable~\footnote{Such as formulas that start with an introspection but cannot be simplified, or formulas that contain an introspection on the left side of an application.} are removed, leaving only those that we call \emph{atoms}.
 
 \begin{figure}[H]
-	\caption{Excerpt $atomize$ from $ProofSearch$.}
     \vspace{-10pt}
 	\lstinputlisting[firstline=2, lastline=17]{Figures/code/atomize.py}
 	\vspace{-10pt}
+	\caption{Excerpt $atomize$ from $ProofSearch$.}
 \end{figure}
 
 \subsection[musts]{\texttt{musts, FormulaTools}}
@@ -56,10 +56,10 @@ The algorithm takes the formula apart from top to bottom, generating new, smalle
 Since the resolution of an application operator introduces a new $X$ variable and the resolution of a introspection operator replaces an existing $X$ variable with a new one, the current $i$ for a new \emph{X-wild} $X_i$ is stored and increased in \texttt{v\_count}.
 
 \begin{figure}[H]
-	\caption{Excerpt $musts$ from $FormulaTools$}
     \vspace{-10pt}
 	\lstinputlisting[firstline=2, lastline=20]{Figures/code/musts.py}
 	\vspace{-10pt}
+	\caption{Excerpt $musts$ from $FormulaTools$}
 \end{figure}
 
 If for example the current justification term is $((a\cdot (!b)):F)$, it will taken apart into the two subformulas $(a:(X_i\rightarrow F))$ and $((!b):(X_i))$. Further, since from $!b:X_i$ follows $\exists X_j \; s.t. \; !b:(b:X_j)$, all $X_i$ that occurred up until now must be replaced by $(b:X_j)$. These values are stored in \texttt{assignments} and eventually replaced.
@@ -74,10 +74,10 @@ The method \texttt{unify} takes two formulas~\footnote{It is assumed that the on
 All those conditions are stored as tuples in a set and are returned in form of a python dictionary, where all conditions for one variable can be accessed by the variable itself as a key. At the current stage conditions that apply to the same variable may contradict each other, but this method is responsible only for collecting conditions and not for evaluating them. This will done by the method \texttt{simplify} and the method \texttt{resolve\_conditions}.
 
 \begin{figure}[H]
-	\caption{Excerpt $unify$ from $FormulaTools$.}
 	\vspace{-10pt}
 	\lstinputlisting[firstline=2, lastline=25]{Figures/code/unify.py}
 	\vspace{-10pt}
+	\caption{Excerpt $unify$ from $FormulaTools$.}
 \end{figure}
 
 
@@ -90,10 +90,10 @@ For example, if we have $ (A \rightarrow B),\; (X_2),\; \text{and } (Y_1 \righta
 Implementing this method proved harder than expected because I underestimated the significance of the newfound variables. The method \texttt{resolve\_conditions} handles the order in which \texttt{simplify} is called on each variable. \texttt{resolve\_conditions} pushes the newfound variables on top of the stack to make sure they are given priority. Because \texttt{resolve\_conditions} needs to know the new variables, the method \texttt{simplify} makes changes to the condition set in place and instead of returning the conditions as might be expected, it returns the list of newfound variables.
 
 \begin{figure}[H]
-	\caption{Excerpt $simplify$ from $FormulaTools$.}
 	\vspace{-10pt}
 	\lstinputlisting[firstline=13, lastline=39]{Figures/code/simplify.py}
 	\vspace{-10pt}
+	\caption{Excerpt $simplify$ from $FormulaTools$.}
 \end{figure}
 
 
@@ -103,19 +103,19 @@ Although the method \texttt{conquer} is the one returning the final result, the 
 There are two main loops in \texttt{conquer\_one\_atom}. The first loop collects all possible configurations for each of the \emph{musts} of the atom. If for any \emph{must} no valid configuration can be found, the method will terminate because one unprovable \emph{must} makes the whole atom unprovable.
 
 \begin{figure}[H]
-	\caption{First excerpt $conquer\_one\_ atom$ from $FormulaTools$.}
 	\vspace{-10pt}
 	\lstinputlisting[firstline=3, lastline=19]{Figures/code/conquer.py}
 	\vspace{-10pt}
+	\caption{First excerpt $conquer\_one\_ atom$ from $FormulaTools$.}
 \end{figure}
 
 The second loop then tries to find an overall configuration that is compatible with at least one of the configurations per \emph{must}. If at one stage there is no entry left in \texttt{merged\_conditions}, it means that the conditions posed by the newly encountered configuration of the musts are not compatible with the old ones and thus the atom is unprovable.
 
 \begin{figure}[H]
-	\caption{Second excerpt $conquer\_one\_ atom$ from $FormulaTools$.}
 	\vspace{-10pt}
 	\lstinputlisting[firstline=23, lastline=41]{Figures/code/conquer.py}
 	\vspace{-10pt}
+	\caption{Second excerpt $conquer\_one\_ atom$ from $FormulaTools$.}
 \end{figure}
 
 \bigskip
