@@ -111,7 +111,6 @@ class ProofSearch:
         # Collect all conditions for each must.
         # Example: a - proof_constant, X1->F - condition_term
         for proof_constant, condition_term in self.musts[atom]:
-            print(proof_constant + ': ' +condition_term)
 
             # List that will hold all valid matches from the
             # cs-list with the current must.
@@ -126,7 +125,7 @@ class ProofSearch:
                 configuration = match_with_cs_term(cs_term, condition_term)
                 if configuration is not None:
                     proofs_for_atom.append(configuration)
-            print(proofs_for_atom)
+
             # If at least one match between the condition_term and an entry in
             # cs was found we can go on. If nothing fits, the whole atom is not
             # provable.
