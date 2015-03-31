@@ -1,5 +1,5 @@
 %!TEX root = ../bachelors_thesis.tex
-In this chapter I will walk through a example covering a few key cases. The justification term we will look at is rather complicated but the walkthrough will also show how it can be broken down into simpler terms.
+In this chapter I will walk through a example covering a few key cases. The justification term we will look at is rather complicated but the walk-through will also show how it can be broken down into simpler terms.
 
 \section{Initialization}
 The algorithm takes a formula $f$ and a cs-list as input. The data presented here is in the same form as it would be entered into the program. Therefore the cs-list is a \emph{python} dictionary and not a simple list of pairs as given by the definition of justification logic. Also, there are more brackets explicitly written than required by convention to enable parsing.
@@ -96,12 +96,12 @@ We have found the two atoms $a_1$ and $a_2$ for the formula $f$. The next step d
 
 \subsection{Musts}
 \subsubsection[First atom]{Atom $a_1$ (\ref{eq:a_1})}
-Since $a_1$ consists of only one proof constant already, there is nothing further to to here.
+Since $a_1$ consists of only one proof constant already, there is nothing further to here.
 \begin{equation}
 	musts \; a_1:\quad  [(c, F)]
 \end{equation}
 \subsubsection[Second atom]{Atom $a_2$ (\ref{eq:a_2})}
-For $a_2$ we need to take the proof term apart bit by bit. Extracting proof constants from a proof term gives us an \emph{X} variable for each application operator. 
+For $a_2$ we need to take the proof term apart bit by bit.
 \begin{align}\label{eq:musts1_a_2}
 		((a \cdot(b\cdot (! c))):(c:F)) \Rightarrow \nonumber\\
 		 & a : \; (X_1 \rightarrow (c:F)) \nonumber\\
@@ -123,7 +123,7 @@ Now $b$ has been isolated as well, leaving $(! c)$ as the only unresolved proof 
 	\end{split}	
 \end{equation*}
 
-This gives us all the \emph{musts} for $a_2$. As can be seen below the \emph{X} variable $X_2$ has been replaced by $(c:X_3)$.
+This gives us all the \emph{musts} for $a_2$. As can be seen below the variable $X_2$ has been replaced by $(c:X_3)$.
 \begin{equation}\label{eq:a2_musts}
 	musts \; a_2: \quad [(a, (X_1 \rightarrow (c:F))), \;(b, ((c:X_3) \rightarrow X_1)),\; (c, X_3)]
 \end{equation}
@@ -131,7 +131,7 @@ This gives us all the \emph{musts} for $a_2$. As can be seen below the \emph{X} 
 Note that the same proof constant may occur more than once in the list of \emph{musts} for one \emph{atom}. 
 
 \subsection{Using the CS-List}
-We now have to look up all \emph{musts} of an atom the see if the atom is provable.
+We now have to look up each \emph{must} of an atom the see if the atom is provable.
 \begin{align*}
 	cs = \{& a: [(H \rightarrow (c:F)), ((E \rightarrow (c:D)) \rightarrow (c:F)), (E \rightarrow (c:D))],\\
 	& b: [((c:F) \rightarrow H), ((c:D) \rightarrow (a:F)), ((H \rightarrow G) \rightarrow H), (Y_1 \rightarrow (Y_2 \rightarrow Y_1))],\\
@@ -153,11 +153,11 @@ Comparing $(X_1 \rightarrow (c:F))$ with all entries in cs-list for the proof co
 \subsubsection[look up proof constant b]{Proof Constant $b$}
 For the proof constant $b$ with \emph{must}-term $((c:X_3) \rightarrow X_1)$ we get:
 \begin{align}
-	((c:F) \rightarrow H) & \; \Rightarrow \; \{X_1: F,\; X_3: H\}\nonumber\\ 
+	((c:F) \rightarrow H) & \; \Rightarrow \; \{X_1: H,\; X_3: F\}\nonumber\\ 
 	((c:D) \rightarrow (a:F)) & \; \Rightarrow \; \{X_1: (a:F),\; X_3: D\}\nonumber\\ 
 	((Y_1 \rightarrow (Y_2 \rightarrow Y_1)) & \; \Rightarrow \; \{X_1: (Y_2 \rightarrow Y_1),\; Y_1: (c:X_3)\} \label{condition:b}
 \end{align}
-We note that for the last set of conditions we now have a \emph{Y} variables aside from the \emph{X} variables given in the \emph{must} term. For the moment both kinds of variables are treated exactly the same.
+We note that for the last set of conditions we now have \emph{Y} variables aside from the \emph{X} variables given in the \emph{must} term. For the moment both kinds of variables are treated exactly the same.
 
 \subsubsection[look up proof constant c]{Proof Constant $c$}
 Since the \emph{must} term for proof constant $c$ is simply $X_3$ we get the following sets of condition.
@@ -172,7 +172,7 @@ Since the \emph{must} term for proof constant $c$ is simply $X_3$ we get the fol
 Now we have several condition sets for each proof constant that have to be put together to form a solution.
 \subsection{Merging Conditions}
 We put together a new set that contains one set of conditions per proof constant. Then we try to simplify this new set. If we encounter a contradiction in doing so, the new set is discarded. If the new set stays without contradictions, we have found a configuration.
-For example we could pick the first set from each, but this would give us a contradiction since $X_3$ can only be either $H$ or $(c:F)$ but not both.
+For example we could pick the first set from each, but this would give us a contradiction since $X_3$ can only be either $F$ or $(c:F)$ but not both.
 
 As we can see, not every set of $a$ can be successfully merged with another set of $b$. We can only take those that have the same term for $X_3$ or where there is a \emph{Y} variable. In fact only the two bottom rows are compatible, since no entry form $b$ fits $X_1: H$ from $a$ and only $(Y_2 \rightarrow Y_1)$ can be matched with $(E \rightarrow (c:D))$.
 \begin{align}
@@ -186,8 +186,7 @@ Comparing the conditions of $X_1$ we find that $Y_2: E$ and $Y_1: (c:D)$. Since 
 	\{X_1: (E \rightarrow (c:D)), \; X_3: D, \; Y_1: (c:D), \; Y_2: E\}
 \end{align}
 
-As a consequence of merging the set of conditions (\ref{condition:a}) from $a$ with set of conditions (\ref{condition:b}) from $b$ there is no choice left for any of the \emph{X} variables. The final result depends on finding a set of conditions of proof constant $c$ that doesn't contradict the value for $X_3$. As it happens this is the case for the set of conditions (\ref{condition:c}).
-
+As a consequence of merging the set of conditions (\ref{condition:a}) from $a$ with set of conditions (\ref{condition:b}) from $b$ there is no choice left for any of the \emph{X} variables. The final result depends on finding a set of conditions of proof constant $c$ that doesn't contradict the value for $X_3$. As it happens this is the case for the set of conditions in the second last row (\ref{condition:c}).
 
 \subsection{Meaning of the Result}
 Since we found a valid configuration for the atom $a_1$ (\ref{eq:a_1}) we have shown that the formula $f$ (\ref{eq:f}) is provable. Lets take a step back and see what the configurations of the \emph{X} variables have to do with the provability of $f$.
@@ -212,4 +211,4 @@ As we see these entries can all be found exactly like that in the cs-list (\ref{
 And with (\ref{ex:reconstruct}) for $a_2$ we have again what we started with right after the atomization step in (\ref{eq:sp_iii}). In the graph below the path with the tree of the atom $a_2$ is highlighted. 
 \input{Figures/trees/tree_example_end.tex}
 
-This concludes the Example chapter. 
+This concludes the example chapter. 

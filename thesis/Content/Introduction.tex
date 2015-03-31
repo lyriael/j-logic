@@ -2,12 +2,12 @@
 \chapter{Introduction}
 
 \section{Motivation}
-Justification Logic is not very common and finding examples of how it works is difficult. This implementation provides the possibility to search simple examples for their provability, thus providing an easy approach to Justification Logic.
+Justification logic is not very common and finding examples of how it works is difficult. This implementation provides the possibility to search simple examples for their provability, thus providing an easy approach to justification logic.
 
 \section{Goal}
-The initial goal of this project was to extend the existing proof search engine Z3~\cite{z3} to also handle Justification Logic. Among the interface languages provided was Python, a language that I was interested in for quite some time already. Deeper investigation into Z3 revealed that to make it also handle Justification Logic, the interface given would not work. Instead it would have to be integrated into the core of the program which is written in C. The effort required to understand enough of Z3 to do the this integration would be to great and as a consequence would leave very little resources for the intended implementation.
+The initial goal of this project was to extend the existing proof search engine Z3~\cite{z3} to also handle justification logic. Among the interface languages provided was Python, a language that I was interested in for quite some time already. Deeper investigation into Z3 revealed that to make it also handle justification logic, the interface given would not work. Instead it would have to be integrated into the core of the program which is written in C. The effort required to understand enough of Z3 to do the this integration would be to great and as a consequence would leave very little resources for the intended implementation.
 
-So instead of extending from Microsoft Research's Z3, the actual goal was altered into implementing a stand-alone proof search for Justification Logic. That meant the implementation would be easier since it did not depend on anything else anymore. Conversely, a lot of the functionality that I hoped to get from Z3 would have to be implemented as well or discarded entirely. The decision to abandon Z3 entirely was made after I had already started implementation with some prototypes in python. As a consequence Python remained the language of choice even though there might have been more suitable languages for this task.
+So instead of extending from Microsoft Research's Z3, the actual goal was altered into implementing a stand-alone proof search for justification logic. That meant the implementation would be easier since it did not depend on anything else anymore. Conversely, a lot of the functionality that I hoped to get from Z3 would have to be implemented as well or discarded entirely. The decision to abandon Z3 entirely was made after I had already started implementation with some prototypes in python. As a consequence Python remained the language of choice even though there might have been more suitable languages for this task.
 
 It was agreed that the program should satisfy to following conditions:
 
@@ -25,4 +25,4 @@ The forth chapter provides a selection of the classes and methods of the source 
 
 The fifth chapter combines the previous two chapters by going through an example from start to end.
 
-Finally, the last chapter will discuss the result of the work and give some ideas about how the work of a Justification Logic proof search implementation could be improved.
+Finally, the last chapter will discuss the result of the work and give some ideas about how the work of a justification logic proof search implementation could be improved.
