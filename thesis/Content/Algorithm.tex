@@ -6,7 +6,7 @@ The comprehension that mine follows a classic \emph{Divide and Conquer} approach
 
 \medskip
 
-There are two major steps in the divide part of this algorithm. First the justification formula itself will be split into several smaller pieces and adjusted. Second each of those smaller pieces called \emph{atoms} is also taken apart so that only their proof constants with corresponding proof terms containing variables remain. The pair of proof constant and proof term will be called \emph{must}\footnote{They are called \emph{musts} in the algorithm because we have to find a match for every single one of them or else the atom is not provable.}.
+There are two major steps in the divide part of this algorithm. First the justification formula itself will be split into several smaller pieces and adjusted. Second each of those smaller pieces called \emph{atoms} is also taken apart so that only their constants with corresponding proof terms containing variables remain. The pair of proof constant and proof term will be called \emph{must}\footnote{They are called \emph{musts} in the algorithm because we have to find a match for every single one of them or else the atom is not provable.}.
 
 The conquer step first handles the \emph{musts} of one atom, trying to find a valid match for every \emph{must} in the constant specification list, and then evaluates the provability of the originally given justification formula from the results of each \emph{atom}.
 
@@ -97,7 +97,7 @@ $X_2$ will be replaced by $(b:X_2)$ so our final \emph{musts} for $(a \cdot (!b)
 
 \section{Conquer}
 
-Once \emph{musts} have been obtained we can search the \emph{cs-list} for terms that match it. Since a \emph{must} usually consists of variables that are not determined, it is possible that we get more than one match per proof term. Since the \emph{cs-list} allows terms that contain variables as well, this imposes further conditions on the possible choice of the proof term. All those possibilities and conditions are collected during the comparison of the musts with the \emph{cs-list}.
+Once the \emph{musts} have been obtained we can search the \emph{cs-list} for terms that match it. Since a \emph{must} term usually consists of variables that are not determined, it is possible that we get more than one match. Since the \emph{cs-list} allows terms that contain variables as well, this imposes further conditions on the possible choice of the variables. All those possibilities and conditions are collected during the comparison of the musts with the \emph{cs-list}.
 
 Then, in a second and more challenging step, those conditions are merged. It is checked if there is a possible combination of the given options so that we have a proof for the atomized formula. The proof of any atom is also a proof of the original formula.
 
@@ -132,7 +132,7 @@ Which can be shorted without losing any informations to\footnote{This is only on
 	X_1 : \{Y_1\},\; X_2 : \{F\},\; Y_2 : \{F\}
 \end{equation*}
 
-Every entry in the \emph{cs-list} that we compare our \emph{must} to gives us a set of conditions for the occurring variables. Each set represents a possible proof for one \emph{must}, but since all \emph{musts} must be proven and contain variables that also occur in other \emph{musts}, the sets of conditions of all \emph{musts} of an atom have to be merged together.
+Every entry in the \emph{cs-list} that we compare our \emph{must} to gives us a set of conditions for the occurring variables. Each set represents a possible proof for one \emph{must}, but since all \emph{musts} must be proven and contain variables that also occur in other \emph{musts}, a set of conditions of each \emph{must} of an atom have to be merged together.
 
 \subsection{Merging Conditions to Configurations}
 Suppose we have \emph{musts} $m_1, m_2, \dots, m_n$ for a certain atom. From the previous step, each of these $m_i$ has at least one set of conditions\footnote{If there is no entry in the \emph{cs-list} that matches the criteria of the \emph{must}, the whole atom is unprovable.} for its variables. Our aim is to find one set of conditions for each \emph{must} such that those conditions contain no contradiction, giving us the final configuration of the $X_i$ variables\footnote{We are only concerned for the $X$ variables but we still need to carry the $Y$ variables along.}.
